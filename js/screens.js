@@ -6,7 +6,7 @@ Game.Screen.menuScreen = {
     exit: function() { 
 	},
     render: function(display) {
-		display.drawText(1,2, "Press [Enter] to start!");
+		display.drawText(0,0, "@");
     },
     handleInput: function(inputType, inputData) {
         if (inputType === 'keydown') {
@@ -31,7 +31,7 @@ Game.Screen.playScreen = {
 		for (var x = 0; x < mapWidth; x++) {
 			map.push([]);
 			for (var y = 0; y < mapHeight; y++) {
-				map[x].push(Game.Tile.nullTile);
+				map[x].push(null);
 			}
 		}
 
@@ -59,13 +59,13 @@ Game.Screen.playScreen = {
 	render: function(display) {
         var screenWidth = Game.screenWidth;
         var screenHeight = Game.screenHeight;
-        
-		var topLeftX = Math.max(0, this.centerX - (screenWidth / 2));
+
+		var topLeftX = Math.max(0, this.centerX - ((screenWidth - 1) / 2)); //subtract 1 from screenWidth/Height to make even number
         topLeftX = Math.min(topLeftX, this.map.width - screenWidth);
         
-		var topLeftY = Math.max(0, this.centerY - (screenHeight / 2));
+		var topLeftY = Math.max(0, this.centerY - ((screenHeight - 1) / 2));
         topLeftY = Math.min(topLeftY, this.map.height - screenHeight)	
-	
+
 		for (var x = topLeftX; x < topLeftX + screenWidth; x++) {
 			for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
 				var glyph = this.map.getTile(x, y).glyph;
