@@ -20,8 +20,6 @@ var Game =  {
 			window.addEventListener(event, function(e) {
 				if (game.currentScreen !== null) {
 					game.currentScreen.handleInput(event, e);
-					game.display.clear();
-                    game.currentScreen.render(game.display);
 				}
 			});
 		}
@@ -29,8 +27,7 @@ var Game =  {
 		bindEventToScreen('mouseup');
 		bindEventToScreen('touchstart');
 		
-		window.addEventListener('resize', this.resizeCanvas());
-								
+		window.addEventListener('resize', this.resizeCanvas());								
     },
 	switchScreen: function(screen) {
 		if (this.currentScreen !== null) {
@@ -40,8 +37,12 @@ var Game =  {
 		this.currentScreen = screen;
 		if (!this.currentScreen !== null) {
 			this.currentScreen.enter();
-			this.currentScreen.render(this.display);
+			this.refresh();
 		}
+	},
+	refresh: function() {
+		this.display.clear();
+        this.currentScreen.render(this.display);
 	},
 	resizeCanvas: function() {		
 		this.display.setOptions({height: this.screenHeight, width: this.screenWidth});

@@ -22,12 +22,11 @@ Game.Screen.menuScreen = {
 //FIXME - move map generation details elsewhere so this can remain more template like
 Game.Screen.playScreen = {
 	map: null,
-    centerX: 0,
-    centerY: 0,
+    player: null,
 	enter: function() {  
 		var map = [];
-        var mapWidth = 500;
-        var mapHeight = 500;		
+        var mapWidth = 50;
+        var mapHeight = 50;		
 		for (var x = 0; x < mapWidth; x++) {
 			map.push([]);
 			for (var y = 0; y < mapHeight; y++) {
@@ -52,7 +51,9 @@ Game.Screen.playScreen = {
 			}
 		});
 
-		this.map = new Game.Map(map);		
+	    this.player = new Game.Entity(Game.PlayerTemplate);
+	    this.map = new Game.Map(map, this.player);
+	    this.map.engine.start();		
 	},
     exit: function() {
 	},
@@ -60,27 +61,35 @@ Game.Screen.playScreen = {
         var screenWidth = Game.screenWidth;
         var screenHeight = Game.screenHeight;
 
-		var topLeftX = Math.max(0, this.centerX - ((screenWidth - 1) / 2)); //subtract 1 from screenWidth/Height to make even number
+		var topLeftX = Math.max(0, this.player.x - ((screenWidth - 1) / 2)); //-1 from screenWidth/Height for even number
         topLeftX = Math.min(topLeftX, this.map.width - screenWidth);
         
-		var topLeftY = Math.max(0, this.centerY - ((screenHeight - 1) / 2));
+		var topLeftY = Math.max(0, this.player.y - ((screenHeight - 1) / 2));
         topLeftY = Math.min(topLeftY, this.map.height - screenHeight)	
 
 		for (var x = topLeftX; x < topLeftX + screenWidth; x++) {
 			for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
-				var glyph = this.map.getTile(x, y).glyph;
+				var tile = this.map.getTile(x, y);
 				display.draw(
 					x - topLeftX, 
 					y - topLeftY,
-					glyph.character);
+					tile.character);
 			}
 		}
         
-		display.draw(
-            this.centerX - topLeftX, 
-            this.centerY - topLeftY,
-            '@'
-		);		
+        var entities = this.map.entities;
+        for (var i = 0; i < entities.length; i++) {
+            var entity = entities[i];
+            if (entity.x >= topLeftX && entity.y >= topLeftY &&
+                entity.x < topLeftX + screenWidth &&
+                entity.x < topLeftY + screenHeight) {
+                display.draw(
+                    entity.x - topLeftX, 
+                    entity.y - topLeftY,    
+                    entity.character
+                );
+            }
+        }		
 	},
     handleInput: function(inputType, inputData) {
         if (inputType === 'keydown') {
@@ -93,14 +102,14 @@ Game.Screen.playScreen = {
             } else if (inputData.keyCode === ROT.VK_DOWN) {
                 this.move(0, 1);
             }
+            this.map.engine.unlock();
         } else if (inputType === 'mouseup' || inputType === 'touchstart') {
 			console.log('click');
         }    
     },
 	move: function(directionX, directionY) {
-        this.centerX = Math.max(0,
-            Math.min(this.map.width - 1, this.centerX + directionX));
-        this.centerY = Math.max(0,
-            Math.min(this.map.height - 1, this.centerY + directionY));
+        var newX = this.player.x + directionX;
+        var newY = this.player.y + directionY;
+        this.player.tryMove(newX, newY, this.map);        
     }
 }

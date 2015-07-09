@@ -1,3 +1,4 @@
-Game.Glyph = function(chr) {
-    this.character = chr || ' ';
+Game.Glyph = function(properties) {
+    properties = properties || {};
+    this.character = properties['character'] || ' ';
 };
