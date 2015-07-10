@@ -7,13 +7,43 @@ Game.Mixins.Moveable = {
         var target = map.getEntityAt(x, y);
         
         if (target) {
-        	return false;
+        
+            if (this.hasMixin('Attacker')) {
+                this.attack(target);
+                return true;
+            } else {
+                return false;
+            }
+            
         } else if (tile && tile.isWalkable) {
             this.x = x;
             this.y = y;
             return true;
         }
         return false;
+    }
+}
+
+Game.Mixins.Destructible = {
+    name: 'Destructible',
+    init: function() {
+        this.hp = 1;
+    },
+    takeDamage: function(attacker, damage) {
+        this.hp -= damage;
+        if (this.hp <= 0) {
+            this.map.removeEntity(this);
+        }
+    }
+}
+
+Game.Mixins.SimpleAttacker = {
+    name: 'SimpleAttacker',
+    groupName: 'Attacker',
+    attack: function(target) {
+        if (target.hasMixin('Destructible')) {
+            target.takeDamage(this, 1);
+        }
     }
 }
 
@@ -28,16 +58,17 @@ Game.Mixins.PlayerActor = {
 
 Game.PlayerTemplate = {
     character: '@',
-    mixins: [Game.Mixins.Moveable, Game.Mixins.PlayerActor]
+    mixins: [Game.Mixins.Moveable, Game.Mixins.PlayerActor,
+    		Game.Mixins.SimpleAttacker, Game.Mixins.Destructible]
 }
 
-Game.Mixins.FungusActor = {
-    name: 'FungusActor',
+Game.Mixins.SlimeActor = {
+    name: 'SlimeActor',
     groupName: 'Actor',
     act: function() { }
 }
 
-Game.FungusTemplate = {
-    character: 'F',
-    mixins: [Game.Mixins.FungusActor]
+Game.SlimeTemplate = {
+    character: 'S',
+    mixins: [Game.Mixins.SlimeActor, Game.Mixins.Destructible]
 }

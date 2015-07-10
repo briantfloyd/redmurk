@@ -10,14 +10,14 @@ Game.Entity = function(properties) {
     this.attachedMixinGroups = {};
     
     var mixins = properties['mixins'] || [];
-console.log(mixins);    
+  
     for (var i = 0; i < mixins.length; i++) {
     	for (var key in mixins[i]) {
     		if (key != 'init' && key != 'name' && !this.hasOwnProperty(key)) {
     			this[key] = mixins[i][key];
     		}
     	}
-console.log(mixins[i]);
+
     	this.attachedMixins[mixins[i].name] = true;
         if (mixins[i].groupName) {
             this.attachedMixinGroups[mixins[i].groupName] = true;

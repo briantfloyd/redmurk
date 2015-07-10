@@ -4,7 +4,8 @@ var Game =  {
 	currentScreen: null, 
     screenWidth: null,
     screenHeight: null,
-    tileWidth: null, 
+    tileWidth: null,
+    loadedEnvironment: null, 
 	init: function() {	
         this.display = new ROT.Display({
         	width: this.screenWidth, 
@@ -53,16 +54,16 @@ window.onload = function() {
     if (!ROT.isSupported()) {
         alert("The rot.js library isn't supported by your browser.");
     } else {    
-        Interface.init();
-        
+        Interface.init();    
 		Game.screenWidth = Interface.canvasTileWidth;
 		Game.screenHeight = Interface.canvasTileHeight;
 		Game.tileWidth = Interface.tilePixelWidth;
         
-        Game.init();
+        Game.loadedEnvironment = Game.RedmurksMaze;
+        Game.loadedEnvironment.init();
         
+        Game.init(); 
         Interface.canvasContainer.appendChild(Game.display.getContainer());
-        
 		Game.switchScreen(Game.Screen.menuScreen);
     }
 }

@@ -1,15 +1,10 @@
-Game.Map = function(tiles, player) {
+Game.Map = function(tiles) {
     this.tiles = tiles;
     this.width = tiles.length;
     this.height = tiles[0].length;
     this.entities = [];
     this.scheduler = new ROT.Scheduler.Simple();
     this.engine = new ROT.Engine(this.scheduler);
-
-    this.addEntityAtRandomPosition(player);
-    /*for (var i = 0; i < 1000; i++) {
-        this.addEntityAtRandomPosition(new Game.Entity(Game.FungusTemplate));
-    }*/   
 };
 
 Game.Map.prototype.getTile = function(x, y) {
@@ -21,20 +16,14 @@ Game.Map.prototype.getTile = function(x, y) {
     }
 };
 
-Game.Map.prototype.getRandomFloorPosition = function() {
-    var x, y;
-    do {
-        x = Math.floor(Math.random() * this.width);
-        y = Math.floor(Math.random() * this.width);
-    } while(this.getTile(x, y) != Game.Tile.floorTile);
-    return {x: x, y: y};
-};
-
 Game.Map.prototype.getEntityAt = function(x, y){
-    for (var i = 0; i < this.entities.length; i++) {
-        if (this.entities[i].x == x && this.entities[i].y == y) {
-            return this.entities[i];
-        }
+    var entitiesLength = this.entities.length;
+    if (entitiesLength > 0) {
+		for (var i = 0; i < this.entities.length; i++) {
+			if (this.entities[i].x == x && this.entities[i].y == y) {
+				return this.entities[i];
+			}
+		}
     }
     return false;
 };
@@ -48,6 +37,18 @@ Game.Map.prototype.addEntity = function(entity) {
     this.entities.push(entity);
     if (entity.hasMixin('Actor')) {
        this.scheduler.add(entity, true);
+    }  
+}
+
+Game.Map.prototype.removeEntity = function(entity) {
+    for (var i = 0; i < this.entities.length; i++) {
+        if (this.entities[i] == entity) {
+            this.entities.splice(i, 1);
+            break;
+        }
+    }
+    if (entity.hasMixin('Actor')) {
+        this.scheduler.remove(entity);
     }
 }
 
@@ -63,7 +64,13 @@ Game.Map.prototype.getRandomFloorPosition = function() {
     do {
         x = Math.floor(Math.random() * this.width);
         y = Math.floor(Math.random() * this.height);
-    } while(this.getTile(x, y) != Game.Tile.floorTile ||
-            this.getEntityAt(x, y));
+    } while(!this.isEmptyFloor(x, y));
     return {x: x, y: y};
+}
+
+Game.Map.prototype.isEmptyFloor = function(x, y) {
+	if (this.getTile(x, y).walkable === false  || this.getEntityAt(x, y)) {
+		return false;
+	} 
+	return true;
 }
