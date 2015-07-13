@@ -3,7 +3,6 @@ Game.RedmurksMaze = {
 	entities: null,
 	tiles: null,
 	init: function() {
-	
 	},
 	generateMap: function() {
 		var map = [];
@@ -48,5 +47,68 @@ Game.RedmurksMaze = {
 		for (var i = 0; i < 50; i++) {
         	Game.Screen.playScreen.map.addEntityAtRandomPosition(new Game.Entity(Game.SlimeTemplate));
     	}  
+	},
+	initializeUI: function() {
+		var uiParameters = [];
+		
+		var messageDisplay = {		
+			type: 'display', //display or button
+			x: 0,
+			y: 0,
+			width:(Interface.canvasTileWidth * Interface.tilePixelWidth) - (Interface.tilePixelWidth * 2),
+			height: Interface.tilePixelWidth
+		};
+		
+		var otherStatsDisplay = {		
+			type: 'display',
+			x: (Interface.canvasTileWidth * Interface.tilePixelWidth) - (Interface.tilePixelWidth * 2),
+			y: 0,
+			width: Interface.tilePixelWidth,
+			height: Interface.tilePixelWidth
+		};		
+
+		var statsDisplay = {		
+			type: 'display',
+			x: (Interface.canvasTileWidth * Interface.tilePixelWidth) - Interface.tilePixelWidth,
+			y: 0,
+			width: Interface.tilePixelWidth,
+			height: Interface.tilePixelWidth
+		};
+		
+		var menuButton = {		
+			type: 'button',
+			text: 'Menu',
+			x: 0,
+			y: (Interface.canvasTileHeight * Interface.tilePixelWidth) - (Interface.tilePixelWidth * 2),
+			width: Interface.tilePixelWidth,
+			height: Interface.tilePixelWidth
+		};
+		
+		var healingPotionButton = {		
+			type: 'button',
+			text: 'Heal',
+			x: (Interface.canvasTileWidth * Interface.tilePixelWidth) - Interface.tilePixelWidth,
+			y: (Interface.canvasTileHeight * Interface.tilePixelWidth) - (Interface.tilePixelWidth * 2),
+			width: Interface.tilePixelWidth,
+			height: Interface.tilePixelWidth
+		};
+		
+		var pauseButton = {		
+			type: 'button',
+			text: 'Pause',
+			x: 0,
+			y: (Interface.canvasTileHeight * Interface.tilePixelWidth) - Interface.tilePixelWidth,
+			width: Interface.canvasTileWidth * Interface.tilePixelWidth,
+			height: Interface.tilePixelWidth
+		};
+		
+		uiParameters.push(messageDisplay, otherStatsDisplay, statsDisplay, menuButton, healingPotionButton, pauseButton);
+		
+		Interface.buildUI(uiParameters);
+	
 	}
 }
+
+
+
+

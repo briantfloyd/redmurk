@@ -23,8 +23,8 @@
 canvas {
    width: 100%;
    height: auto;
+   position: absolute; top: 0; left: 0; 
 }
-
 
 /* ------------------------------------------------------------ */
 /* Media queries */
@@ -51,7 +51,7 @@ canvas {
   and (min-device-width: 768px) {
 
 	.canvas-container {
-	   width: 720px;
+	   width: 660px; /*720px;*/
 	}
 }
 
@@ -85,7 +85,7 @@ canvas {
   and (min-device-height: 768px) {
 
 	.canvas-container {
-	   height: 720px;
+	   height: 660px;/*720px;*/
 	}
 }
 
