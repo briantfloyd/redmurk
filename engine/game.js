@@ -46,12 +46,8 @@ var Game =  {
         this.currentScreen.render(this.display);
 	},
 	resizeCanvas: function() {		
-		this.display.setOptions({height: this.screenHeight, width: this.screenWidth});
-		
-
-		
-		
-console.log('game.resize: ' + this.screenHeight + ',' + this.screenWidth);		
+		this.display.setOptions({height: this.screenHeight, width: this.screenWidth});			
+		//console.log('game.resize: ' + this.screenHeight + ',' + this.screenWidth);		
 	}
 }
 
@@ -59,17 +55,20 @@ window.onload = function() {
     if (!ROT.isSupported()) {
         alert("The rot.js library isn't supported by your browser.");
     } else {    
-        Interface.init();    
-		Game.screenWidth = Interface.canvasTileWidth;
-		Game.screenHeight = Interface.canvasTileHeight;
-		Game.tileWidth = Interface.tilePixelWidth;
+        Game.interfaceObject = Interface;
+        Game.interfaceObject.init();    
         
-        Game.loadedEnvironment = Game.RedmurksMaze;
+		Game.screenWidth = Game.interfaceObject.canvasTileWidth;
+		Game.screenHeight = Game.interfaceObject.canvasTileHeight;
+		Game.tileWidth = Game.interfaceObject.tilePixelWidth;
         
         Game.init(); 
-        Interface.canvasContainer.appendChild(Game.display.getContainer());
+        Game.interfaceObject.canvasContainer.appendChild(Game.display.getContainer());
         
-        Game.loadedEnvironment.initializeUI();
+        Game.interfaceObject.createUICanvas();
+        
+        Game.loadedEnvironment = Game.RedmurksMaze;
+        Game.loadedEnvironment.init();
         
 		Game.switchScreen(Game.Screen.menuScreen);
     }

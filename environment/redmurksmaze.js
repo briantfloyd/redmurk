@@ -2,7 +2,9 @@ Game.RedmurksMaze = {
 	map: null,
 	entities: null,
 	tiles: null,
+	uiScreens: {},
 	init: function() {
+		this.initializeUI();
 	},
 	generateMap: function() {
 		var map = [];
@@ -51,61 +53,87 @@ Game.RedmurksMaze = {
 	initializeUI: function() {
 		var uiParameters = [];
 		
-		var messageDisplay = {		
-			type: 'display', //display or button
+		uiParameters.push(this.menuButton, this.healingPotionButton, this.pauseButton, this.messageDisplay, this.statsDisplay);		
+		
+		this.uiScreens.playScreenUI = uiParameters;	 //FIXME - update to better accommodate multiple screens
+	},
+	menuButton: function() {	
+		var displayObject = {
+			type: 'button',
+			text: ['Menu'],
+			x: 0,
+			y: (Game.interfaceObject.canvasTileHeight * Game.interfaceObject.tilePixelWidth) - (Game.interfaceObject.tilePixelWidth * 2),
+			width: Game.interfaceObject.tilePixelWidth,
+			height: Game.interfaceObject.tilePixelWidth
+		}
+		return displayObject;
+	},
+	healingPotionButton: function() {	
+		var displayObject = {
+			type: 'button',
+			text: ['Heal'],
+			x: (Game.interfaceObject.canvasTileWidth * Game.interfaceObject.tilePixelWidth) - Game.interfaceObject.tilePixelWidth,
+			y: (Game.interfaceObject.canvasTileHeight * Game.interfaceObject.tilePixelWidth) - (Game.interfaceObject.tilePixelWidth * 2),
+			width: Game.interfaceObject.tilePixelWidth,
+			height: Game.interfaceObject.tilePixelWidth
+		}
+		return displayObject;
+	},
+	pauseButton: function() {	
+		var displayObject = {
+			type: 'button',
+			text: ['Pause'],
+			x: 0,
+			y: (Game.interfaceObject.canvasTileHeight * Game.interfaceObject.tilePixelWidth) - Game.interfaceObject.tilePixelWidth,
+			width: Game.interfaceObject.canvasTileWidth * Game.interfaceObject.tilePixelWidth,
+			height: Game.interfaceObject.tilePixelWidth
+		}
+		return displayObject;
+	},
+	messageDisplay: function() {	
+			var displayObject = {
+			type: 'display',
 			x: 0,
 			y: 0,
-			width:(Interface.canvasTileWidth * Interface.tilePixelWidth) - (Interface.tilePixelWidth * 2),
-			height: Interface.tilePixelWidth
-		};
-		
-		var otherStatsDisplay = {		
+			width:(Game.interfaceObject.canvasTileWidth * Game.interfaceObject.tilePixelWidth) - (Game.interfaceObject.tilePixelWidth * 2),
+			height: Game.interfaceObject.tilePixelWidth,
+			text: Game.Messages.getLatest() //FIXME
+		}
+		return displayObject;
+	},
+	statsDisplay: function() {		
+		var displayObject = {
 			type: 'display',
-			x: (Interface.canvasTileWidth * Interface.tilePixelWidth) - (Interface.tilePixelWidth * 2),
+			x: (Game.interfaceObject.canvasTileWidth * Game.interfaceObject.tilePixelWidth) - Game.interfaceObject.tilePixelWidth,
 			y: 0,
-			width: Interface.tilePixelWidth,
-			height: Interface.tilePixelWidth
-		};		
+			width: Game.interfaceObject.tilePixelWidth,
+			height: Game.interfaceObject.tilePixelWidth,
+			//text: this.getStatsDisplay(Game.Screen.playScreen.player)
+			text: [Game.Screen.playScreen.player.hp + "/" + Game.Screen.playScreen.player.maxHp, Game.Screen.playScreen.player.attackValue + "|" + Game.Screen.playScreen.player.defenseValue]
+		}
+		return displayObject;
 
-		var statsDisplay = {		
+	},
+	/*otherStatsDisplay: function() {		
+		var displayObject = {
 			type: 'display',
-			x: (Interface.canvasTileWidth * Interface.tilePixelWidth) - Interface.tilePixelWidth,
+			x: (Game.interfaceObject.canvasTileWidth * Game.interfaceObject.tilePixelWidth) - (Game.interfaceObject.tilePixelWidth * 2),
 			y: 0,
-			width: Interface.tilePixelWidth,
-			height: Interface.tilePixelWidth
-		};
-		
-		var menuButton = {		
-			type: 'button',
-			text: 'Menu',
-			x: 0,
-			y: (Interface.canvasTileHeight * Interface.tilePixelWidth) - (Interface.tilePixelWidth * 2),
-			width: Interface.tilePixelWidth,
-			height: Interface.tilePixelWidth
-		};
-		
-		var healingPotionButton = {		
-			type: 'button',
-			text: 'Heal',
-			x: (Interface.canvasTileWidth * Interface.tilePixelWidth) - Interface.tilePixelWidth,
-			y: (Interface.canvasTileHeight * Interface.tilePixelWidth) - (Interface.tilePixelWidth * 2),
-			width: Interface.tilePixelWidth,
-			height: Interface.tilePixelWidth
-		};
-		
-		var pauseButton = {		
-			type: 'button',
-			text: 'Pause',
-			x: 0,
-			y: (Interface.canvasTileHeight * Interface.tilePixelWidth) - Interface.tilePixelWidth,
-			width: Interface.canvasTileWidth * Interface.tilePixelWidth,
-			height: Interface.tilePixelWidth
-		};
-		
-		uiParameters.push(messageDisplay, otherStatsDisplay, statsDisplay, menuButton, healingPotionButton, pauseButton);
-		
-		Interface.buildUI(uiParameters);
+			width: Game.interfaceObject.tilePixelWidth,
+			height: Game.interfaceObject.tilePixelWidth,
+			text: [''] //Game.Messages.queue[Game.Messages.queue.length - 1]
+		}
+		return displayObject;
+
+	},*/
+	getStatsDisplay: function(entity) {
 	
+		/*var healthIcon = "♥";
+		var attackIcon = "†";
+		var defenseIcon = "∇";*/
+		var newDisplay = [entity.hp + "/" + entity.maxHp, entity.attackValue + "|" + entity.defenseValue];
+		
+		return newDisplay;
 	}
 }
 

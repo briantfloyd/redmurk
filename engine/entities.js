@@ -1,29 +1,5 @@
 Game.Mixins = {};
 
-Game.Mixins.Moveable = {
-    name: 'Moveable',
-    tryMove: function(x, y, map) {
-        var tile = map.getTile(x, y);
-        var target = map.getEntityAt(x, y);
-        
-        if (target) {
-        
-            if (this.hasMixin('Attacker')) {
-                this.attack(target);
-                return true;
-            } else {
-                return false;
-            }
-            
-        } else if (tile && tile.isWalkable) {
-            this.x = x;
-            this.y = y;
-            return true;
-        }
-        return false;
-    }
-}
-
 Game.Mixins.Destructible = {
     name: 'Destructible',
     init: function(template) {
@@ -80,6 +56,28 @@ Game.Mixins.Attacker = {
     }
 }
 
+Game.Mixins.Sight = {
+    name: 'Sight',
+    groupName: 'Sight',
+    init: function(template) {
+        this.sightRadius = template['sightRadius'] || 5;
+    },
+}
+
+Game.Mixins.WanderActor = {
+    name: 'WanderActor',
+    groupName: 'Actor',
+    act: function() {
+        var moveOffset = (Math.round(Math.random()) === 1) ? 1 : -1;
+        if (Math.round(Math.random()) === 1) {
+            this.tryMove(this.x + moveOffset, this.y);
+        } else {
+            this.tryMove(this.x, this.y + moveOffset);
+        }
+    }
+};
+
+
 Game.Mixins.PlayerActor = {
     name: 'PlayerActor',
     groupName: 'Actor',
@@ -93,8 +91,10 @@ Game.PlayerTemplate = {
     character: '@',
     maxHp: 40,
     attackValue: 10,
-    mixins: [Game.Mixins.Moveable, Game.Mixins.PlayerActor,
-    		Game.Mixins.Attacker, Game.Mixins.Destructible]
+    sightRadius: 6,
+    mixins: [Game.Mixins.PlayerActor,
+    		Game.Mixins.Attacker, Game.Mixins.Destructible,
+    		Game.Mixins.Sight]
 }
 
 Game.Mixins.SlimeActor = {
@@ -106,5 +106,6 @@ Game.Mixins.SlimeActor = {
 Game.SlimeTemplate = {
     character: 'S',
 	maxHp: 10,
-    mixins: [Game.Mixins.SlimeActor, Game.Mixins.Destructible]
+    mixins: [Game.Mixins.SlimeActor, Game.Mixins.WanderActor, 
+    		Game.Mixins.Destructible, Game.Mixins.Attacker]
 }

@@ -37,3 +37,31 @@ Game.Entity.prototype.hasMixin = function(obj) {
         return this.attachedMixins[obj] || this.attachedMixinGroups[obj];
     }
 }
+
+Game.Entity.prototype.tryMove = function(x, y, map) {
+    //var map = this.map;
+    var tile = map.getTile(x, y);
+    var target = map.getEntityAt(x, y);
+ 	
+ 	if (target) {
+
+        if (this.hasMixin('Attacker')) {
+            this.attack(target);
+            return true;
+        } else {
+            return false;
+        }
+
+    } else if (tile && tile.walkable) {        
+		var oldX = this.x;
+		var oldY = this.y;
+		
+		this.x = x;
+		this.y = y;
+		
+		this.map.updateEntityPosition(this, oldX, oldY);
+			
+        return true;
+    } 
+    return false;
+};

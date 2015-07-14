@@ -1,7 +1,9 @@
 Game.Screen = {};
 
 Game.Screen.menuScreen = {
-    enter: function() {    
+	uiParameters: null,
+    enter: function() { 
+    	   //this.uiParameters = Game.loadedEnvironment.
 	},
     exit: function() { 
 	},
@@ -22,12 +24,15 @@ Game.Screen.menuScreen = {
 Game.Screen.playScreen = {
 	map: null,
     player: null,
+    uiParameters: null,
 	enter: function() {  	    
 	    this.map = new Game.Map(Game.loadedEnvironment.generateMap());
-	    Game.loadedEnvironment.addEntities();
-	    this.map.engine.start();
 	    
-	    		
+	    Game.loadedEnvironment.addEntities();
+	    	    
+	    this.uiParameters = Game.loadedEnvironment.uiScreens.playScreenUI;	    
+	    
+	    this.map.engine.start();	
 	},
     exit: function() {
 	},
@@ -36,42 +41,54 @@ Game.Screen.playScreen = {
         var screenHeight = Game.screenHeight;
 
 		var topLeftX = Math.max(0, this.player.x - ((screenWidth - 1) / 2)); //-1 from screenWidth/Height for even number
-//console.log(this.player.x);
-//console.log(screenWidth);
-
-//console.log(topLeftX);
         topLeftX = Math.min(topLeftX, this.map.width - screenWidth);
-//console.log(topLeftX);       
+
 		var topLeftY = Math.max(0, this.player.y - ((screenHeight - 1) / 2));
         topLeftY = Math.min(topLeftY, this.map.height - screenHeight)	
+        
+        var visibleCells = {};
+        
+        var currentDepth = this.map.depth; //FIXME
+        
+        this.map.fov[currentDepth].compute(
+            this.player.x, this.player.y, 
+            this.player.sightRadius, 
+            function(x, y, radius, visibility) {
+                visibleCells[x + "," + y] = true;
+            });
 
 		for (var x = topLeftX; x < topLeftX + screenWidth; x++) {
 			for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
-				var tile = this.map.getTile(x, y);
-//console.log(tile);		
-				display.draw(
-					x - topLeftX, 
-					y - topLeftY,
-					tile.character);
+				if (visibleCells[x + ',' + y]) {
+					var tile = this.map.getTile(x, y);
+					display.draw(
+						x - topLeftX, 
+						y - topLeftY,
+						tile.character);
+				}
 			}
 		}
         
         var entities = this.map.entities;
-        for (var i = 0; i < entities.length; i++) {
-            var entity = entities[i];            
+
+        for (var key in entities) {
+            var entity = entities[key];
+           
             if (entity.x >= topLeftX && 
             	entity.y >= topLeftY &&
                 entity.x < topLeftX + screenWidth &&
                 entity.y < topLeftY + screenHeight) {
-                display.draw(
-                    entity.x - topLeftX, 
-                    entity.y - topLeftY,    
-                    entity.character
-                );
+                if (visibleCells[entity.x + ',' + entity.y]) {
+                    display.draw(
+                        entity.x - topLeftX, 
+                        entity.y - topLeftY,    
+                        entity.character
+                    );
+                }
             }
         }
         
-        Interface.drawUI();
+        Game.interfaceObject.drawUI(this.uiParameters);
         		
 	},
     handleInput: function(inputType, inputData) {
