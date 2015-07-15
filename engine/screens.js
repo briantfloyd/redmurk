@@ -50,21 +50,30 @@ Game.Screen.playScreen = {
         
         var currentDepth = this.map.depth; //FIXME
         
-        this.map.fov[currentDepth].compute(
-            this.player.x, this.player.y, 
+        var map = this.map; //for call back in function below
+        
+        this.map.fov[currentDepth].compute( //FIXME
+            this.player.x, 
+            this.player.y, 
             this.player.sightRadius, 
             function(x, y, radius, visibility) {
                 visibleCells[x + "," + y] = true;
+                map.setExplored(x, y, true);
             });
 
 		for (var x = topLeftX; x < topLeftX + screenWidth; x++) {
 			for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
-				if (visibleCells[x + ',' + y]) {
+				if (this.map.isExplored(x, y)) {
+				//if (visibleCells[x + ',' + y]) {
 					var tile = this.map.getTile(x, y);
+					
+					var foreground = visibleCells[x + ',' + y] ? 'white' : '#333333'; //FIXME - replace with tinting for graphic tiles
+					
 					display.draw(
 						x - topLeftX, 
 						y - topLeftY,
-						tile.character);
+						tile.character,
+						foreground); //FIXME - replace with tinting for graphic tiles
 				}
 			}
 		}

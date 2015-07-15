@@ -8,11 +8,13 @@ Game.Map = function(tiles) {
     this.engine = new ROT.Engine(this.scheduler);
     this.fov = [];
     this.setupFov();
+    this.explored = null;
+    this.setupExploredArray();
 };
 
 Game.Map.prototype.getTile = function(x, y) {
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
-        console.log('getTile() coordinates outside of map');
+        //console.log('getTile() coordinates outside of map');
         return false;
     } else {    
         return this.tiles[x][y];
@@ -100,6 +102,30 @@ Game.Map.prototype.setupFov = function() {
         })();
     }
 }
+
+Game.Map.prototype.setupExploredArray = function() {
+	this.explored = new Array(this.width);
+	for (var x = 0; x < this.width; x++) {
+		this.explored[x] = new Array(this.height);
+		for (var y = 0; y < this.height; y++) {
+			this.explored[x][y] = false;
+		}
+	}
+};
+
+Game.Map.prototype.setExplored = function(x, y, state) {
+    if (this.getTile(x, y)) {
+        this.explored[x][y] = state;
+    }
+};
+
+Game.Map.prototype.isExplored = function(x, y) {
+    if (this.getTile(x, y)) {
+        return this.explored[x][y];
+    } else {
+        return false;
+    }
+};
 
 Game.Map.prototype.updateEntityPosition = function(entity, oldX, oldY) {
     if (oldX) {

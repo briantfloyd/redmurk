@@ -2,7 +2,6 @@ Game.Messages = {
 	queue: [],
 	getLatest: function() { //FIXME - temporary placeholder solution
 		
-		console.log(this.queue);
 		var queueLength = this.queue.length;
 		var latestMessage = 'The air is cool';
 		if (queueLength > 0) {

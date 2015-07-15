@@ -60,7 +60,7 @@ Game.Mixins.Sight = {
     name: 'Sight',
     groupName: 'Sight',
     init: function(template) {
-        this.sightRadius = template['sightRadius'] || 5;
+        this.sightRadius = template['sightRadius'] || 3;
     },
 }
 
@@ -91,7 +91,8 @@ Game.PlayerTemplate = {
     character: '@',
     maxHp: 40,
     attackValue: 10,
-    sightRadius: 6,
+    defenseValue: 10,
+    sightRadius: 4,
     mixins: [Game.Mixins.PlayerActor,
     		Game.Mixins.Attacker, Game.Mixins.Destructible,
     		Game.Mixins.Sight]

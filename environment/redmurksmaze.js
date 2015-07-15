@@ -1,7 +1,7 @@
 Game.RedmurksMaze = {
-	map: null,
-	entities: null,
-	tiles: null,
+	//map: null,
+	//entities: null,
+	//tiles: null,
 	uiScreens: {},
 	init: function() {
 		this.initializeUI();
@@ -25,7 +25,7 @@ Game.RedmurksMaze = {
 		for (var i = 0; i < totalIterations - 1; i++) {
 			generator.create();
 		}
-		//final smoothing then update
+		//final smoothing pass then update
 		generator.create(function(x,y,v) {
 			if (v === 1) {
 				map[x][y] = Game.Tile.floorTile;
@@ -34,8 +34,9 @@ Game.RedmurksMaze = {
 			}
 		});
 		
-		this.map = map;
-		return this.map;
+		//this.map = map;
+		//return this.map;
+		return map;
 	},
 	createPlayer: function() {
 		this.player = new Game.Entity(Game.PlayerTemplate);
@@ -60,9 +61,10 @@ Game.RedmurksMaze = {
 	menuButton: function() {	
 		var displayObject = {
 			type: 'button',
-			text: ['Menu'],
+			//text: ['Menu'],
+			icon: Game.interfaceObject.uiIcons.menuIcon,
 			x: 0,
-			y: (Game.interfaceObject.canvasTileHeight * Game.interfaceObject.tilePixelWidth) - (Game.interfaceObject.tilePixelWidth * 2),
+			y: 0,
 			width: Game.interfaceObject.tilePixelWidth,
 			height: Game.interfaceObject.tilePixelWidth
 		}
@@ -71,7 +73,8 @@ Game.RedmurksMaze = {
 	healingPotionButton: function() {	
 		var displayObject = {
 			type: 'button',
-			text: ['Heal'],
+			//text: ['Heal'],
+			icon: Game.interfaceObject.uiIcons.healIcon,
 			x: (Game.interfaceObject.canvasTileWidth * Game.interfaceObject.tilePixelWidth) - Game.interfaceObject.tilePixelWidth,
 			y: (Game.interfaceObject.canvasTileHeight * Game.interfaceObject.tilePixelWidth) - (Game.interfaceObject.tilePixelWidth * 2),
 			width: Game.interfaceObject.tilePixelWidth,
@@ -82,7 +85,8 @@ Game.RedmurksMaze = {
 	pauseButton: function() {	
 		var displayObject = {
 			type: 'button',
-			text: ['Pause'],
+			//text: ['Pause'],
+			icon: Game.interfaceObject.uiIcons.pauseIcon,
 			x: 0,
 			y: (Game.interfaceObject.canvasTileHeight * Game.interfaceObject.tilePixelWidth) - Game.interfaceObject.tilePixelWidth,
 			width: Game.interfaceObject.canvasTileWidth * Game.interfaceObject.tilePixelWidth,
@@ -93,22 +97,29 @@ Game.RedmurksMaze = {
 	messageDisplay: function() {	
 			var displayObject = {
 			type: 'display',
-			x: 0,
+			x: Game.interfaceObject.tilePixelWidth,
 			y: 0,
 			width:(Game.interfaceObject.canvasTileWidth * Game.interfaceObject.tilePixelWidth) - (Game.interfaceObject.tilePixelWidth * 2),
 			height: Game.interfaceObject.tilePixelWidth,
-			text: Game.Messages.getLatest() //FIXME
+			font: "italic 12px sans-serif",
+			text: Game.Messages.getLatest() //FIXME - temporary
 		}
 		return displayObject;
 	},
 	statsDisplay: function() {		
 		var displayObject = {
 			type: 'display',
+			/*icon: {
+					health: Game.interfaceObject.uiIcons.healthIcon,
+					attack: Game.interfaceObject.uiIcons.attackIcon,
+					defense: Game.interfaceObject.uiIcons.defenseIcon,
+				},*/
 			x: (Game.interfaceObject.canvasTileWidth * Game.interfaceObject.tilePixelWidth) - Game.interfaceObject.tilePixelWidth,
 			y: 0,
 			width: Game.interfaceObject.tilePixelWidth,
 			height: Game.interfaceObject.tilePixelWidth,
-			//text: this.getStatsDisplay(Game.Screen.playScreen.player)
+			//text: this.getStatsDisplay(Game.Screen.playScreen.player),
+			font: "bold 16px sans-serif",
 			text: [Game.Screen.playScreen.player.hp + "/" + Game.Screen.playScreen.player.maxHp, Game.Screen.playScreen.player.attackValue + "|" + Game.Screen.playScreen.player.defenseValue]
 		}
 		return displayObject;
@@ -126,15 +137,12 @@ Game.RedmurksMaze = {
 		return displayObject;
 
 	},*/
-	getStatsDisplay: function(entity) {
+	/*getStatsDisplay: function(entity) {
 	
-		/*var healthIcon = "♥";
-		var attackIcon = "†";
-		var defenseIcon = "∇";*/
 		var newDisplay = [entity.hp + "/" + entity.maxHp, entity.attackValue + "|" + entity.defenseValue];
 		
 		return newDisplay;
-	}
+	}*/
 }
 
 
