@@ -8,7 +8,7 @@ Game.Screen.menuScreen = {
     exit: function() { 
 	},
     render: function(display) {
-		display.drawText(0,0, "@");
+		display.drawText(0,0, "");
     },
     handleInput: function(inputType, inputData) {
         if (inputType === 'keydown') {
@@ -50,8 +50,7 @@ Game.Screen.playScreen = {
         
         var currentDepth = this.map.depth; //FIXME
         
-        var map = this.map; //for call back in function below
-        
+        var map = this.map;        
         this.map.fov[currentDepth].compute( //FIXME
             this.player.x, 
             this.player.y, 
@@ -64,16 +63,33 @@ Game.Screen.playScreen = {
 		for (var x = topLeftX; x < topLeftX + screenWidth; x++) {
 			for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
 				if (this.map.isExplored(x, y)) {
-				//if (visibleCells[x + ',' + y]) {
-					var tile = this.map.getTile(x, y);
+					var tile = this.map.getTile(x, y);					
 					
-					var foreground = visibleCells[x + ',' + y] ? 'white' : '#333333'; //FIXME - replace with tinting for graphic tiles
+					var tintForeground = 'transparent';
+					var tintBackground = 'transparent';
 					
+					if (!visibleCells[x + ',' + y]) {
+						tintForeground = "rgba(1, 1, 1, 0.8)";
+						tintBackground = "rgba(1, 1, 1, 0.8)";
+					} else if (x > (this.player.x + 3) || x < (this.player.x - 3) || y > (this.player.y + 3) || y < (this.player.y - 3)) { 
+						tintForeground = "rgba(1, 1, 1, 0.7)";
+						tintBackground = "rgba(1, 1, 1, 0.7)";							 
+					} else if (x > (this.player.x + 2) || x < (this.player.x - 2) || y > (this.player.y + 2) || y < (this.player.y - 2)) { 
+						tintForeground = "rgba(1, 1, 1, 0.5)";
+						tintBackground = "rgba(1, 1, 1, 0.5)";
+					} else if (x > (this.player.x + 1) || x < (this.player.x - 1) || y > (this.player.y + 1) || y < (this.player.y - 1)) { 
+						tintForeground = "rgba(1, 1, 1, 0.3)";
+						tintBackground = "rgba(1, 1, 1, 0.3)";
+					}
+
 					display.draw(
 						x - topLeftX, 
 						y - topLeftY,
 						tile.character,
-						foreground); //FIXME - replace with tinting for graphic tiles
+						tintForeground,
+						tintBackground
+					);					
+					
 				}
 			}
 		}
@@ -88,10 +104,27 @@ Game.Screen.playScreen = {
                 entity.x < topLeftX + screenWidth &&
                 entity.y < topLeftY + screenHeight) {
                 if (visibleCells[entity.x + ',' + entity.y]) {
-                    display.draw(
+ 
+					var tintForeground = 'transparent';
+					var tintBackground = 'transparent';
+					
+					if (entity.x > (this.player.x + 3) || entity.x < (this.player.x - 3) || entity.y > (this.player.y + 3) || entity.y < (this.player.y - 3)) { 
+						tintForeground = "rgba(1, 1, 1, 0.7)";
+						tintBackground = "rgba(1, 1, 1, 0.7)";							 
+					} else if (entity.x > (this.player.x + 2) || entity.x < (this.player.x - 2) || entity.y > (this.player.y + 2) || entity.y < (this.player.y - 2)) { 
+						tintForeground = "rgba(1, 1, 1, 0.5)";
+						tintBackground = "rgba(1, 1, 1, 0.5)";
+					} else if (entity.x > (this.player.x + 1) || entity.x < (this.player.x - 1) || entity.y > (this.player.y + 1) || entity.y < (this.player.y - 1)) { 
+						tintForeground = "rgba(1, 1, 1, 0.3)";
+						tintBackground = "rgba(1, 1, 1, 0.3)";
+					}
+
+					display.draw(
                         entity.x - topLeftX, 
                         entity.y - topLeftY,    
-                        entity.character
+                        entity.character,
+						tintForeground,
+						tintBackground
                     );
                 }
             }

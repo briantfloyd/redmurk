@@ -6,17 +6,21 @@ var Game =  {
     screenHeight: null,
     tileWidth: null,
     loadedEnvironment: null, 
-	init: function() {	
+	init: function() {
+			
         this.display = new ROT.Display({
+        	layout: 'tile',
         	width: this.screenWidth, 
         	height: this.screenHeight, 
         	tileWidth: this.tileWidth, 
         	tileHeight: this.tileWidth, 
-        	forceSquareRatio:true
-        	});
+        	tileSet: null,//new Image(),//src set by environment
+        	tileMap: {},//mapping set by environment
+        	forceSquareRatio:true,
+			tileColorize:true
+        	});    
         	
 		var game = this;
-		
 		var bindEventToScreen = function(event) {
 			window.addEventListener(event, function(e) {
 				if (game.currentScreen !== null) {

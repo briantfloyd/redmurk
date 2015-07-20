@@ -3,30 +3,11 @@ Game.Tile = function(properties) {
 	Game.Glyph.call(this, properties);
 	this.walkable = properties['walkable'] || false;
 	this.blocksLight = (properties['blocksLight'] !== undefined) ? properties['blocksLight'] : false;
+	this.spriteSheetY = properties['spriteSheetY'] || 0;
+	this.spriteSheetX = properties['spriteSheetX'] || 0;
 };
 
 Game.Tile.extend(Game.Glyph);
-
-Game.Tile.floorTile = new Game.Tile({
-	character: '.',
-	walkable: true
-});
-
-Game.Tile.wallTile = new Game.Tile({
-	character: '#',
-	walkable: false,
-	blocksLight: true
-});
-
-Game.Tile.stairsUpTile = new Game.Tile({
-    character: '<',
-    walkable: true
-});
-
-Game.Tile.stairsDownTile = new Game.Tile({
-    character: '>',
-    walkable: true
-});
 
 /*Game.getNeighborPositions = function(x, y) {
     var tiles = [];

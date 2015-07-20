@@ -1,6 +1,9 @@
 /* ------------------------------------------------------------ */
 /* Horizontal/vertical centering */
 /* http://blog.sklambert.com/responsive-html5-canvas-game/ */
+body {
+   background-color: #000;
+}
 
 .wrapper {
    display: table;

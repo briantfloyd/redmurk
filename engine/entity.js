@@ -8,6 +8,11 @@ Game.Entity = function(properties) {
     this.map = null;
     this.attachedMixins = {};
     this.attachedMixinGroups = {};
+	
+	this.spriteSheetY = properties['spriteSheetY'] || 0;
+	this.spriteSheetX = properties['spriteSheetX'] || 0;
+	
+	this.directionFacing = 'south';
     
     var mixins = properties['mixins'] || [];
   
@@ -43,6 +48,38 @@ Game.Entity.prototype.tryMove = function(x, y, map) {
     var tile = map.getTile(x, y);
     var target = map.getEntityAt(x, y);
  	
+//console.log(this.character);
+
+	var direction;
+	if (x === this.x && y === this.y - 1) {
+		direction = 'north';
+		Game.display._options.tileMap[this.character] = [0, this.spriteSheetY];
+	} else if (x === this.x + 1 && y === this.y - 1) {
+		direction = 'northeast';
+		Game.display._options.tileMap[this.character] = [60, this.spriteSheetY];
+	} else if (x === this.x + 1 && y === this.y) {
+		direction = 'east';
+		Game.display._options.tileMap[this.character] = [120, this.spriteSheetY];
+	} else if (x === this.x + 1 && y === this.y + 1) {
+		direction = 'southeast';
+		Game.display._options.tileMap[this.character] = [180, this.spriteSheetY];
+	} else if (x === this.x && y === this.y + 1) {
+		direction = 'south';
+		Game.display._options.tileMap[this.character] = [240, this.spriteSheetY];
+	} else if (x === this.x - 1 && y === this.y + 1) {
+		direction = 'southwest';
+		Game.display._options.tileMap[this.character] = [300, this.spriteSheetY];
+	} else if (x === this.x - 1 && y === this.y) {
+		direction = 'west';
+		Game.display._options.tileMap[this.character] = [360, this.spriteSheetY];
+	} else if (x === this.x - 1 && y === this.y - 1){
+		direction = 'northwest';
+		Game.display._options.tileMap[this.character] = [420, this.spriteSheetY];
+	}
+	
+	this.directionFacing = direction;
+
+	
  	if (target) {
 
         if (this.hasMixin('Attacker')) {
@@ -52,7 +89,7 @@ Game.Entity.prototype.tryMove = function(x, y, map) {
             return false;
         }
 
-    } else if (tile && tile.walkable) {        
+    } else if (tile && tile.walkable) {        		
 		var oldX = this.x;
 		var oldY = this.y;
 		

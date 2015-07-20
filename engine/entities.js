@@ -78,35 +78,3 @@ Game.Mixins.WanderActor = {
 };
 
 
-Game.Mixins.PlayerActor = {
-    name: 'PlayerActor',
-    groupName: 'Actor',
-    act: function() {
-        Game.refresh();
-        this.map.engine.lock();        
-    }
-}
-
-Game.PlayerTemplate = {
-    character: '@',
-    maxHp: 40,
-    attackValue: 10,
-    defenseValue: 10,
-    sightRadius: 4,
-    mixins: [Game.Mixins.PlayerActor,
-    		Game.Mixins.Attacker, Game.Mixins.Destructible,
-    		Game.Mixins.Sight]
-}
-
-Game.Mixins.SlimeActor = {
-    name: 'SlimeActor',
-    groupName: 'Actor',
-    act: function() { }
-}
-
-Game.SlimeTemplate = {
-    character: 'S',
-	maxHp: 10,
-    mixins: [Game.Mixins.SlimeActor, Game.Mixins.WanderActor, 
-    		Game.Mixins.Destructible, Game.Mixins.Attacker]
-}
