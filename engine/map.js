@@ -4,7 +4,9 @@ Game.Map = function(tiles) {
     this.height = tiles[0].length;
     this.depth = 0;
     this.entities = {};
-    this.scheduler = new ROT.Scheduler.Simple();
+    this.items = {};
+    //this.scheduler = new ROT.Scheduler.Simple();
+    this.scheduler = new ROT.Scheduler.Speed();
     this.engine = new ROT.Engine(this.scheduler);
     this.fov = [];
     this.setupFov();
@@ -14,7 +16,6 @@ Game.Map = function(tiles) {
 
 Game.Map.prototype.getTile = function(x, y) {
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
-        //console.log('getTile() coordinates outside of map');
         return false;
     } else {    
         return this.tiles[x][y];
@@ -50,6 +51,14 @@ Game.Map.prototype.addEntity = function(entity) {
 
     if (entity.hasMixin('Actor')) {
        this.scheduler.add(entity, true);
+    }  
+}
+
+Game.Map.prototype.addEngineProcessActor = function(actor) {
+    actor.map = this;
+
+    if (actor.hasMixin('Actor')) {
+       this.scheduler.add(actor, true);
     }  
 }
 
@@ -90,11 +99,11 @@ Game.Map.prototype.isEmptyFloor = function(x, y) {
 Game.Map.prototype.setupFov = function() {
     var map = this;
 
-    for (var z = 0; z <= this.depth; z++) {
+    for (var z = 0; z <= this.depth; z++) { //FIXME - depth
         // We have to put the following code in it's own scope to prevent the depth variable from being hoisted out of the loop.
         (function() {
             // For each depth, we need to create a callback which figures out if light can pass through a given tile.
-            var depth = z;
+            var depth = z; //FIXME - depth
             map.fov.push(
                 new ROT.FOV.DiscreteShadowcasting(function(x, y) {
                     return !map.getTile(x, y).blocksLight;
@@ -128,7 +137,7 @@ Game.Map.prototype.isExplored = function(x, y) {
 };
 
 Game.Map.prototype.updateEntityPosition = function(entity, oldX, oldY) {
-    if (oldX) {
+    if (typeof oldX === 'number') {
         var oldKey = oldX + ',' + oldY;
         if (this.entities[oldKey] == entity) {
             delete this.entities[oldKey];
@@ -147,3 +156,34 @@ Game.Map.prototype.updateEntityPosition = function(entity, oldX, oldY) {
     // Add the entity to the table of entities
     this.entities[key] = entity;
 };
+
+Game.Map.prototype.getItemsAt = function(x, y) {
+    return this.items[x + ',' + y];
+};
+
+/*Game.Map.prototype.setItemsAt = function(x, y, items) {
+    // If our items array is empty, then delete the key from the table.
+    var key = x + ',' + y;
+    if (items.length === 0) {
+        if (this.items[key]) {
+            delete this.items[key];
+        }
+    } else {
+        // Simply update the items at that key
+        this.items[key] = items;
+    }
+};*/
+
+Game.Map.prototype.addItem = function(x, y, item) {
+    var key = x + ',' + y;
+    if (this.items[key]) {
+        this.items[key].push(item);
+    } else {
+        this.items[key] = [item];
+    }
+};
+
+Game.Map.prototype.addItemAtRandomPosition = function(item) {
+    var position = this.getRandomFloorPosition();
+    this.addItem(position.x, position.y, item);
+}

@@ -8,12 +8,11 @@ Game.Entity = function(properties) {
     this.map = null;
     this.attachedMixins = {};
     this.attachedMixinGroups = {};
+    this.speed = properties['speed'] || 1200;
 	
 	this.spriteSheetY = properties['spriteSheetY'] || 0;
 	this.spriteSheetX = properties['spriteSheetX'] || 0;
-	
-	this.directionFacing = 'south';
-    
+	    
     var mixins = properties['mixins'] || [];
   
     for (var i = 0; i < mixins.length; i++) {
@@ -43,45 +42,34 @@ Game.Entity.prototype.hasMixin = function(obj) {
     }
 }
 
-Game.Entity.prototype.tryMove = function(x, y, map) {
-    //var map = this.map;
+Game.Entity.prototype.tryMove = function(x, y) {
+    var map = this.map;
     var tile = map.getTile(x, y);
     var target = map.getEntityAt(x, y);
- 	
-//console.log(this.character);
-
-	var direction;
+	
+	//compare old position to new to determine direction entity is facing
 	if (x === this.x && y === this.y - 1) {
-		direction = 'north';
-		Game.display._options.tileMap[this.character] = [0, this.spriteSheetY];
+		this.spriteSheetX = 0;
 	} else if (x === this.x + 1 && y === this.y - 1) {
-		direction = 'northeast';
-		Game.display._options.tileMap[this.character] = [60, this.spriteSheetY];
+		this.spriteSheetX = 60;
 	} else if (x === this.x + 1 && y === this.y) {
-		direction = 'east';
-		Game.display._options.tileMap[this.character] = [120, this.spriteSheetY];
+		this.spriteSheetX = 120;
 	} else if (x === this.x + 1 && y === this.y + 1) {
-		direction = 'southeast';
-		Game.display._options.tileMap[this.character] = [180, this.spriteSheetY];
+		this.spriteSheetX = 180;
 	} else if (x === this.x && y === this.y + 1) {
-		direction = 'south';
-		Game.display._options.tileMap[this.character] = [240, this.spriteSheetY];
+		this.spriteSheetX = 240;
 	} else if (x === this.x - 1 && y === this.y + 1) {
-		direction = 'southwest';
-		Game.display._options.tileMap[this.character] = [300, this.spriteSheetY];
+		this.spriteSheetX = 300;
 	} else if (x === this.x - 1 && y === this.y) {
-		direction = 'west';
-		Game.display._options.tileMap[this.character] = [360, this.spriteSheetY];
+		this.spriteSheetX = 360;
 	} else if (x === this.x - 1 && y === this.y - 1){
-		direction = 'northwest';
-		Game.display._options.tileMap[this.character] = [420, this.spriteSheetY];
+		this.spriteSheetX = 420;
 	}
 	
-	this.directionFacing = direction;
-
+	//update spriteSheetX to reflect new direction
+	Game.display._options.tileMap[this.character] = [this.spriteSheetX, this.spriteSheetY];
 	
  	if (target) {
-
         if (this.hasMixin('Attacker')) {
             this.attack(target);
             return true;
@@ -101,4 +89,8 @@ Game.Entity.prototype.tryMove = function(x, y, map) {
         return true;
     } 
     return false;
+};
+
+Game.Entity.prototype.getSpeed = function() {
+    return this.speed;
 };

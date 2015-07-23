@@ -14,7 +14,7 @@ var Game =  {
         	height: this.screenHeight, 
         	tileWidth: this.tileWidth, 
         	tileHeight: this.tileWidth, 
-        	tileSet: null,//new Image(),//src set by environment
+        	tileSet: null,//new Image(), src set by environment
         	tileMap: {},//mapping set by environment
         	forceSquareRatio:true,
 			tileColorize:true

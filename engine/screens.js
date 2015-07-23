@@ -27,14 +27,19 @@ Game.Screen.playScreen = {
     uiParameters: null,
 	enter: function() {  	    
 	    this.map = new Game.Map(Game.loadedEnvironment.generateMap());
-	    
+
 	    Game.loadedEnvironment.addEntities();
+	    
+	    this.addEngineProcessActors();
 	    	    
 	    this.uiParameters = Game.loadedEnvironment.uiScreens.playScreenUI;	    
 	    
 	    this.map.engine.start();	
 	},
     exit: function() {
+	},
+	addEngineProcessActors: function() {
+		this.map.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
 	},
 	render: function(display) {
         var screenWidth = Game.screenWidth;
@@ -48,10 +53,10 @@ Game.Screen.playScreen = {
         
         var visibleCells = {};
         
-        var currentDepth = this.map.depth; //FIXME
+        var currentDepth = this.map.depth; //FIXME - depth
         
         var map = this.map;        
-        this.map.fov[currentDepth].compute( //FIXME
+        this.map.fov[currentDepth].compute( //FIXME - depth
             this.player.x, 
             this.player.y, 
             this.player.sightRadius, 
@@ -62,73 +67,49 @@ Game.Screen.playScreen = {
 
 		for (var x = topLeftX; x < topLeftX + screenWidth; x++) {
 			for (var y = topLeftY; y < topLeftY + screenHeight; y++) {
-				if (this.map.isExplored(x, y)) {
-					var tile = this.map.getTile(x, y);					
+				if (this.map.isExplored(x, y)) {			
 					
 					var tintForeground = 'transparent';
-					var tintBackground = 'transparent';
+					var tintBackground = "rgba(1, 1, 1, 0.0)"; //passing 'transparent' has some problem
 					
 					if (!visibleCells[x + ',' + y]) {
 						tintForeground = "rgba(1, 1, 1, 0.8)";
-						tintBackground = "rgba(1, 1, 1, 0.8)";
 					} else if (x > (this.player.x + 3) || x < (this.player.x - 3) || y > (this.player.y + 3) || y < (this.player.y - 3)) { 
 						tintForeground = "rgba(1, 1, 1, 0.7)";
-						tintBackground = "rgba(1, 1, 1, 0.7)";							 
 					} else if (x > (this.player.x + 2) || x < (this.player.x - 2) || y > (this.player.y + 2) || y < (this.player.y - 2)) { 
 						tintForeground = "rgba(1, 1, 1, 0.5)";
-						tintBackground = "rgba(1, 1, 1, 0.5)";
 					} else if (x > (this.player.x + 1) || x < (this.player.x - 1) || y > (this.player.y + 1) || y < (this.player.y - 1)) { 
 						tintForeground = "rgba(1, 1, 1, 0.3)";
-						tintBackground = "rgba(1, 1, 1, 0.3)";
+					}
+					
+					var charactersToDraw = [];
+										
+					charactersToDraw.push(this.map.getTile(x, y).character);
+					
+					if (visibleCells[x + ',' + y]) {
+					
+						var items = this.map.getItemsAt(x, y);
+						if (items) {
+                            var item = items[items.length - 1];  //FIXME - only grabs topmost item to draw     
+                            charactersToDraw.push(item.character);
+                        }
+						
+						var entity = this.map.getEntityAt(x, y);
+						if (entity) {	
+							charactersToDraw.push(entity.character);
+						}
 					}
 
 					display.draw(
 						x - topLeftX, 
 						y - topLeftY,
-						tile.character,
+						charactersToDraw,
 						tintForeground,
 						tintBackground
 					);					
-					
 				}
 			}
 		}
-        
-        var entities = this.map.entities;
-
-        for (var key in entities) {
-            var entity = entities[key];
-           
-            if (entity.x >= topLeftX && 
-            	entity.y >= topLeftY &&
-                entity.x < topLeftX + screenWidth &&
-                entity.y < topLeftY + screenHeight) {
-                if (visibleCells[entity.x + ',' + entity.y]) {
- 
-					var tintForeground = 'transparent';
-					var tintBackground = 'transparent';
-					
-					if (entity.x > (this.player.x + 3) || entity.x < (this.player.x - 3) || entity.y > (this.player.y + 3) || entity.y < (this.player.y - 3)) { 
-						tintForeground = "rgba(1, 1, 1, 0.7)";
-						tintBackground = "rgba(1, 1, 1, 0.7)";							 
-					} else if (entity.x > (this.player.x + 2) || entity.x < (this.player.x - 2) || entity.y > (this.player.y + 2) || entity.y < (this.player.y - 2)) { 
-						tintForeground = "rgba(1, 1, 1, 0.5)";
-						tintBackground = "rgba(1, 1, 1, 0.5)";
-					} else if (entity.x > (this.player.x + 1) || entity.x < (this.player.x - 1) || entity.y > (this.player.y + 1) || entity.y < (this.player.y - 1)) { 
-						tintForeground = "rgba(1, 1, 1, 0.3)";
-						tintBackground = "rgba(1, 1, 1, 0.3)";
-					}
-
-					display.draw(
-                        entity.x - topLeftX, 
-                        entity.y - topLeftY,    
-                        entity.character,
-						tintForeground,
-						tintBackground
-                    );
-                }
-            }
-        }
         
         Game.interfaceObject.drawUI(this.uiParameters);
         		
@@ -144,14 +125,14 @@ Game.Screen.playScreen = {
             } else if (inputData.keyCode === ROT.VK_DOWN) {
                 this.move(0, 1);
             }
-            this.map.engine.unlock();
         } else if (inputType === 'mouseup' || inputType === 'touchstart') {
 			console.log('click');
         }    
     },
 	move: function(directionX, directionY) {
-        var newX = this.player.x + directionX;
+        var newX = this.player.x + directionX; //FIXME - player
         var newY = this.player.y + directionY;
-        this.player.tryMove(newX, newY, this.map);        
+        
+        this.player.tryMove(newX, newY);        
     }
 }
