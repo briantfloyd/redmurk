@@ -24,7 +24,8 @@ var Game =  {
 		var bindEventToScreen = function(event) {
 			window.addEventListener(event, function(e) {
 				if (game.currentScreen !== null) {
-					game.currentScreen.handleInput(event, e);
+					game.currentScreen.handleInput(event, e);	
+					e.preventDefault(); //to mouseup/touchstart from both firing
 				}
 			});
 		}

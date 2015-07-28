@@ -161,25 +161,52 @@ Game.Mixins.TaskActor = {
             }
         }
 
-        //pathfinding
-        var source = this;
-        var path = new ROT.Path.AStar(player.x, player.y, function(x, y) { //FIXME - player
+        //pathfinding 
+        this.destinationCoordinates = {};
+        this.destinationCoordinates.x = player.x;
+        this.destinationCoordinates.y = player.y;
+        
+        var sourceEntity = this;
+        var destX = this.destinationCoordinates.x;
+        var destY = this.destinationCoordinates.y;
+        
+        this.findPath(sourceEntity, destX, destY);
+        
+        if (this.pathCoordinates.length > 0) {
+        	
+        	var nextCoordinate = this.pathCoordinates.splice(0, 1);
+        	var nextCoordinateX = nextCoordinate[0].x;
+        	var nextCoordinateY = nextCoordinate[0].y;
+        	
+        	sourceEntity.tryMove(nextCoordinateX, nextCoordinateY);
+        
+        }
+        //var path = this.findPath(sourceEntity, destX, destY); //FIXME? - computes pathfinding every time
+        
+        /*var path = new ROT.Path.AStar(player.x, player.y, function(x, y) { //FIXME - player
             // If an entity is present at the tile, can't move there.
             var entity = source.map.getEntityAt(x, y);
             if (entity && entity !== player && entity !== source) { //FIXME - player
                 return false;
             }
             return source.map.getTile(x, y).walkable;
-        }, {topology: 4});
+        }, {topology: 4});*/
+        
+        
 
         // move to the second cell  in path that is passed in the callback (the first is the entity's strting point)
-        var count = 0;
-        path.compute(source.x, source.y, function(x, y) {
+        /*var count = 0;
+        path.compute(sourceEntity.x, sourceEntity.y, function(x, y) {
+            
+            
+            
             if (count == 1) {
-                source.tryMove(x, y);
+                sourceEntity.tryMove(x, y);
             }
             count++;
-        });
+        });*/
+        
+        
     },
     wander: function() {
         var moveOffset = (Math.round(Math.random()) === 1) ? 1 : -1;

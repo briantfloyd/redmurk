@@ -258,15 +258,36 @@ Game.RedmurksMaze.Mixins = {};
 Game.RedmurksMaze.Mixins.PlayerActor = {
     name: 'PlayerActor',
     groupName: 'Actor',
-    act: function() {/*
-    	if (this.acting) {
-    		return;
+    act: function() {
+    
+    	if (this.destinationCoordinates !== null) {
+
+			var sourceEntity = this;
+			var destX = this.destinationCoordinates.x;
+			var destY = this.destinationCoordinates.y;
+	
+			this.findPath(sourceEntity, destX, destY);
+			
+			//this.destinationCoordinates = null;
+		
     	}
-    	this.acting = true 
- 
-        Game.refresh();
-        
-        this.acting = false;*/
+    	
+    	if (this.pathCoordinates.length > 0) { 
+    		this.speed = 600; //FIXME
+    		this.followPath();
+    	}
+    },
+    followPath: function () {
+		var nextCoordinate = this.pathCoordinates.splice(0, 1);
+		var nextCoordinateX = nextCoordinate[0].x;
+		var nextCoordinateY = nextCoordinate[0].y;
+	
+		this.tryMove(nextCoordinateX, nextCoordinateY);
+		
+		if (this.pathCoordinates.length === 0) {
+			this.destinationCoordinates = null;
+			this.speed = 1200; //FIXME
+		}
     }
 }
 

@@ -9,6 +9,9 @@ Game.Entity = function(properties) {
     this.attachedMixins = {};
     this.attachedMixinGroups = {};
     this.speed = properties['speed'] || 1200;
+    
+    this.destinationCoordinates = null;
+    this.pathCoordinates = [];
 	
 	this.spriteSheetY = properties['spriteSheetY'] || 0;
 	this.spriteSheetX = properties['spriteSheetX'] || 0;
@@ -93,4 +96,48 @@ Game.Entity.prototype.tryMove = function(x, y) {
 
 Game.Entity.prototype.getSpeed = function() {
     return this.speed;
+};
+
+
+Game.Entity.prototype.findPath = function(sourceEntity, destX, destY) {
+	
+	var sourceEntity = sourceEntity;
+	
+	//reset
+	this.pathCoordinates = [];
+	
+	var path = new ROT.Path.AStar(destX, destY, function(x, y) { 
+		// If an entity is present at the tile, can't move there.
+		var entity = sourceEntity.map.getEntityAt(x, y);
+		if (entity && entity !== sourceEntity) { 
+			return false;
+		}
+		//console.log(x + ',' + y);
+		
+		return sourceEntity.map.getTile(x, y).walkable;
+	}, {topology: 8});
+
+	// move to the second cell  in path that is passed in the callback (the first is the entity's strting point)
+	//var count = 0;
+	path.compute(sourceEntity.x, sourceEntity.y, function(x, y) {
+		
+		
+		
+		/*if (count == 1) {
+			sourceEntity.tryMove(x, y);
+		}
+		count++;*/
+		
+		
+		var coordinateObject = {};
+		coordinateObject.x = x;
+		coordinateObject.y = y;
+		sourceEntity.pathCoordinates.push(coordinateObject);
+		
+	});
+	
+	//remove first coordinate in path - it's the entity's current coordinate
+	sourceEntity.pathCoordinates.shift();
+
+
 };
