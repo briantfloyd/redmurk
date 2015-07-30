@@ -38,6 +38,8 @@ Game.Mixins.Destructible = {
             	attacker: attacker
             };
             Game.Messages.queue.push(newMessage);
+            
+            attacker.attackTarget = null;
                     
             this.map.removeEntity(this);
         }
@@ -74,7 +76,7 @@ Game.Mixins.Attacker = {
             	damage: damage
             };
             Game.Messages.queue.push(newMessage);
-                        
+//console.log(this.name + " attacking " + target.name);                   
             target.takeDamage(this, damage);
         }
     }

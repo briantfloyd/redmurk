@@ -12,6 +12,8 @@ Game.Entity = function(properties) {
     
     this.destinationCoordinates = null;
     this.pathCoordinates = [];
+    
+    this.attackTarget = null;
 	
 	this.spriteSheetY = properties['spriteSheetY'] || 0;
 	this.spriteSheetX = properties['spriteSheetX'] || 0;

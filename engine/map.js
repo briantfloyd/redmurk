@@ -187,3 +187,16 @@ Game.Map.prototype.addItemAtRandomPosition = function(item) {
     var position = this.getRandomFloorPosition();
     this.addItem(position.x, position.y, item);
 };
+
+Game.Map.prototype.inRange = function(entity1, entity2, range) {
+    
+    var xDifference = Math.abs(Math.abs(entity1.x) - Math.abs(entity2.x));
+    var yDifference = Math.abs(Math.abs(entity1.y) - Math.abs(entity2.y));
+    
+    if (xDifference <= range && yDifference <= range) {
+    	return true;
+    } else {
+    	return false;
+    }
+};
+

@@ -11,12 +11,8 @@ Game.Screen.menuScreen = {
 		display.drawText(0,0, "");
     },
     handleInput: function(inputType, inputData) {
-        if (inputType === 'keydown') {
-            if (inputData.keyCode === ROT.VK_RETURN) {
-                Game.switchScreen(Game.Screen.playScreen);
-            }
-        } else if (inputType === 'mouseup' || inputType === 'touchstart') {
-			console.log('click');
+        if (inputType === 'keydown' || inputType === 'mouseup' || inputType === 'touchstart') {
+            Game.switchScreen(Game.Screen.playScreen);
         }
     }
 }
@@ -28,32 +24,33 @@ Game.Screen.playScreen = {
     topLeftX: null,
     topLeftY: null,
     selectedEntity: null,
-	enter: function() {  	    
-	    this.map = new Game.Map(Game.loadedEnvironment.generateMap());
+    selectedItem: null,
+	enter: function() {  	        
+	    if (this.map === null) {
+	    	this.map = new Game.Map(Game.loadedEnvironment.generateMap());
 
-	    Game.loadedEnvironment.addEntities();
+			Game.loadedEnvironment.addEntities();
+		
+			this.addEngineProcessActors();
+				
+			this.uiParameters = Game.loadedEnvironment.uiScreens.playScreenUI;
+			
+			this.map.engine.start();	
+				    
+	    } else {
+	    	console.log('unlocking engine');
+	    	this.map.engine.unlock();	
+	    }
 	    
-	    this.addEngineProcessActors();
-	    	    
-	    this.uiParameters = Game.loadedEnvironment.uiScreens.playScreenUI;	    
-	    
-	    this.map.engine.start();	
 	},
     exit: function() {
+    	console.log('locking engine');
+    	this.map.engine.lock();
 	},
 	addEngineProcessActors: function() {
 		this.map.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
 	},
-	render: function(display) {
-        /*var screenWidth = Game.screenWidth;
-        var screenHeight = Game.screenHeight;
-
-		var topLeftX = Math.max(0, this.player.x - ((screenWidth - 1) / 2)); //-1 from screenWidth/Height for even number
-        topLeftX = Math.min(topLeftX, this.map.width - screenWidth);
-
-		var topLeftY = Math.max(0, this.player.y - ((screenHeight - 1) / 2));
-        topLeftY = Math.min(topLeftY, this.map.height - screenHeight)	*/
-        
+	render: function(display) {        
         this.updateTopLeft();
         
         var visibleCells = {};
@@ -76,7 +73,7 @@ Game.Screen.playScreen = {
 					
 					//default tinting - none
 					var tintForeground = 'transparent';
-					var tintBackground = "rgba(1, 1, 1, 0.0)"; //passing 'transparent' has some problem
+					var tintBackground = "rgba(1, 1, 1, 0.0)"; //passing 'transparent' seems to have some problem
 					
 					//visible / distance tinting
 					if (!visibleCells[x + ',' + y]) {
@@ -95,10 +92,17 @@ Game.Screen.playScreen = {
 					}
 					
 					//selected entity tinting
-					//selectedEntity
 					if (this.selectedEntity && x === this.selectedEntity.x && y === this.selectedEntity.y) {
 						tintForeground = "rgba(255, 0, 0, 0.1)";
 					}
+					
+					//selected item tinting
+					/*console.log(this.selectedItem);
+					//console.log(this.selectedItem.x + "," + this.selectedItem.y);
+					if (this.selectedItem && x === this.selectedItem.x && y === this.selectedItem.y) {
+						console.log('here');
+						tintForeground = "rgba(0, 255, 0, 0.1)";
+					}*/
 					
 					
 					var charactersToDraw = [];
@@ -136,30 +140,20 @@ Game.Screen.playScreen = {
     handleInput: function(inputType, inputData) {
         if (inputType === 'keydown') {
             if (inputData.keyCode === ROT.VK_LEFT) {
-            	this.player.speed = 1200; //FIXME
-                this.move(-1, 0);
+                this.player.move(-1, 0); //FIXME - player
             } else if (inputData.keyCode === ROT.VK_RIGHT) {
-                this.player.speed = 1200; //FIXME
-                this.move(1, 0);
+                this.player.move(1, 0); //FIXME - player
             } else if (inputData.keyCode === ROT.VK_UP) {
-                this.player.speed = 1200; //FIXME
-                this.move(0, -1);
+                this.player.move(0, -1); //FIXME - player
             } else if (inputData.keyCode === ROT.VK_DOWN) {
-                this.player.speed = 1200; //FIXME
-                this.move(0, 1);
+                this.player.move(0, 1); //FIXME - player
             }
         } else if (inputType === 'mouseup' || inputType === 'touchstart') {			
 			var eventPosition = Game.display.eventToPosition(inputData);
-			if (eventPosition[0] > 0 && eventPosition[1] > 0) {
+			if (eventPosition[0] >= 0 && eventPosition[1] >= 0) {
 				this.clickEvaluation(eventPosition);
 			}
         }    
-    },
-	move: function(directionX, directionY) {
-        var newX = this.player.x + directionX; //FIXME - player
-        var newY = this.player.y + directionY;
-        
-        this.player.tryMove(newX, newY);        
     },
     clickEvaluation: function(eventPosition) {
        
@@ -169,28 +163,51 @@ Game.Screen.playScreen = {
    		var eventMapX = this.topLeftX + eventPosition[0];
    		var eventMapY = this.topLeftY + eventPosition[1];
 
- 
-   		if (this.map.isEmptyFloor(eventMapX, eventMapY)) {
-   		
+   		if (this.map.getEntityAt(eventMapX, eventMapY)) {
+
+   			this.selectedItem = null;
+   			this.player.attackTarget = null;
+   			
+    		var clickedEntity = this.map.getEntityAt(eventMapX, eventMapY);	
+    		if (clickedEntity === this.selectedEntity) {
+				this.player.attackTarget = clickedEntity; //FIXME - player
+    		
+    		} else {
+    			this.selectedEntity = clickedEntity;
+    		}
+    		
+    	} else if (this.map.getItemsAt(eventMapX, eventMapY) && this.map.getItemsAt(eventMapX, eventMapY).length > 0) {
+    		
+    		this.selectedEntity = null;
+   			this.player.attackTarget = null;
+    		
+    		var items = this.map.getItemsAt(eventMapX, eventMapY);
+    		if (items[items.length - 1] === this.selectedItem) {
+				var newDestinationCoordinates = {};
+				newDestinationCoordinates.x = eventMapX;
+				newDestinationCoordinates.y = eventMapY;
+			
+				this.player.destinationCoordinates = newDestinationCoordinates; //FIXME - player
+				this.player.pathCoordinates = [];
+    			
+    		} else {
+    			this.selectedItem = items[items.length - 1];
+    		}
+    		
+    	} else if (this.map.isEmptyFloor(eventMapX, eventMapY)) {
+   			
+   			this.selectedEntity = null;
+   			this.selectedItem = null;
+   			this.player.attackTarget = null;
+   			
    			var newDestinationCoordinates = {};
    			newDestinationCoordinates.x = eventMapX;
    			newDestinationCoordinates.y = eventMapY;
    			
    			this.player.destinationCoordinates = newDestinationCoordinates; //FIXME - player
    			this.player.pathCoordinates = [];
-   			
-   			this.selectedEntity = null;
-   			
-   		} else if (this.map.getEntityAt(eventMapX, eventMapY)) {
-    		
-    		this.selectedEntity = this.map.getEntityAt(eventMapX, eventMapY);
-    		
-    	}
-    	
-    	//if on item
-    	//this.map.isEmptyFloor //checks walkable and getEntityAt
-    	//this.map.getItemsAt //returns array    	
-    	
+
+   		}  
     	
     	//is explored
     	//this.map.isExplored
@@ -210,5 +227,25 @@ Game.Screen.playScreen = {
 
 		var newTopLeftY = Math.max(0, this.player.y - ((screenHeight - 1) / 2));
         this.topLeftY = Math.min(newTopLeftY, this.map.height - screenHeight)	    
+    }
+}
+
+Game.Screen.inventoryScreen = {
+	//uiParameters: null,
+	justViewed: true,
+    enter: function() { 
+    	   //this.uiParameters = Game.loadedEnvironment.
+	},
+    exit: function() { 
+    	this.justViewed = true;
+	},
+    render: function(display) {
+		display.drawText(0,0, "");
+		console.log('inventory screen');
+    },
+    handleInput: function(inputType, inputData) {    
+        if (inputType === 'keydown' || inputType === 'mouseup' || inputType === 'touchstart') {
+            Game.switchScreen(Game.Screen.playScreen);
+        }
     }
 }

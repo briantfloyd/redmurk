@@ -1,6 +1,6 @@
 var Interface =  {
 	canvasContainer: document.getElementById('canvas-container'),
-	tilePixelWidth: 60, //single tile height/width
+	tilePixelWidth: 60, //single tile height/width //FIXME - hardcoded
 	canvasTileWidth: null, //# of tiles wide
 	canvasTileHeight: null,
 	uiCanvas: null,

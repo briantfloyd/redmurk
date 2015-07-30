@@ -259,39 +259,69 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
     name: 'PlayerActor',
     groupName: 'Actor',
     act: function() {
-    
-    	if (this.destinationCoordinates !== null) {
+    	
+    	if (this.attackTarget) {	
+    		var range = 1;
+    		if (this.map.inRange(this, this.attackTarget, range)) {
+    			this.tryMove(this.attackTarget.x, this.attackTarget.y);    		
+    		} else {    		
+				var newDestinationCoordinates = {};
+				newDestinationCoordinates.x = eventMapX;
+				newDestinationCoordinates.y = eventMapY;
+	
+				this.destinationCoordinates = newDestinationCoordinates; //FIXME - player
+				this.pathCoordinates = [];  //reset
+			}  
+		}
+
+    	if (this.destinationCoordinates !== null && this.pathCoordinates.length === 0) {
 
 			var sourceEntity = this;
 			var destX = this.destinationCoordinates.x;
 			var destY = this.destinationCoordinates.y;
 	
-			this.findPath(sourceEntity, destX, destY);
-			
-			//this.destinationCoordinates = null;
-		
+			this.findPath(sourceEntity, destX, destY);		
     	}
     	
     	if (this.pathCoordinates.length > 0) { 
     		this.speed = 600; //FIXME
     		this.followPath();
     	}
+    	
+    	//if items at coordinate and not midway following path and number of items is greater than 0
+    	if (this.map.getItemsAt(this.x, this.y) && this.pathCoordinates.length === 0 && this.map.getItemsAt(this.x, this.y).length > 0) {
+    		if (Game.Screen.inventoryScreen.justViewed !== true) {
+    			Game.switchScreen(Game.Screen.inventoryScreen);
+    		}
+    	}
+    	
     },
     followPath: function () {
 		var nextCoordinate = this.pathCoordinates.splice(0, 1);
 		var nextCoordinateX = nextCoordinate[0].x;
 		var nextCoordinateY = nextCoordinate[0].y;
 	
+		Game.Screen.inventoryScreen.justViewed = null;
 		this.tryMove(nextCoordinateX, nextCoordinateY);
 		
 		if (this.pathCoordinates.length === 0) {
 			this.destinationCoordinates = null;
 			this.speed = 1200; //FIXME
 		}
+    },
+    move: function(directionX, directionY) {
+        this.speed = 1200; //FIXME
+        
+        var newX = this.x + directionX; //FIXME - player
+        var newY = this.y + directionY;
+        
+        Game.Screen.inventoryScreen.viewed = null;
+        this.tryMove(newX, newY);        
     }
 }
 
 Game.RedmurksMaze.PlayerTemplate = {
+    name: 'Player',
     character: '@',
 	spriteSheetX: 0,
 	spriteSheetY: 300,
@@ -311,6 +341,7 @@ Game.RedmurksMaze.Mixins.SlimeActor = {
 }
 
 Game.RedmurksMaze.SlimeTemplate = {
+    name: 'Slime',
     character: 'S',
 	spriteSheetX: 0,
 	spriteSheetY: 540,

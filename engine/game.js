@@ -59,16 +59,19 @@ var Game =  {
 window.onload = function() {
     if (!ROT.isSupported()) {
         alert("The rot.js library isn't supported by your browser.");
-    } else {    
+    } else {     
         Game.interfaceObject = Interface;
         Game.interfaceObject.init();    
-        
+
 		Game.screenWidth = Game.interfaceObject.canvasTileWidth;
 		Game.screenHeight = Game.interfaceObject.canvasTileHeight;
 		Game.tileWidth = Game.interfaceObject.tilePixelWidth;
         
         Game.init(); 
+        
         Game.interfaceObject.canvasContainer.appendChild(Game.display.getContainer());
+        
+        Game.SpecialEffects.init();
         
         Game.interfaceObject.createUICanvas();
         
