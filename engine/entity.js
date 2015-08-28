@@ -16,7 +16,15 @@ Game.Entity = function(properties) {
     this.attackTarget = null;
 	
 	this.spriteSheetY = properties['spriteSheetY'] || 0;
-	this.spriteSheetX = properties['spriteSheetX'] || 0;
+	this.spriteSheetX = properties['spriteSheetX'] || 0;	
+	
+	var tilePixelWidth = Game.interfaceObject.tilePixelWidth;
+	
+	this.spriteSheetY *= tilePixelWidth; 
+	this.spriteSheetX *= tilePixelWidth; 
+	
+	//update character to spritesheet coordinate mapping
+	Game.display._options.tileMap[this.character] = [this.spriteSheetX, this.spriteSheetY];
 	    
     var mixins = properties['mixins'] || [];
   
@@ -51,24 +59,25 @@ Game.Entity.prototype.tryMove = function(x, y) {
     var map = this.map;
     var tile = map.getTile(x, y);
     var target = map.getEntityAt(x, y);
+	var tilePixelWidth = Game.interfaceObject.tilePixelWidth
 	
 	//compare old position to new to determine direction entity is facing
 	if (x === this.x && y === this.y - 1) {
 		this.spriteSheetX = 0;
 	} else if (x === this.x + 1 && y === this.y - 1) {
-		this.spriteSheetX = 60;
+		this.spriteSheetX = tilePixelWidth;//60;
 	} else if (x === this.x + 1 && y === this.y) {
-		this.spriteSheetX = 120;
+		this.spriteSheetX = tilePixelWidth * 2;//120;
 	} else if (x === this.x + 1 && y === this.y + 1) {
-		this.spriteSheetX = 180;
+		this.spriteSheetX = tilePixelWidth * 3;//180;
 	} else if (x === this.x && y === this.y + 1) {
-		this.spriteSheetX = 240;
+		this.spriteSheetX = tilePixelWidth * 4;//240;
 	} else if (x === this.x - 1 && y === this.y + 1) {
-		this.spriteSheetX = 300;
+		this.spriteSheetX = tilePixelWidth * 5;//300;
 	} else if (x === this.x - 1 && y === this.y) {
-		this.spriteSheetX = 360;
+		this.spriteSheetX = tilePixelWidth * 6;//360;
 	} else if (x === this.x - 1 && y === this.y - 1){
-		this.spriteSheetX = 420;
+		this.spriteSheetX = tilePixelWidth * 7;//420;
 	}
 	
 	//update spriteSheetX to reflect new direction

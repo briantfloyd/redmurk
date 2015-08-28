@@ -15,6 +15,7 @@ Game.Map = function(tiles) {
 };
 
 Game.Map.prototype.getTile = function(x, y) {
+//console.log(x + ',' + y);
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
         return false;
     } else {    

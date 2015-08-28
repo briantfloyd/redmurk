@@ -66,9 +66,10 @@ Game.Screen.playScreen = {
                 visibleCells[x + "," + y] = true;
                 map.setExplored(x, y, true);
             });
-
-		for (var x = this.topLeftX; x < this.topLeftX + Game.screenWidth; x++) {
-			for (var y = this.topLeftY; y < this.topLeftY + Game.screenHeight; y++) {
+		
+		var interfaceObject = Game.interfaceObject;	
+		for (var x = this.topLeftX; x < this.topLeftX + interfaceObject.canvasTileWidth; x++) {
+			for (var y = this.topLeftY; y < this.topLeftY + interfaceObject.canvasTileHeight; y++) {
 				if (this.map.isExplored(x, y)) {			
 					
 					//default tinting - none
@@ -149,19 +150,18 @@ Game.Screen.playScreen = {
                 this.player.move(0, 1); //FIXME - player
             }
         } else if (inputType === 'mouseup' || inputType === 'touchstart') {			
-			var eventPosition = Game.display.eventToPosition(inputData);
+			var eventPosition = Game.display.eventToPosition(inputData);	
 			if (eventPosition[0] >= 0 && eventPosition[1] >= 0) {
 				this.clickEvaluation(eventPosition);
 			}
         }    
     },
     clickEvaluation: function(eventPosition) {
-       
    		//convert event positions to map coordinates   		
    		this.updateTopLeft();
-   		
-   		var eventMapX = this.topLeftX + eventPosition[0];
-   		var eventMapY = this.topLeftY + eventPosition[1];
+   
+   		var eventMapX = this.topLeftX + (eventPosition[0]);
+   		var eventMapY = this.topLeftY + (eventPosition[1]);
 
    		if (this.map.getEntityAt(eventMapX, eventMapY)) {
 
@@ -213,21 +213,20 @@ Game.Screen.playScreen = {
     	//this.map.isExplored
     	
     	//if on player
-    	
-    	
-    	
     
     },
     updateTopLeft: function() {
-   		var screenWidth = Game.screenWidth;
-        var screenHeight = Game.screenHeight;
-        
+   		var interfaceObject = Game.interfaceObject;	
+   		var screenWidth = interfaceObject.canvasTileWidth;
+        var screenHeight = interfaceObject.canvasTileHeight;
+
    		var newTopLeftX = Math.max(0, this.player.x - ((screenWidth - 1) / 2)); //-1 from screenWidth/Height for even number
         this.topLeftX = Math.min(newTopLeftX, this.map.width - screenWidth);
 
 		var newTopLeftY = Math.max(0, this.player.y - ((screenHeight - 1) / 2));
-        this.topLeftY = Math.min(newTopLeftY, this.map.height - screenHeight)	    
-    }
+        this.topLeftY = Math.min(newTopLeftY, this.map.height - screenHeight);	    
+
+	}
 }
 
 Game.Screen.inventoryScreen = {

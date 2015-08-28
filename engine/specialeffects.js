@@ -1,6 +1,6 @@
 Game.SpecialEffects =  {
 	canvasContainer: document.getElementById('canvas-container'),
-	tilePixelWidth: 60, //single tile height/width //FIXME - hardcoded
+	tilePixelWidth: 60, //single tile height/width //FIXME - hardcoded //Game.interfaceObject.tilePixelWidth - not yet available
 	canvasTileWidth: null, //# of tiles wide
 	canvasTileHeight: null,
 	specialEffectsCanvas: null,

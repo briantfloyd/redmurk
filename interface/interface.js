@@ -1,6 +1,6 @@
 var Interface =  {
 	canvasContainer: document.getElementById('canvas-container'),
-	tilePixelWidth: 60, //single tile height/width //FIXME - hardcoded
+	tilePixelWidth: 60, //single tile height/width //FIXME - hardcoded - move to redmurk.js?
 	canvasTileWidth: null, //# of tiles wide
 	canvasTileHeight: null,
 	uiCanvas: null,
@@ -39,8 +39,12 @@ var Interface =  {
     	    	
     },
     updateCanvasTileDimensions: function() {
+
     	this.canvasTileWidth = this.canvasContainer.offsetWidth / this.tilePixelWidth;
     	this.canvasTileHeight = this.canvasContainer.offsetHeight / this.tilePixelWidth;
+
+//console.log(this.canvasContainer.offsetWidth + ',' + this.canvasContainer.offsetHeight);
+//console.log(this.canvasTileWidth + ',' + this.canvasTileHeight);
 		
 		if (this.uiCanvas !== null) {
 			this.uiCanvas.width = this.canvasTileWidth * this.tilePixelWidth;
@@ -158,8 +162,6 @@ var Interface =  {
 
 				//FIXME - if button, then onclick() property action //listener?
 			}
-			
     	}
-
     }
 }
