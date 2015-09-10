@@ -3,17 +3,23 @@ Game.Screen = {};
 Game.Screen.menuScreen = {
 	uiParameters: null,
     enter: function() { 
-    	   //this.uiParameters = Game.loadedEnvironment.
+    	this.uiParameters = Game.loadedEnvironment.uiScreens.menuScreenUI;
 	},
     exit: function() { 
 	},
     render: function(display) {
-		display.drawText(0,0, "");
+		Game.interfaceObject.drawUI(this.uiParameters);
     },
-    handleInput: function(inputType, inputData) {
-        if (inputType === 'keydown' || inputType === 'mouseup' || inputType === 'touchstart') {
-            Game.switchScreen(Game.Screen.playScreen);
-        }
+    handleInput: function(inputType, inputData) {    
+        if (inputType === 'mouseup' || inputType === 'touchstart') {	        		
+			var eventPosition = Game.display.eventToPosition(inputData);	
+			if (eventPosition[0] >= 0 && eventPosition[1] >= 0) {
+				this.clickEvaluation(eventPosition);
+			}
+        } 
+    },
+    clickEvaluation: function(eventPosition) {  
+    	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
     }
 }
 
@@ -49,9 +55,10 @@ Game.Screen.playScreen = {
 	},
 	addEngineProcessActors: function() {
 		this.map.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
+		this.map.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
 	},
 	render: function(display) {        
-        this.updateTopLeft();
+        Game.Screen.updateTopLeft();
         
         var visibleCells = {};
         
@@ -79,7 +86,7 @@ Game.Screen.playScreen = {
 					//visible / distance tinting
 					if (!visibleCells[x + ',' + y]) {
 						tintForeground = "rgba(1, 1, 1, 0.8)";
-					} else if (x > (this.player.x + 3) || x < (this.player.x - 3) || y > (this.player.y + 3) || y < (this.player.y - 3)) { 
+					} else if (x > (this.player.x + 3) || x < (this.player.x - 3) || y > (this.player.y + 3) || y < (this.player.y - 3)) { //FIXME - player
 						tintForeground = "rgba(1, 1, 1, 0.7)";
 					} else if (x > (this.player.x + 2) || x < (this.player.x - 2) || y > (this.player.y + 2) || y < (this.player.y - 2)) { 
 						tintForeground = "rgba(1, 1, 1, 0.5)";
@@ -156,95 +163,270 @@ Game.Screen.playScreen = {
 			}
         }    
     },
-    clickEvaluation: function(eventPosition) {
-   		//convert event positions to map coordinates   		
-   		this.updateTopLeft();
-   
-   		var eventMapX = this.topLeftX + (eventPosition[0]);
-   		var eventMapY = this.topLeftY + (eventPosition[1]);
+    clickEvaluation: function(eventPosition) {	  		
+   		
+   		var componentClicked = Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+ 		
+   		if (componentClicked === false) {
+			//convert event positions to map coordinates 
+			Game.Screen.updateTopLeft();
+		
+			var eventMapX = this.topLeftX + (eventPosition[0]);
+			var eventMapY = this.topLeftY + (eventPosition[1]);
 
-   		if (this.map.getEntityAt(eventMapX, eventMapY)) {
+			if (this.map.getEntityAt(eventMapX, eventMapY)) {
 
-   			this.selectedItem = null;
-   			this.player.attackTarget = null;
-   			
-    		var clickedEntity = this.map.getEntityAt(eventMapX, eventMapY);	
-    		if (clickedEntity === this.selectedEntity) {
-				this.player.attackTarget = clickedEntity; //FIXME - player
-    		
-    		} else {
-    			this.selectedEntity = clickedEntity;
-    		}
-    		
-    	} else if (this.map.getItemsAt(eventMapX, eventMapY) && this.map.getItemsAt(eventMapX, eventMapY).length > 0) {
-    		
-    		this.selectedEntity = null;
-   			this.player.attackTarget = null;
-    		
-    		var items = this.map.getItemsAt(eventMapX, eventMapY);
-    		if (items[items.length - 1] === this.selectedItem) {
+				this.selectedItem = null;
+				this.player.attackTarget = null;
+			
+				var clickedEntity = this.map.getEntityAt(eventMapX, eventMapY);	
+				if (clickedEntity === this.selectedEntity) {
+					this.player.attackTarget = clickedEntity; //FIXME - player
+			
+				} else {
+					this.selectedEntity = clickedEntity;
+				}
+			
+			} else if (this.map.getItemsAt(eventMapX, eventMapY) && this.map.getItemsAt(eventMapX, eventMapY).length > 0) {
+			
+				this.selectedEntity = null;
+				this.player.attackTarget = null;
+			
+				var items = this.map.getItemsAt(eventMapX, eventMapY);
+				if (items[items.length - 1] === this.selectedItem) {
+					var newDestinationCoordinates = {};
+					newDestinationCoordinates.x = eventMapX;
+					newDestinationCoordinates.y = eventMapY;
+			
+					this.player.destinationCoordinates = newDestinationCoordinates; //FIXME - player
+					this.player.pathCoordinates = [];
+				
+				} else {
+					this.selectedItem = items[items.length - 1];
+				}
+			
+			} else if (this.map.isEmptyFloor(eventMapX, eventMapY)) {
+			
+				this.selectedEntity = null;
+				this.selectedItem = null;
+				this.player.attackTarget = null;
+			
 				var newDestinationCoordinates = {};
 				newDestinationCoordinates.x = eventMapX;
 				newDestinationCoordinates.y = eventMapY;
 			
 				this.player.destinationCoordinates = newDestinationCoordinates; //FIXME - player
 				this.player.pathCoordinates = [];
-    			
-    		} else {
-    			this.selectedItem = items[items.length - 1];
-    		}
-    		
-    	} else if (this.map.isEmptyFloor(eventMapX, eventMapY)) {
-   			
-   			this.selectedEntity = null;
-   			this.selectedItem = null;
-   			this.player.attackTarget = null;
-   			
-   			var newDestinationCoordinates = {};
-   			newDestinationCoordinates.x = eventMapX;
-   			newDestinationCoordinates.y = eventMapY;
-   			
-   			this.player.destinationCoordinates = newDestinationCoordinates; //FIXME - player
-   			this.player.pathCoordinates = [];
 
-   		}  
-    	
-    	//is explored
-    	//this.map.isExplored
-    	
-    	//if on player
-    
-    },
-    updateTopLeft: function() {
-   		var interfaceObject = Game.interfaceObject;	
-   		var screenWidth = interfaceObject.canvasTileWidth;
-        var screenHeight = interfaceObject.canvasTileHeight;
-
-   		var newTopLeftX = Math.max(0, this.player.x - ((screenWidth - 1) / 2)); //-1 from screenWidth/Height for even number
-        this.topLeftX = Math.min(newTopLeftX, this.map.width - screenWidth);
-
-		var newTopLeftY = Math.max(0, this.player.y - ((screenHeight - 1) / 2));
-        this.topLeftY = Math.min(newTopLeftY, this.map.height - screenHeight);	    
-
-	}
+			}  
+		
+			//is explored
+			//this.map.isExplored
+		
+			//if on player
+    	}
+    }
 }
 
 Game.Screen.inventoryScreen = {
-	//uiParameters: null,
+	uiParameters: null,
 	justViewed: true,
+	//groundItems: null,
+	displayedItems: [],
+	groundDisplayFirstItemDisplayed: 0,
+	displaysFirstItemsDisplayed: {
+			inventory: 0,
+			ground: 0,
+			equipped: 0
+	},
+	selectedItem: null,
     enter: function() { 
-    	   //this.uiParameters = Game.loadedEnvironment.
+    	   this.uiParameters = Game.loadedEnvironment.uiScreens.inventoryScreenUI;
 	},
     exit: function() { 
     	this.justViewed = true;
 	},
     render: function(display) {
-		display.drawText(0,0, "");
-		console.log('inventory screen');
+    
+    	this.displayedItems = []; //reset
+    	
+		var interfaceObject = Game.interfaceObject;		
+		interfaceObject.drawUI(this.uiParameters);
+
+		var player = Game.Screen.playScreen.player; //FIXME - player
+		
+		//equipped display area
+		this.equippedItems = [];
+		for (var x in Game.Screen.playScreen.player.equipped) {
+			if (Game.Screen.playScreen.player.equipped[x]) {
+				this.equippedItems.push(Game.Screen.playScreen.player.equipped[x]);
+			}
+		}
+		this.equippedItemsDisplayArea = Game.loadedEnvironment.uiComponents.inventoryScreen.equippedDisplay;
+		this.equippedDisplayFirstItemDisplayed = this.displaysFirstItemsDisplayed.equipped;
+		
+		//inventory display area
+		this.inventoryItems = Game.Screen.playScreen.player.inventory;
+		this.inventoryItemsDisplayArea = Game.loadedEnvironment.uiComponents.inventoryScreen.inventoryDisplay;
+		this.inventoryDisplayFirstItemDisplayed = this.displaysFirstItemsDisplayed.inventory;
+		
+		//ground display area
+		this.groundItems = Game.Screen.playScreen.map.getItemsAt(player.x, player.y);
+		this.groundItemsDisplayArea = Game.loadedEnvironment.uiComponents.inventoryScreen.groundDisplay;
+		this.groundDisplayFirstItemDisplayed = this.displaysFirstItemsDisplayed.ground;
+		
+		var itemGroups= [
+			[this.groundItems,this.groundItemsDisplayArea,this.groundDisplayFirstItemDisplayed], 
+			[this.inventoryItems,this.inventoryItemsDisplayArea,this.inventoryDisplayFirstItemDisplayed],
+			[this.equippedItems,this.equippedItemsDisplayArea,this.equippedDisplayFirstItemDisplayed]
+		];
+
+		//loop through display areas drawing appropriate items
+		var spriteSheet = Game.display._options.tileSet;
+		var tilePixelWidth = interfaceObject.tilePixelWidth;
+		var ctx = interfaceObject.uiCanvas.getContext("2d");
+		
+		for (var i = 0, j = itemGroups.length; i < j; i++) {
+
+			var displayArea = itemGroups[i][1];
+
+			//how many display positions are available
+			var displayAreaPositions = (displayArea.width * displayArea.height) / tilePixelWidth;
+			
+			//where to begin drawing on UI canvas
+			var displayAreaNextPositionX = displayArea.x;
+			var displayAreaNextPositionY = displayArea.y;			
+
+			var items = itemGroups[i][0];
+
+			if (items) {	
+				var characterToDraw, itemImageX, itemImageY, newDisplayedItem;
+
+				for (var l = itemGroups[i][2], m = items.length; l < m; l++) {
+								
+					//break out if no more available display positions
+					if (l >= displayAreaPositions) { break;}
+					
+					characterToDraw = items[l].character;	
+					itemImageY = items[l].spriteSheetY;
+					itemImageX = items[l].spriteSheetX;
+				
+					//drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
+					ctx.drawImage(spriteSheet, itemImageX, itemImageY, tilePixelWidth, tilePixelWidth, displayAreaNextPositionX, displayAreaNextPositionY, tilePixelWidth, tilePixelWidth);				
+					
+					//selected item tinting	
+					if (items[l] === this.selectedItem) {
+						ctx.fillStyle = "rgba(0, 255, 0, 0.1)";
+						ctx.fillRect(displayAreaNextPositionX,displayAreaNextPositionY,tilePixelWidth,tilePixelWidth);
+					}
+					
+					//add to displayed (visible) items (used for click evaluation)
+					newDisplayedItem = {};
+					newDisplayedItem.x = displayAreaNextPositionX;
+					newDisplayedItem.y = displayAreaNextPositionY;
+					newDisplayedItem.item = items[l];
+					newDisplayedItem.itemsArrayPosition = l;
+					this.displayedItems.push(newDisplayedItem);
+					
+					//check if another display position to the right exists, or go down to next row
+					if ((displayAreaNextPositionX + tilePixelWidth) < displayArea.width) {
+						displayAreaNextPositionX += tilePixelWidth;
+					} else {
+						displayAreaNextPositionY += tilePixelWidth;
+						displayAreaNextPositionX = displayArea.x;
+					}
+				}		
+			}	
+		}
     },
     handleInput: function(inputType, inputData) {    
-        if (inputType === 'keydown' || inputType === 'mouseup' || inputType === 'touchstart') {
-            Game.switchScreen(Game.Screen.playScreen);
-        }
-    }
+        if (inputType === 'mouseup' || inputType === 'touchstart') {	        		
+			var eventPosition = Game.display.eventToPosition(inputData);	
+			if (eventPosition[0] >= 0 && eventPosition[1] >= 0) {
+				this.clickEvaluation(eventPosition);
+			}
+        } 
+    },
+    clickEvaluation: function(eventPosition) {
+    	//Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+    	var componentClicked = Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+    	
+    	if (componentClicked === false) {
+    		this.displayedItemClickEvaluation(eventPosition);    	
+    	}
+    },	
+    itemDisplayScroll: function(display, displayType, direction, items) {
+    	var tilePixelWidth = Game.interfaceObject.tilePixelWidth;
+		var firstItemsDisplayed = this.displaysFirstItemsDisplayed;
+    	if (direction === "up" && firstItemsDisplayed[displayType] > 0) {
+    		firstItemsDisplayed[displayType] = firstItemsDisplayed[displayType] - (display.width  / tilePixelWidth);
+    	
+    	} else if (direction === "down") {
+    		var player = Game.Screen.playScreen.player; //FIXME - player
+    		
+    		if (items && firstItemsDisplayed[displayType] + (display.width  / tilePixelWidth) <= items.length) { //FIXME - need to limit when no more items to display
+    			firstItemsDisplayed[displayType] = firstItemsDisplayed[displayType] + (display.width  / tilePixelWidth);
+    		}
+    	}
+    	this.render();    	
+    },
+    displayedItemClickEvaluation: function(eventPosition) {
+		var tilePixelWidth = Game.interfaceObject.tilePixelWidth;	
+		var clickX = eventPosition[0] * tilePixelWidth;
+		var clickY = eventPosition[1] * tilePixelWidth;
+		var itemClicked = false;
+	
+		var displayedItems = this.displayedItems;
+	
+		//loop through displayed items checking for position match
+		for (var i = 0, j = displayedItems.length; i < j; i++) {
+		
+			//if within item boundary coordinates
+			if (clickX >= displayedItems[i].x && clickX < (displayedItems[i].x + tilePixelWidth) && clickY >= displayedItems[i].y && clickY < (displayedItems[i].y + tilePixelWidth)) { 
+				this.selectedItem = displayedItems[i].item;
+				itemClicked = true;
+				break;
+			}
+		}
+		
+		if (itemClicked === false) {
+			this.selectedItem = null;
+		} 
+		
+		this.render();    
+	}
+}
+
+Game.Screen.updateTopLeft = function() {
+   		var interfaceObject = Game.interfaceObject;	
+   		var screenWidth = interfaceObject.canvasTileWidth;
+        var screenHeight = interfaceObject.canvasTileHeight;
+        
+        var playScreen = Game.Screen.playScreen; //FIXME? - play screen dependent
+
+   		var newTopLeftX = Math.max(0, playScreen.player.x - ((screenWidth - 1) / 2)); //-1 from screenWidth/Height for even number
+        playScreen.topLeftX = Math.min(newTopLeftX, playScreen.map.width - screenWidth);
+
+		var newTopLeftY = Math.max(0, playScreen.player.y - ((screenHeight - 1) / 2));
+        playScreen.topLeftY = Math.min(newTopLeftY, playScreen.map.height - screenHeight);	    
+}
+
+Game.Screen.UIClickEvaluation = function(eventPosition, uiParameters) {
+	var tilePixelWidth = Game.interfaceObject.tilePixelWidth;	
+	var clickX = eventPosition[0] * tilePixelWidth;
+	var clickY = eventPosition[1] * tilePixelWidth;
+	var componentClicked = false;
+	
+	//loop through UI components checking for position match
+	for (var i = 0, j = uiParameters.length; i < j; i++) {
+		
+		//if within button boundary coordinates
+		if (clickX >= uiParameters[i].x && clickX < (uiParameters[i].x + uiParameters[i].width) && clickY >= uiParameters[i].y && clickY < (uiParameters[i].y + uiParameters[i].height)) { 
+			if (uiParameters[i].clickAction) {
+				uiParameters[i].clickAction();
+				componentClicked = true;
+			}
+		}
+	}
+	return componentClicked;               
 }

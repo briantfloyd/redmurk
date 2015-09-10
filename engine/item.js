@@ -16,6 +16,26 @@ Game.Item = function(properties) {
 	//update character to spritesheet coordinate mapping
 	Game.display._options.tileMap[this.character] = [this.spriteSheetX, this.spriteSheetY];
 	
+    this.attachedMixins = {};
+    this.attachedMixinGroups = {}; //FIXME - probably don't need this for items
+	
+    var mixins = properties['mixins'] || [];
+  
+    for (var i = 0; i < mixins.length; i++) {
+    	for (var key in mixins[i]) {
+    		if (key != 'init' && key != 'name' && !this.hasOwnProperty(key)) {
+    			this[key] = mixins[i][key];
+    		}
+    	}
+
+    	this.attachedMixins[mixins[i].name] = true;
+        if (mixins[i].groupName) {
+            this.attachedMixinGroups[mixins[i].groupName] = true;
+        }    	
+    	if (mixins[i].init) {
+    		mixins[i].init.call(this, properties);
+    	}
+    }		
 };
 
 Game.Item.extend(Game.Glyph);
@@ -43,7 +63,9 @@ Game.ItemMixins.Equippable = {
     init: function(template) {
         this.attackValue = template['attackValue'] || 0;
         this.defenseValue = template['defenseValue'] || 0;
-        this.wieldable = template['wieldable'] || false;
-        this.wearable = template['wearable'] || false;
+        //this.wieldable = template['wieldable'] || false;
+        //this.wearable = template['wearable'] || false;
+        
+        this.equippable = template['equippable'] || false;
     }
 };

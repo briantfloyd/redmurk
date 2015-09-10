@@ -21,6 +21,23 @@ Game.Mixins.EngineLockerActor = {
     }
 };
 
+// Message display update actor mixin
+Game.Mixins.MessageDisplayUpdateActor = {
+    name: 'MessageDisplayUpdateActor',
+    groupName: 'Actor',
+    act: function() {       
+ 	
+ 		var player = Game.Screen.playScreen.player;
+		
+		Game.loadedEnvironment.uiComponents.playScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.attackValue + "|" + player.defenseValue]; //FIXME - player		
+		Game.loadedEnvironment.uiComponents.playScreen.messageDisplay.text = Game.Messages.getLatest(); //FIXME - temporary
+		
+		Game.loadedEnvironment.uiComponents.inventoryScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.attackValue + "|" + player.defenseValue]; //FIXME - player		
+		Game.loadedEnvironment.uiComponents.inventoryScreen.messageDisplay.text = Game.Messages.getLatest(); //FIXME - temporary
+
+    }
+};
+
 //Engine process templates
 Game.EngineLockerTemplate = {
     character: 'P01',
@@ -28,3 +45,13 @@ Game.EngineLockerTemplate = {
 	speed: 1200,
     mixins: [Game.Mixins.EngineLockerActor]
 };
+
+Game.MessageDisplayUpdateTemplate = {
+    character: 'P02',
+    race: 'engine process',
+	speed: 1200,
+    mixins: [Game.Mixins.MessageDisplayUpdateActor]
+};
+
+
+

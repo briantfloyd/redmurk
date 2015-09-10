@@ -31,6 +31,12 @@ var Interface =  {
     	healIcon.width = this.tilePixelWidth * .7; 	    	
     	this.uiIcons.healIcon = healIcon;
     	
+    	var arrowIcon = new Image();
+    	arrowIcon.src = 'interface/icons/icon-60x60-arrow.svg';
+    	arrowIcon.height = iconWidth;
+    	arrowIcon.width = iconWidth; 	    	
+    	this.uiIcons.arrowIcon = arrowIcon;
+    	
     	/*var healthIcon = new Image();
     	healthIcon.src = 'interface/icons/icon-60x60-health.svg';
     	healthIcon.height = iconWidth;
@@ -62,12 +68,17 @@ var Interface =  {
 
     	var ctx = this.uiCanvas.getContext("2d");
     	
+    	//clear UI canvas
+    	ctx.clearRect(0, 0, this.uiCanvas.width, this.uiCanvas.height);
+    	
+    	//parameters array defined in environment
     	for (var i = 0, j = parameters.length; i < j; i++) {	
     		
-    		var componentParameters = parameters[i]();
+    		var componentParameters = parameters[i];
     		
     		var inset = 4;
 		
+			//off set component positioning and sizing to provide padding in between
 			var componentX = componentParameters.x + inset;
 			var componentY = componentParameters.y + inset;
 			var componentWidth = componentParameters.width - (inset * 2);
@@ -75,41 +86,67 @@ var Interface =  {
 			var componentType = componentParameters.type;
 			var componentFont = componentParameters.font;
 			
-			//displays
-			if (componentType === 'display'){
+			//component type styling & drawing
+			if (componentType === 'message display'){
 				//ctx.globalAlpha = 0.5 //opacity for images
 				ctx.fillStyle = "rgba(0, 0, 0, 0.45)"; //ctx.fillStyle = "#000000";
 				ctx.fillRect(componentX,componentY,componentWidth,componentHeight);
 			
 				var displayText = componentParameters.text;
-				//var fontSize = 12;
 			
 				ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
-				//ctx.font = fontSize + "px sans-serif";
-				ctx.font = componentFont;
+				ctx.font = "italic 12px sans-serif";
+
+				if (displayText) {
+					var displayTextLength = displayText.length;
+					var verticalSpacing = componentHeight / (displayTextLength + 1);
 				
-				var displayTextLength = displayText.length;
-				var verticalSpacing = componentHeight / (displayTextLength + 1);
-				
-				for (var k = 0; k < displayTextLength; k++) {
-					var displayTextX = componentX + (componentWidth / 2) - (ctx.measureText(displayText[k]).width / 2);
-					var displayTextY = componentY + (verticalSpacing * (k + 1));
+					for (var k = 0; k < displayTextLength; k++) {
+						var displayTextX = componentX + (componentWidth / 2) - (ctx.measureText(displayText[k]).width / 2);
+						var displayTextY = componentY + (verticalSpacing * (k + 1));
 					
-					ctx.fillText(displayText[k],displayTextX,displayTextY);
-					
-					/*
-					if (componentParameters.icon
-					
-					var componentIcon = componentParameters.icon;
-					
-					var iconX = componentX + (componentWidth / 2) - (this.uiIcons.pauseIcon.width / 2);
-					var iconY = componentY + (componentHeight / 2) - (this.uiIcons.pauseIcon.height / 2);
-				
-					ctx.drawImage(componentIcon, iconX, iconY, componentIcon.width, componentIcon.height);
-					
-					*/	
+						ctx.fillText(displayText[k],displayTextX,displayTextY);
+					}
 				}		
-						
+			
+			} else if (componentType === 'stats display'){
+				/*icon: {
+					health: Game.interfaceObject.uiIcons.healthIcon,
+					attack: Game.interfaceObject.uiIcons.attackIcon,
+					defense: Game.interfaceObject.uiIcons.defenseIcon,
+				},*/					
+				
+				ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+				ctx.fillRect(componentX,componentY,componentWidth,componentHeight);
+			
+				var displayText = componentParameters.text;
+			
+				ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
+				ctx.font = "bold 16px sans-serif";
+
+				if (displayText) {
+					var displayTextLength = displayText.length;
+					var verticalSpacing = componentHeight / (displayTextLength + 1);
+				
+					for (var k = 0; k < displayTextLength; k++) {
+						var displayTextX = componentX + (componentWidth / 2) - (ctx.measureText(displayText[k]).width / 2);
+						var displayTextY = componentY + (verticalSpacing * (k + 1));
+					
+						ctx.fillText(displayText[k],displayTextX,displayTextY);
+					
+						/*
+						if (componentParameters.icon
+					
+						var componentIcon = componentParameters.icon;
+					
+						var iconX = componentX + (componentWidth / 2) - (this.uiIcons.pauseIcon.width / 2);
+						var iconY = componentY + (componentHeight / 2) - (this.uiIcons.pauseIcon.height / 2);
+				
+						ctx.drawImage(componentIcon, iconX, iconY, componentIcon.width, componentIcon.height);
+					
+						*/	
+					}
+				}						
 			} else if (componentType === 'button'){
 				
 				//button rect fill/stroke
@@ -161,6 +198,33 @@ var Interface =  {
 				}
 
 				//FIXME - if button, then onclick() property action //listener?
+				
+				
+			} else if (componentType === 'inventory display'){
+				var cornerRadius = 20;
+				//ctx.lineJoin = "round";
+				//ctx.lineWidth = 20; 
+				
+				ctx.fillStyle = "rgba(255, 255, 255, 0.45)"; //ctx.fillStyle = "#000000";
+				//ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
+
+				//ctx.strokeRect(componentX+(cornerRadius/2), componentY+(cornerRadius/2), componentWidth-cornerRadius, componentHeight-cornerRadius);
+				//ctx.fillRect(componentX+(cornerRadius/2), componentY+(cornerRadius/2), componentWidth-cornerRadius, componentHeight-cornerRadius);
+				
+				ctx.fillRect(componentX, componentY, componentWidth, componentHeight);
+				
+				/*
+				
+				var c=document.getElementById("myCanvas");
+				var ctx=c.getContext("2d");
+				var img=document.getElementById("lamp");
+				var pat=ctx.createPattern(img,"repeat");
+				ctx.rect(0,0,150,100);
+				ctx.fillStyle=pat;
+				ctx.fill();
+
+				*/
+			
 			}
     	}
     }

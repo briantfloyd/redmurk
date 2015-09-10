@@ -9,7 +9,8 @@ Game.Entity = function(properties) {
     this.attachedMixins = {};
     this.attachedMixinGroups = {};
     this.speed = properties['speed'] || 1200;
-    
+    this.inventory = []; //FIXME? move into mixin?
+	
     this.destinationCoordinates = null;
     this.pathCoordinates = [];
     

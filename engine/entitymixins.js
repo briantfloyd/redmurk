@@ -10,12 +10,21 @@ Game.Mixins.Destructible = {
     getDefenseValue: function() {
         var modifier = 0;
         if (this.hasMixin(Game.Mixins.Equipper)) {
-            if (this.weapon) {
+            /*if (this.weapon) {
                 modifier += this.weapon.defenseValue;
             }
             if (this.armor) {
                 modifier += this.armor.defenseValue;
             }
+            */
+            
+            for (var x in this.equipped) {
+            	if (this.equipped[x]) {
+            		modifier += this.equipped[x].defenseValue;
+            	}
+            }
+            
+            
         }
         return this.defenseValue + modifier;
     },
@@ -55,12 +64,22 @@ Game.Mixins.Attacker = {
     getAttackValue: function() {
         var modifier = 0;
         if (this.hasMixin(Game.Mixins.Equipper)) {
-            if (this.weapon) {
+            /*if (this.weapon) {
                 modifier += this.weapon.attackValue;
             }
             if (this.armor) {
                 modifier += this.armor.attackValue;
+            }*/
+ 
+             
+            for (var x in this.equipped) {
+            	if (this.equipped[x]) {
+            		modifier += this.equipped[x].attackValue;
+            	}
             }
+            
+            
+ 
         }
         return this.attackValue + modifier;
     },
@@ -76,7 +95,7 @@ Game.Mixins.Attacker = {
             	damage: damage
             };
             Game.Messages.queue.push(newMessage);
-//console.log(this.name + " attacking " + target.name);                   
+                   
             target.takeDamage(this, damage);
         }
     }
@@ -122,8 +141,16 @@ Game.Mixins.Sight = {
 Game.Mixins.Equipper = {
     name: 'Equipper',
     init: function(template) {
-        this.weapon = null;
-        this.armor = null;
+        //this.weapon = null;
+        //this.armor = null;
+        
+		this.equipped = {
+			head: null,
+			body: null,
+			hand: null,
+			shieldhand: null,
+			accessory: null
+		};
     }
 };
 

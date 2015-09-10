@@ -162,19 +162,6 @@ Game.Map.prototype.getItemsAt = function(x, y) {
     return this.items[x + ',' + y];
 };
 
-/*Game.Map.prototype.setItemsAt = function(x, y, items) {
-    // If our items array is empty, then delete the key from the table.
-    var key = x + ',' + y;
-    if (items.length === 0) {
-        if (this.items[key]) {
-            delete this.items[key];
-        }
-    } else {
-        // Simply update the items at that key
-        this.items[key] = items;
-    }
-};*/
-
 Game.Map.prototype.addItem = function(x, y, item) {
     var key = x + ',' + y;
     if (this.items[key]) {
@@ -183,6 +170,19 @@ Game.Map.prototype.addItem = function(x, y, item) {
         this.items[key] = [item];
     }
 };
+
+
+Game.Map.prototype.setItemsAt = function(x, y, items) {
+    var key = x + ',' + y;
+    if (items.length === 0) {
+        if (this.items[key]) {
+            delete this.items[key];
+        }
+    } else {
+        this.items[key] = items;
+    }
+};
+
 
 Game.Map.prototype.addItemAtRandomPosition = function(item) {
     var position = this.getRandomFloorPosition();

@@ -2,6 +2,7 @@ Game.RedmurksMaze = {
 	tiles: {},
 	//items: {},
 	uiScreens: {},
+	uiComponents: {},
 	init: function() {
 		this.initializeUI();
 		this.initializeTiles();
@@ -132,108 +133,378 @@ Game.RedmurksMaze = {
 			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.SmallSwordTemplate));
 			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.WoodenShieldTemplate));
     	}      	    	
+		for (var i = 0; i < 1000; i++) { //FIXME - temporary
+			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.HealingPotionTemplate));
+			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.SmallSwordTemplate));
+			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.WoodenShieldTemplate));
+    	}
+
 	},
 	initializeUI: function() {
-		var uiParameters = [];
-		
-		uiParameters.push(this.menuButton, this.healingPotionButton, this.pauseButton, this.messageDisplay, this.statsDisplay);		
-		
-		this.uiScreens.playScreenUI = uiParameters;	 //FIXME - update to better accommodate multiple screens
-	},
-	menuButton: function() {	
-		var interfaceObject = Game.interfaceObject;
-		var displayObject = {
-			type: 'button',
-			//text: ['Menu'],
-			icon: interfaceObject.uiIcons.menuIcon,
-			x: 0, //positioning on screen
-			y: 0,
-			width: interfaceObject.tilePixelWidth,
-			height: interfaceObject.tilePixelWidth
-		}
-		return displayObject;
-	},
-	healingPotionButton: function() {	
-		var interfaceObject = Game.interfaceObject;
-		var displayObject = {
-			type: 'button',
-			//text: ['Heal'],
-			icon: interfaceObject.uiIcons.healIcon,
-			x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
-			y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
-			width: interfaceObject.tilePixelWidth,
-			height: interfaceObject.tilePixelWidth
-		}
-		return displayObject;
-	},
-	pauseButton: function() {	
-		var interfaceObject = Game.interfaceObject;
-		var displayObject = {
-			type: 'button',
-			//text: ['Pause'],
-			icon: interfaceObject.uiIcons.pauseIcon,
-			x: 0,
-			y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
-			width: interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth,
-			height: interfaceObject.tilePixelWidth
-		}
-		return displayObject;
-	},
-	messageDisplay: function() {	
-			var interfaceObject = Game.interfaceObject;
-			var displayObject = {
-			type: 'display',
-			x: interfaceObject.tilePixelWidth,
-			y: 0,
-			width:(interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
-			height: interfaceObject.tilePixelWidth,
-			font: "italic 12px sans-serif",
-			text: Game.Messages.getLatest() //FIXME - temporary
-		}
-		return displayObject;
-	},
-	statsDisplay: function() {		
-		var interfaceObject = Game.interfaceObject;
-		var displayObject = {
-			type: 'display',
-			/*icon: {
-					health: Game.interfaceObject.uiIcons.healthIcon,
-					attack: Game.interfaceObject.uiIcons.attackIcon,
-					defense: Game.interfaceObject.uiIcons.defenseIcon,
-				},*/
-			x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
-			y: 0,
-			width: interfaceObject.tilePixelWidth,
-			height: interfaceObject.tilePixelWidth,
-			//text: this.getStatsDisplay(Game.Screen.playScreen.player),
-			font: "bold 16px sans-serif",
-			text: [Game.Screen.playScreen.player.hp + "/" + Game.Screen.playScreen.player.maxHp, Game.Screen.playScreen.player.attackValue + "|" + Game.Screen.playScreen.player.defenseValue]
-		}
-		return displayObject;
 
-	},
-	/*otherStatsDisplay: function() {		
 		var interfaceObject = Game.interfaceObject;
-		var displayObject = {
-			type: 'display',
-			x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
-			y: 0,
-			width: interfaceObject.tilePixelWidth,
-			height: interfaceObject.tilePixelWidth,
-			text: [''] //Game.Messages.queue[Game.Messages.queue.length - 1]
-		}
-		return displayObject;
-
-	},*/
-	/*getStatsDisplay: function(entity) {
-	
-		var newDisplay = [entity.hp + "/" + entity.maxHp, entity.attackValue + "|" + entity.defenseValue];
+		//var player = Game.Screen.playScreen.player;
 		
-		return newDisplay;
-	}*/
+		//menu screen UI components
+		this.uiComponents.menuScreen = {};	
+		var menuComponents = this.uiComponents.menuScreen;
+
+		menuComponents.menuButton = 
+			{	
+				type: 'button',
+				icon: interfaceObject.uiIcons.menuIcon,
+				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.switchScreen(Game.Screen.playScreen);
+				}					
+			};
+
+		//component parameters to be read by interface drawUI()
+		this.uiScreens.menuScreenUI = [menuComponents.menuButton];		
+		
+		//play screen UI components
+		this.uiComponents.playScreen = {};	
+		var playComponents = this.uiComponents.playScreen;
+
+		playComponents.menuButton = 
+			{	
+				type: 'button',
+				icon: interfaceObject.uiIcons.menuIcon,
+				x: 0, //positioning on screen
+				y: 0,
+				width: interfaceObject.tilePixelWidth, //positioning and sizing is defined relative to tile grid
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.switchScreen(Game.Screen.menuScreen);
+				}					
+			};
+
+		playComponents.healButton = 
+			{	
+				type: 'button',
+				icon: interfaceObject.uiIcons.healIcon,
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth			
+			};
+			
+		playComponents.pauseButton = 
+			{	
+				type: 'button',
+				icon: interfaceObject.uiIcons.pauseIcon,
+				x: 0,
+				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				width: interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth			
+			};			
+
+		playComponents.messageDisplay = 
+			{	
+				type: 'message display',
+				x: interfaceObject.tilePixelWidth,
+				y: 0,
+				width:(interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
+				height: interfaceObject.tilePixelWidth,
+				text: null //set by engine process actor				
+			};
+			
+		playComponents.statsDisplay = 
+			{	
+				type: 'stats display',
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				y: 0,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: null		
+			};			
+
+		this.uiScreens.playScreenUI = [playComponents.menuButton, playComponents.healButton, playComponents.pauseButton, playComponents.messageDisplay, playComponents.statsDisplay];		
+		
+		//inventory screen UI components
+		this.uiComponents.inventoryScreen = {};	
+		var inventoryComponents = this.uiComponents.inventoryScreen;
+
+		inventoryComponents.menuButton = 
+			{	
+				type: 'button',
+				icon: interfaceObject.uiIcons.menuIcon,
+				x: 0,
+				y: 0,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.switchScreen(Game.Screen.playScreen);
+				}					
+			};
+
+		inventoryComponents.messageDisplay = 
+			{	
+				type: 'message display',
+				x: interfaceObject.tilePixelWidth,
+				y: 0,
+				width:(interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
+				height: interfaceObject.tilePixelWidth,
+				text: null						
+			};
+
+		inventoryComponents.statsDisplay = 
+			{	
+				type: 'stats display',
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				y: 0,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: null					
+			};
+
+		inventoryComponents.groundToInventoryButton = 
+			{
+				type: 'button',
+				icon: interfaceObject.uiIcons.arrowIcon,
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth * 2,
+				clickAction: function() {
+					var player = Game.Screen.playScreen.player;
+					var	selectedItem = Game.Screen.inventoryScreen.selectedItem;
+					var groundItems = Game.Screen.playScreen.map.items[player.x + ',' + player.y];
+						
+					if (player && selectedItem && groundItems) {						
+		
+						for (var x = 0, y = groundItems.length; x < y; x++){ 
+						
+							if (groundItems[x] === selectedItem) {
+								
+								//remove item from ground
+								groundItems.splice(x,1);			
+								Game.Screen.playScreen.map.setItemsAt(player.x, player.y, groundItems);	
+								
+								//add to player inventory
+								player.inventory.push(selectedItem);								
+								
+								break;
+							}				
+						}
+					}
+					Game.Screen.inventoryScreen.render();
+				}						
+			};
+			
+		inventoryComponents.inventoryToGroundButton = 
+			{
+				type: 'button',
+				icon: interfaceObject.uiIcons.arrowIcon,
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
+				y: interfaceObject.tilePixelWidth * 5,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth * 2,
+				clickAction: function() {
+					var player = Game.Screen.playScreen.player;
+					var selectedItem = Game.Screen.inventoryScreen.selectedItem;
+					
+					if (player && selectedItem) {
+						
+						for (var x = 0, y = player.inventory.length; x < y; x++) {
+						
+							if (player.inventory[x] === selectedItem) {
+								
+								//remove item from player inventory
+								player.inventory.splice(x,1);
+
+								//add item to ground
+								var groundItems = Game.Screen.playScreen.map.items[player.x + ',' + player.y];
+							
+								if (groundItems) {
+									groundItems.push(selectedItem);
+								} else{
+									groundItems = [selectedItem];
+								}
+							
+								Game.Screen.playScreen.map.setItemsAt(player.x, player.y, groundItems);
+						
+								break;								
+							}
+						}
+					}
+					Game.Screen.inventoryScreen.render();
+				}						
+			};
+
+		inventoryComponents.inventoryToEquippedButton = 
+			{
+				type: 'button',
+				icon: interfaceObject.uiIcons.arrowIcon,
+				x: 0,
+				y: interfaceObject.tilePixelWidth * 2,
+				width: interfaceObject.tilePixelWidth * 2,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					var player = Game.Screen.playScreen.player;
+					var selectedItem = Game.Screen.inventoryScreen.selectedItem;
+						
+					if (player && selectedItem && selectedItem.equippable) {
+		
+						for (var x = 0, y = player.inventory.length; x < y; x++) {
+						
+							if (player.inventory[x] === selectedItem) {
+								
+								//remove item from player inventory
+								player.inventory.splice(x,1);
+								
+								//check if something already equipped
+								if (player.equipped[selectedItem.equippable]) {
+									
+									//move previously equipped item back to inventory
+									player.inventory.push(player.equipped[selectedItem.equippable]);	
+								
+								}
+								
+								//equip new item
+								player.equipped[selectedItem.equippable] = selectedItem;
+
+								break;								
+							}
+						}
+					}
+					Game.Screen.inventoryScreen.render();
+				}						
+			};
+
+		inventoryComponents.equippedToInventoryButton = 
+			{
+				type: 'button',
+				icon: interfaceObject.uiIcons.arrowIcon,
+				x: interfaceObject.tilePixelWidth * 2,
+				y: interfaceObject.tilePixelWidth * 2,
+				width: interfaceObject.tilePixelWidth * 2,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					var player = Game.Screen.playScreen.player;
+					var selectedItem = Game.Screen.inventoryScreen.selectedItem;
+						
+					if (player && selectedItem) {
+						
+						for (var x in player.equipped) {
+							if (player.equipped[x] === selectedItem) {
+							
+								//remove item from equipped
+								player.equipped[x] = null;
+								
+								//add item to inventory
+								player.inventory.push(selectedItem);
+								
+								break;
+							}
+						}
+					}
+					Game.Screen.inventoryScreen.render();
+				}						
+			};
+
+		inventoryComponents.groundScrollUpButton = 
+			{
+				type: 'button',
+				icon: interfaceObject.uiIcons.arrowIcon,
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					var display = Game.loadedEnvironment.uiComponents.inventoryScreen.groundDisplay;
+					var direction = 'up';
+					var displayType = 'ground';
+					var items = Game.Screen.playScreen.map.getItemsAt(Game.Screen.playScreen.player.x, Game.Screen.playScreen.player.y);
+					Game.Screen.inventoryScreen.itemDisplayScroll(display, displayType, direction, items);
+				}					
+			};
+
+		inventoryComponents.groundScrollDownButton = 
+			{
+				type: 'button',
+				icon: interfaceObject.uiIcons.arrowIcon,
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					var display = Game.loadedEnvironment.uiComponents.inventoryScreen.groundDisplay;
+					var direction = 'down';
+					var displayType = 'ground';
+					var items = Game.Screen.playScreen.map.getItemsAt(Game.Screen.playScreen.player.x, Game.Screen.playScreen.player.y);
+					Game.Screen.inventoryScreen.itemDisplayScroll(display, displayType, direction, items);					
+				}						
+			};
+
+		inventoryComponents.inventoryScrollUpButton = 
+			{
+				type: 'button',
+				icon: interfaceObject.uiIcons.arrowIcon,
+				x: 0,
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					var display = Game.loadedEnvironment.uiComponents.inventoryScreen.inventoryDisplay;
+					var direction = 'up';
+					var displayType = 'inventory';
+					var items = Game.Screen.playScreen.player.inventory;
+					Game.Screen.inventoryScreen.itemDisplayScroll(display, displayType, direction, items);
+				}					
+			};
+
+		inventoryComponents.inventoryScrollDownButton = 
+			{
+				type: 'button',
+				icon: interfaceObject.uiIcons.arrowIcon,
+				x: 0,
+				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					var display = Game.loadedEnvironment.uiComponents.inventoryScreen.inventoryDisplay;
+					var direction = 'down';
+					var displayType = 'inventory';
+					var items = Game.Screen.playScreen.player.inventory;
+					Game.Screen.inventoryScreen.itemDisplayScroll(display, displayType, direction, items);					
+				}						
+			};
+			
+		inventoryComponents.equippedDisplay = 
+			{
+				type: 'inventory display',
+				x: 0,
+				y: interfaceObject.tilePixelWidth,
+				width: interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth						
+			};
+
+		inventoryComponents.inventoryDisplay = 
+			{
+				type: 'inventory display',
+				x: interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 3,
+				width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 4),
+				height: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2)					
+			};
+
+		inventoryComponents.groundDisplay = 
+			{
+				type: 'inventory display',
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth,
+				height: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2)				
+			};
+			
+		this.uiScreens.inventoryScreenUI = [inventoryComponents.menuButton, inventoryComponents.messageDisplay, inventoryComponents.statsDisplay, inventoryComponents.groundToInventoryButton, inventoryComponents.inventoryToGroundButton, inventoryComponents.equippedDisplay, inventoryComponents.inventoryDisplay, inventoryComponents.groundDisplay, inventoryComponents.groundScrollUpButton, inventoryComponents.groundScrollDownButton, inventoryComponents.inventoryScrollUpButton, inventoryComponents.inventoryScrollDownButton, inventoryComponents.inventoryToEquippedButton, inventoryComponents.equippedToInventoryButton];
+		
+	}
 }
-
-
 
 Game.RedmurksMaze.Mixins = {};
 
@@ -248,12 +519,15 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
     			this.tryMove(this.attackTarget.x, this.attackTarget.y);    		
     		} else {    		
 				var newDestinationCoordinates = {};
-				newDestinationCoordinates.x = eventMapX;
-				newDestinationCoordinates.y = eventMapY;
-	
+				//newDestinationCoordinates.x = eventMapX; //FIXME - eventMapX not defined
+				//newDestinationCoordinates.y = eventMapY;
+
+				newDestinationCoordinates.x = this.attackTarget.x;
+				newDestinationCoordinates.y = this.attackTarget.y;
+				
 				this.destinationCoordinates = newDestinationCoordinates; //FIXME - player
 				this.pathCoordinates = [];  //reset
-			}  
+			} 
 		}
 
     	if (this.destinationCoordinates !== null && this.pathCoordinates.length === 0) {
@@ -301,6 +575,8 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
         this.tryMove(newX, newY);        
     }
 }
+
+
 
 Game.RedmurksMaze.PlayerTemplate = {
     name: 'Player',
@@ -352,7 +628,8 @@ Game.RedmurksMaze.SmallSwordTemplate = {
 	spriteSheetX: 0,
     spriteSheetY: 3,	
 	attackValue: 5,
-	wieldable: true,
+	//wieldable: true,
+	equippable: 'hand', //must match one of the .equipped property names in Game.Mixins.Equipper - needed for inventory equipping
 	mixins: [Game.ItemMixins.Equippable]
 }
 
@@ -362,6 +639,7 @@ Game.RedmurksMaze.WoodenShieldTemplate = {
 	spriteSheetX: 0,
     spriteSheetY: 4,	
 	defenseValue: 5,
-	wearable: true,
+	//wearable: true,
+	equippable: 'shieldhand',
 	mixins: [Game.ItemMixins.Equippable]
 }
