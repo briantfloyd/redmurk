@@ -129,21 +129,24 @@ Game.RedmurksMaze = {
 		
 		for (var i = 0; i < 50; i++) { //FIXME - temporary
         	Game.Screen.playScreen.map.addEntityAtRandomPosition(new Game.Entity(this.SlimeTemplate));
-			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.HealingPotionTemplate));
-			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.SmallSwordTemplate));
-			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.WoodenShieldTemplate));
     	}      	    	
-		for (var i = 0; i < 1000; i++) { //FIXME - temporary
+		for (var i = 0; i < 10; i++) { //FIXME - temporary
+			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.SmallSwordTemplate));
+			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.WoodenShieldTemplate));
+    	} 
+		for (var i = 0; i < 10; i++) { //FIXME - temporary
+			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.HealingPotionTemplate));
+    	} 
+		/*for (var i = 0; i < 1000; i++) { //FIXME - temporary
 			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.HealingPotionTemplate));
 			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.SmallSwordTemplate));
 			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.WoodenShieldTemplate));
-    	}
+    	}*/
 
 	},
 	initializeUI: function() {
 
 		var interfaceObject = Game.interfaceObject;
-		//var player = Game.Screen.playScreen.player;
 		
 		//menu screen UI components
 		this.uiComponents.menuScreen = {};	
@@ -189,7 +192,11 @@ Game.RedmurksMaze = {
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
 				width: interfaceObject.tilePixelWidth,
-				height: interfaceObject.tilePixelWidth			
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					var player = Game.Screen.playScreen.player;
+					player.useHealingPotion();
+				}				
 			};
 			
 		playComponents.pauseButton = 
@@ -199,7 +206,21 @@ Game.RedmurksMaze = {
 				x: 0,
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				width: interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth,
-				height: interfaceObject.tilePixelWidth			
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					var playScreen = Game.Screen.playScreen;
+					var engine = Game.Screen.playScreen.map.engine;
+					
+					if(playScreen.paused === true) {
+						console.log('unlocking engine');
+						engine.unlock();
+						playScreen.paused = false;
+					} else {
+						console.log('locking engine');
+						engine.lock	();	
+						playScreen.paused = true;
+					}
+				}			
 			};			
 
 		playComponents.messageDisplay = 
@@ -228,10 +249,10 @@ Game.RedmurksMaze = {
 		this.uiComponents.inventoryScreen = {};	
 		var inventoryComponents = this.uiComponents.inventoryScreen;
 
-		inventoryComponents.menuButton = 
+		inventoryComponents.closeButton = 
 			{	
 				type: 'button',
-				icon: interfaceObject.uiIcons.menuIcon,
+				icon: interfaceObject.uiIcons.closeIcon,
 				x: 0,
 				y: 0,
 				width: interfaceObject.tilePixelWidth,
@@ -264,7 +285,7 @@ Game.RedmurksMaze = {
 		inventoryComponents.groundToInventoryButton = 
 			{
 				type: 'button',
-				icon: interfaceObject.uiIcons.arrowIcon,
+				icon: interfaceObject.uiIcons.arrowIconLeft,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
@@ -298,7 +319,7 @@ Game.RedmurksMaze = {
 		inventoryComponents.inventoryToGroundButton = 
 			{
 				type: 'button',
-				icon: interfaceObject.uiIcons.arrowIcon,
+				icon: interfaceObject.uiIcons.arrowIconRight,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
 				y: interfaceObject.tilePixelWidth * 5,
 				width: interfaceObject.tilePixelWidth,
@@ -338,7 +359,7 @@ Game.RedmurksMaze = {
 		inventoryComponents.inventoryToEquippedButton = 
 			{
 				type: 'button',
-				icon: interfaceObject.uiIcons.arrowIcon,
+				icon: interfaceObject.uiIcons.arrowIconUp,
 				x: 0,
 				y: interfaceObject.tilePixelWidth * 2,
 				width: interfaceObject.tilePixelWidth * 2,
@@ -378,7 +399,7 @@ Game.RedmurksMaze = {
 		inventoryComponents.equippedToInventoryButton = 
 			{
 				type: 'button',
-				icon: interfaceObject.uiIcons.arrowIcon,
+				icon: interfaceObject.uiIcons.arrowIconDown,
 				x: interfaceObject.tilePixelWidth * 2,
 				y: interfaceObject.tilePixelWidth * 2,
 				width: interfaceObject.tilePixelWidth * 2,
@@ -409,7 +430,7 @@ Game.RedmurksMaze = {
 		inventoryComponents.groundScrollUpButton = 
 			{
 				type: 'button',
-				icon: interfaceObject.uiIcons.arrowIcon,
+				icon: interfaceObject.uiIcons.arrowIconUp,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
@@ -426,7 +447,7 @@ Game.RedmurksMaze = {
 		inventoryComponents.groundScrollDownButton = 
 			{
 				type: 'button',
-				icon: interfaceObject.uiIcons.arrowIcon,
+				icon: interfaceObject.uiIcons.arrowIconDown,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
@@ -443,7 +464,7 @@ Game.RedmurksMaze = {
 		inventoryComponents.inventoryScrollUpButton = 
 			{
 				type: 'button',
-				icon: interfaceObject.uiIcons.arrowIcon,
+				icon: interfaceObject.uiIcons.arrowIconUp,
 				x: 0,
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
@@ -460,7 +481,7 @@ Game.RedmurksMaze = {
 		inventoryComponents.inventoryScrollDownButton = 
 			{
 				type: 'button',
-				icon: interfaceObject.uiIcons.arrowIcon,
+				icon: interfaceObject.uiIcons.arrowIconDown,
 				x: 0,
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
@@ -501,7 +522,7 @@ Game.RedmurksMaze = {
 				height: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2)				
 			};
 			
-		this.uiScreens.inventoryScreenUI = [inventoryComponents.menuButton, inventoryComponents.messageDisplay, inventoryComponents.statsDisplay, inventoryComponents.groundToInventoryButton, inventoryComponents.inventoryToGroundButton, inventoryComponents.equippedDisplay, inventoryComponents.inventoryDisplay, inventoryComponents.groundDisplay, inventoryComponents.groundScrollUpButton, inventoryComponents.groundScrollDownButton, inventoryComponents.inventoryScrollUpButton, inventoryComponents.inventoryScrollDownButton, inventoryComponents.inventoryToEquippedButton, inventoryComponents.equippedToInventoryButton];
+		this.uiScreens.inventoryScreenUI = [inventoryComponents.closeButton, inventoryComponents.messageDisplay, inventoryComponents.statsDisplay, inventoryComponents.groundToInventoryButton, inventoryComponents.inventoryToGroundButton, inventoryComponents.equippedDisplay, inventoryComponents.inventoryDisplay, inventoryComponents.groundDisplay, inventoryComponents.groundScrollUpButton, inventoryComponents.groundScrollDownButton, inventoryComponents.inventoryScrollUpButton, inventoryComponents.inventoryScrollDownButton, inventoryComponents.inventoryToEquippedButton, inventoryComponents.equippedToInventoryButton];
 		
 	}
 }
@@ -511,38 +532,47 @@ Game.RedmurksMaze.Mixins = {};
 Game.RedmurksMaze.Mixins.PlayerActor = {
     name: 'PlayerActor',
     groupName: 'Actor',
+    actThrottleTimer: 0,
     act: function() {
-    	
-    	if (this.attackTarget) {	
-    		var range = 1;
-    		if (this.map.inRange(this, this.attackTarget, range)) {
-    			this.tryMove(this.attackTarget.x, this.attackTarget.y);    		
-    		} else {    		
-				var newDestinationCoordinates = {};
-				//newDestinationCoordinates.x = eventMapX; //FIXME - eventMapX not defined
-				//newDestinationCoordinates.y = eventMapY;
 
-				newDestinationCoordinates.x = this.attackTarget.x;
-				newDestinationCoordinates.y = this.attackTarget.y;
+    	if (this.actThrottleTimer === 0) {    	
+			if (this.attackTarget) {	
+				var range = 1;
+				if (this.map.inRange(this, this.attackTarget, range)) {
+					this.tryMove(this.attackTarget.x, this.attackTarget.y);    		
+				} else {    		
+					var newDestinationCoordinates = {};
+					newDestinationCoordinates.x = this.attackTarget.x;
+					newDestinationCoordinates.y = this.attackTarget.y;
 				
-				this.destinationCoordinates = newDestinationCoordinates; //FIXME - player
-				this.pathCoordinates = [];  //reset
-			} 
+					this.destinationCoordinates = newDestinationCoordinates; //FIXME - player
+					this.pathCoordinates = [];  //reset
+				} 
+			} else {
+				this.restHeal();
+			}
 		}
 
-    	if (this.destinationCoordinates !== null && this.pathCoordinates.length === 0) {
+		if (this.destinationCoordinates !== null && this.pathCoordinates.length === 0) {
 
 			var sourceEntity = this;
 			var destX = this.destinationCoordinates.x;
 			var destY = this.destinationCoordinates.y;
-	
+
 			this.findPath(sourceEntity, destX, destY);		
+		}
+			
+		//if (this.actThrottleTimer === 0 || this.actThrottleTimer === 6) { //slow movement rate?
+			if (this.pathCoordinates.length > 0) { 
+				this.followPath();
+			}
+    	//}
+    	
+    	if (this.actThrottleTimer === 0) {
+    		this.actThrottleTimer = this.speed / 100; //reset
     	}
     	
-    	if (this.pathCoordinates.length > 0) { 
-    		this.speed = 600; //FIXME
-    		this.followPath();
-    	}
+    	this.actThrottleTimer--;
     	
     	//if items at coordinate and not midway following path and number of items is greater than 0
     	if (this.map.getItemsAt(this.x, this.y) && this.pathCoordinates.length === 0 && this.map.getItemsAt(this.x, this.y).length > 0) {
@@ -562,17 +592,29 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
 		
 		if (this.pathCoordinates.length === 0) {
 			this.destinationCoordinates = null;
-			this.speed = 1200; //FIXME
 		}
     },
-    move: function(directionX, directionY) {
-        this.speed = 1200; //FIXME
-        
+    move: function(directionX, directionY) {        
         var newX = this.x + directionX; //FIXME - player
         var newY = this.y + directionY;
         
         Game.Screen.inventoryScreen.viewed = null;
         this.tryMove(newX, newY);        
+    },
+    useHealingPotion: function() {
+		for (var x = 0, y = this.inventory.length; x < y; x++) {
+		
+			if (this.inventory[x].name === 'Healing potion') {
+				
+				//remove item from player inventory
+				var potion = this.inventory.splice(x,1);
+
+				//heal player				
+				potion[0].eat(this);
+				
+				break;								
+			}
+		}
     }
 }
 
@@ -583,14 +625,15 @@ Game.RedmurksMaze.PlayerTemplate = {
     character: '@',
 	spriteSheetX: 0, //multiple applied to Game.interfaceObject.tilePixelWidth to determine actual pixel coordinate on spritesheet
     spriteSheetY: 5,
-    maxHp: 40,
-    attackValue: 10,
-    defenseValue: 10,
+    maxHp: 10,
+    attackValue: 2,
+    defenseValue: 1,
     sightRadius: 4,
     speed: 1200,
     mixins: [Game.RedmurksMaze.Mixins.PlayerActor,
     		Game.Mixins.Attacker, Game.Mixins.Destructible,
-    		Game.Mixins.Sight, Game.Mixins.Equipper]
+    		Game.Mixins.Sight, Game.Mixins.Equipper,
+    		Game.Mixins.ExperienceGainer]
 }
 
 Game.RedmurksMaze.Mixins.SlimeActor = {
@@ -604,8 +647,10 @@ Game.RedmurksMaze.SlimeTemplate = {
 	spriteSheetX: 0,
     spriteSheetY: 9,
 	maxHp: 10,
+	attackValue: 2,
+    defenseValue: 1,
 	speed: 100,
-	tasks: ['hunt', 'wander'],
+	tasks: ['hunt', 'heal', 'wander'],
     mixins: [Game.RedmurksMaze.Mixins.SlimeActor, 
     		Game.Mixins.TaskActor, Game.Mixins.Sight,
     		Game.Mixins.Destructible, Game.Mixins.Attacker]

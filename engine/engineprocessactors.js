@@ -29,11 +29,35 @@ Game.Mixins.MessageDisplayUpdateActor = {
  	
  		var player = Game.Screen.playScreen.player;
 		
-		Game.loadedEnvironment.uiComponents.playScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.attackValue + "|" + player.defenseValue]; //FIXME - player		
-		Game.loadedEnvironment.uiComponents.playScreen.messageDisplay.text = Game.Messages.getLatest(); //FIXME - temporary
+		//play screen stats display
+		Game.loadedEnvironment.uiComponents.playScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.getAttackValue() + "|" + player.getDefenseValue(), player.experiencePoints]; //FIXME - player		
 		
-		Game.loadedEnvironment.uiComponents.inventoryScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.attackValue + "|" + player.defenseValue]; //FIXME - player		
-		Game.loadedEnvironment.uiComponents.inventoryScreen.messageDisplay.text = Game.Messages.getLatest(); //FIXME - temporary
+		//play screen message display
+		var playSelectedEntity = Game.Screen.playScreen.selectedEntity;
+		var playSelectedItem = Game.Screen.playScreen.selectedItem;
+		var playMessageDisplay = Game.loadedEnvironment.uiComponents.playScreen.messageDisplay;
+		
+		if (playSelectedEntity) {	
+			playMessageDisplay.text = [playSelectedEntity.name, playSelectedEntity.hp + "/" + playSelectedEntity.maxHp, playSelectedEntity.getAttackValue() + "|" + playSelectedEntity.getDefenseValue()];
+		} else if (playSelectedItem) {
+			playMessageDisplay.text = [playSelectedItem.name];
+		} else {
+			playMessageDisplay.text = Game.Messages.getLatest(); //FIXME - temporary	
+		}
+		
+		/*
+		//inventory screen stats display
+		Game.loadedEnvironment.uiComponents.inventoryScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.getAttackValue() + "|" + player.getDefenseValue(), player.experiencePoints]; //FIXME - player		
+		
+		//inventory screen message display
+		var inventorySelectedItem = Game.Screen.inventoryScreen.selectedItem;
+
+		var inventoryMessageDisplay = Game.loadedEnvironment.uiComponents.inventoryScreen.messageDisplay;		
+
+		if (inventorySelectedItem) {
+			inventoryMessageDisplay.text = [inventorySelectedItem.name];
+		}		
+		*/
 
     }
 };

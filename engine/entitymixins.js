@@ -6,6 +6,7 @@ Game.Mixins.Destructible = {
         this.maxHp = template['maxHp'] || 10;
         this.hp = template['hp'] || this.maxHp;
         this.defenseValue = template['defenseValue'] || 0;
+        this.restHealTimer = 0;
     },
     getDefenseValue: function() {
         var modifier = 0;
@@ -23,8 +24,6 @@ Game.Mixins.Destructible = {
             		modifier += this.equipped[x].defenseValue;
             	}
             }
-            
-            
         }
         return this.defenseValue + modifier;
     },
@@ -49,9 +48,40 @@ Game.Mixins.Destructible = {
             Game.Messages.queue.push(newMessage);
             
             attacker.attackTarget = null;
-                    
+ 
+            //attacker experience gain
+            //-relative to difference between attacker and defender in .maxHp, .defenseValue, .attackValue
+            if (attacker.experiencePoints) {
+            	var hpDifference = attacker.maxHp - this.maxHp;
+            	hpDifference = Math.max(hpDifference, 1);
+            	
+            	var attackDifference = attacker.getAttackValue() - this.getAttackValue();
+            	attackDifference = Math.max(attackDifference, 1);
+            	
+            	var defenseDifference = attacker.getDefenseValue() - this.getDefenseValue();
+            	defenseDifference = Math.max(defenseDifference, 1);
+            	
+            	var pointsEarned = hpDifference + attackDifference + defenseDifference;
+            	attacker.experiencePoints = attacker.experiencePoints + pointsEarned
+            }
+            
+            //loot drop            
+            var item = new Game.Item(Game.loadedEnvironment.HealingPotionTemplate);            
+            Game.Screen.playScreen.map.addItem(this.x, this.y, item);
+
+            //deselect if necessary //FIXME - seems like this should be handled by the playScreen itself
+            if (Game.Screen.playScreen.selectedEntity && Game.Screen.playScreen.selectedEntity === this) {
+            	Game.Screen.playScreen.selectedEntity = null;
+            }
+            
+            //remove dead entity        
             this.map.removeEntity(this);
         }
+    },
+    restHeal: function() {	   
+    	if (this.hp < this.maxHp) {
+			this.hp++;   		
+    	}
     }
 }
 
@@ -59,6 +89,7 @@ Game.Mixins.Attacker = {
     name: 'Attacker',
     groupName: 'Attacker',
     init: function(template) {
+    	this.attackTarget = null;
     	this.attackValue = template['attackValue'] || 1;
     },
     getAttackValue: function() {
@@ -98,6 +129,12 @@ Game.Mixins.Attacker = {
                    
             target.takeDamage(this, damage);
         }
+        
+        //target auto defend
+        if (target.hasMixin('Attacker') && target.attackTarget === null) {
+        	target.attackTarget = this;
+        }
+        
     }
 }
 
@@ -154,6 +191,13 @@ Game.Mixins.Equipper = {
     }
 };
 
+Game.Mixins.ExperienceGainer = {
+    name: 'ExperienceGainer',
+    init: function(template) {
+        this.experiencePoints = 1;
+    }
+};
+
 Game.Mixins.TaskActor = {
     name: 'TaskActor',
     groupName: 'Actor',
@@ -171,6 +215,8 @@ Game.Mixins.TaskActor = {
     canDoTask: function(task) {
         if (task === 'hunt') {     
             return this.hasMixin('Sight') && this.canSee(Game.loadedEnvironment.player); //FIXME - player
+        } else if (task === 'heal') {
+			return this.hp != this.maxHp; //returns true if need to heal
         } else if (task === 'wander') {
             return true;
         } else {
@@ -236,6 +282,9 @@ Game.Mixins.TaskActor = {
         });*/
         
         
+    },
+    heal: function() {
+    	this.restHeal();
     },
     wander: function() {
         var moveOffset = (Math.round(Math.random()) === 1) ? 1 : -1;

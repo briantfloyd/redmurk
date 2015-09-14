@@ -31,6 +31,7 @@ Game.Screen.playScreen = {
     topLeftY: null,
     selectedEntity: null,
     selectedItem: null,
+	paused: false,
 	enter: function() {  	        
 	    if (this.map === null) {
 	    	this.map = new Game.Map(Game.loadedEnvironment.generateMap());
@@ -43,11 +44,10 @@ Game.Screen.playScreen = {
 			
 			this.map.engine.start();	
 				    
-	    } else {
+	    } else if (this.paused === false){
 	    	console.log('unlocking engine');
 	    	this.map.engine.unlock();	
-	    }
-	    
+	    }	    
 	},
     exit: function() {
     	console.log('locking engine');
@@ -120,6 +120,7 @@ Game.Screen.playScreen = {
 					if (visibleCells[x + ',' + y]) {
 					
 						var items = this.map.getItemsAt(x, y);
+				
 						if (items) {
                             var item = items[items.length - 1];  //FIXME - only grabs topmost item to draw     
                             charactersToDraw.push(item.character);
@@ -174,13 +175,15 @@ Game.Screen.playScreen = {
 			var eventMapX = this.topLeftX + (eventPosition[0]);
 			var eventMapY = this.topLeftY + (eventPosition[1]);
 
-			if (this.map.getEntityAt(eventMapX, eventMapY)) {
+			var clickedEntity = this.map.getEntityAt(eventMapX, eventMapY);
+			if (clickedEntity) {
 
 				this.selectedItem = null;
 				this.player.attackTarget = null;
-			
-				var clickedEntity = this.map.getEntityAt(eventMapX, eventMapY);	
-				if (clickedEntity === this.selectedEntity) {
+				
+				if (clickedEntity === this.player) {
+					Game.switchScreen(Game.Screen.inventoryScreen);
+				} else if (clickedEntity === this.selectedEntity) {
 					this.player.attackTarget = clickedEntity; //FIXME - player
 			
 				} else {
@@ -233,7 +236,7 @@ Game.Screen.inventoryScreen = {
 	justViewed: true,
 	//groundItems: null,
 	displayedItems: [],
-	groundDisplayFirstItemDisplayed: 0,
+	//groundDisplayFirstItemDisplayed: 0,
 	displaysFirstItemsDisplayed: {
 			inventory: 0,
 			ground: 0,
@@ -247,14 +250,31 @@ Game.Screen.inventoryScreen = {
     	this.justViewed = true;
 	},
     render: function(display) {
-    
-    	this.displayedItems = []; //reset
+    	var player = Game.Screen.playScreen.player; //FIXME - player
     	
+    	this.displayedItems = []; //reset
+
+		//UPDATE STAT/MESSAGE DISPLAY VALUES
+		//stats display //FIXME - duplicate of MessageDisplayUpdateActor stats display
+		Game.loadedEnvironment.uiComponents.inventoryScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.getAttackValue() + "|" + player.getDefenseValue(), player.experiencePoints]; //FIXME - player		
+		
+		//message display
+		var inventorySelectedItem = this.selectedItem;
+
+		var inventoryMessageDisplay = Game.loadedEnvironment.uiComponents.inventoryScreen.messageDisplay;		
+
+		if (inventorySelectedItem) {
+			inventoryMessageDisplay.text = [inventorySelectedItem.name];
+		} else {
+			inventoryMessageDisplay.text = [''];
+		}	
+		
+    	//DRAW UI
 		var interfaceObject = Game.interfaceObject;		
 		interfaceObject.drawUI(this.uiParameters);
 
-		var player = Game.Screen.playScreen.player; //FIXME - player
 		
+		//DRAW ITEMS OVER UI
 		//equipped display area
 		this.equippedItems = [];
 		for (var x in Game.Screen.playScreen.player.equipped) {

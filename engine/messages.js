@@ -4,10 +4,12 @@ Game.Messages = {
 		
 		var queueLength = this.queue.length;
 		var latestMessage = 'The air is cool';
+		
 		if (queueLength > 0) {
 			latestMessage = this.queue[queueLength - 1];
 		}
 		this.queue = [];
+		
 		return [latestMessage];
 	}
 }

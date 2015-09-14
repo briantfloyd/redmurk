@@ -13,9 +13,7 @@ Game.Entity = function(properties) {
 	
     this.destinationCoordinates = null;
     this.pathCoordinates = [];
-    
-    this.attackTarget = null;
-	
+    	
 	this.spriteSheetY = properties['spriteSheetY'] || 0;
 	this.spriteSheetX = properties['spriteSheetX'] || 0;	
 	
@@ -85,7 +83,7 @@ Game.Entity.prototype.tryMove = function(x, y) {
 	Game.display._options.tileMap[this.character] = [this.spriteSheetX, this.spriteSheetY];
 	
  	if (target) {
-        if (this.hasMixin('Attacker')) {
+        if (this.hasMixin('Attacker') && target != this) {
             this.attack(target);
             return true;
         } else {

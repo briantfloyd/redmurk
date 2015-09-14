@@ -31,11 +31,41 @@ var Interface =  {
     	healIcon.width = this.tilePixelWidth * .7; 	    	
     	this.uiIcons.healIcon = healIcon;
     	
-    	var arrowIcon = new Image();
+    	/*var arrowIcon = new Image(); //FIXME - way to rotat single image?
     	arrowIcon.src = 'interface/icons/icon-60x60-arrow.svg';
     	arrowIcon.height = iconWidth;
     	arrowIcon.width = iconWidth; 	    	
-    	this.uiIcons.arrowIcon = arrowIcon;
+    	this.uiIcons.arrowIcon = arrowIcon;*/
+    	
+    	var arrowIconUp = new Image();
+    	arrowIconUp.src = 'interface/icons/icon-60x60-arrow-up.svg';
+    	arrowIconUp.height = iconWidth;
+    	arrowIconUp.width = iconWidth; 	    	
+    	this.uiIcons.arrowIconUp = arrowIconUp;
+    	
+    	var arrowIconDown = new Image();
+    	arrowIconDown.src = 'interface/icons/icon-60x60-arrow-down.svg';
+    	arrowIconDown.height = iconWidth;
+    	arrowIconDown.width = iconWidth; 	    	
+    	this.uiIcons.arrowIconDown = arrowIconDown;
+    	
+    	var arrowIconLeft = new Image();
+    	arrowIconLeft.src = 'interface/icons/icon-60x60-arrow-left.svg';
+    	arrowIconLeft.height = iconWidth;
+    	arrowIconLeft.width = iconWidth; 	    	
+    	this.uiIcons.arrowIconLeft = arrowIconLeft;
+    	
+    	var arrowIconRight = new Image();
+    	arrowIconRight.src = 'interface/icons/icon-60x60-arrow-right.svg';
+    	arrowIconRight.height = iconWidth;
+    	arrowIconRight.width = iconWidth; 	    	
+    	this.uiIcons.arrowIconRight = arrowIconRight;
+    	
+    	var closeIcon = new Image();
+    	closeIcon.src = 'interface/icons/icon-60x60-close.svg';
+    	closeIcon.height = iconWidth;
+    	closeIcon.width = iconWidth; 	    	
+    	this.uiIcons.closeIcon = closeIcon;
     	
     	/*var healthIcon = new Image();
     	healthIcon.src = 'interface/icons/icon-60x60-health.svg';

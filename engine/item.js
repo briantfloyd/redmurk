@@ -50,9 +50,8 @@ Game.ItemMixins.HealingDose = {
         this.remainingConsumptions = this.maxConsumptions;
     },
     eat: function(entity) {
-
-		if (this.remainingConsumptions > 0) {
-			entity.hp += this.healingValue;
+		if (this.remainingConsumptions > 0) {			
+			entity.hp = Math.min(entity.hp + this.healingValue, entity.maxHp);
 			this.remainingConsumptions--;
 		}
     }
