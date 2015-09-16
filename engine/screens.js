@@ -228,6 +228,17 @@ Game.Screen.playScreen = {
 		
 			//if on player
     	}
+    },
+    pauseToggle: function() {
+		if(this.paused === true) {
+			console.log('unlocking engine');
+			this.map.engine.unlock();
+			this.paused = false;
+		} else {
+			console.log('locking engine');
+			this.map.engine.lock();	
+			this.paused = true;
+		}
     }
 }
 
@@ -414,7 +425,174 @@ Game.Screen.inventoryScreen = {
 		} 
 		
 		this.render();    
+	},
+	itemInventoryGroundSwap: function(item, entity) {
+		
+		if (item && entity) {
+		
+			var positionX = entity.x;
+			var positionY = entity.y;
+		
+			var groundItems = Game.Screen.playScreen.map.items[positionX + ',' + positionY];
+			
+			//check if item is ground item first - likely shorter list
+			if (groundItems) {
+				for (var x = 0, y = groundItems.length; x < y; x++){ 
+		
+					if (groundItems[x] === item) {
+						
+						//remove from ground
+						groundItems.splice(x,1);			
+						Game.Screen.playScreen.map.setItemsAt(positionX, positionY, groundItems);									
+						
+						//add to inventory
+						entity.inventory.push(item);
+						return;
+					}				
+				}
+			}
+			
+			//now check ground if not already returned out
+			var inventoryItems = entity.inventory;
+			
+			for (var i = 0, j = inventoryItems.length; i < j; i++) {
+			
+				if (inventoryItems[i] === item) {
+					
+					//remove item from entity inventory
+					inventoryItems.splice(i,1);
+
+					//add item to ground
+					if (groundItems) {
+						groundItems.push(item);
+					} else{
+						groundItems = [item];
+					}
+				
+					Game.Screen.playScreen.map.setItemsAt(positionX, positionY, groundItems);	
+					return;								
+				}
+			}			
+		}
+	},
+	itemInventoryEquippedSwap: function(item, entity) {
+
+		if (item && item.equippable && entity) {
+			
+			//check if item is equipped item first - likely shorter list
+			for (var x in entity.equipped) {
+				if (entity.equipped[x] === item) {
+				
+					//remove item from equipped
+					entity.equipped[x] = null;
+					
+					//add item to inventory
+					entity.inventory.push(item);
+					return;
+				}
+			}
+			
+			//now check inventory if not already returned out
+			for (var i = 0, j = entity.inventory.length; i < j; i++) {
+			
+				if (entity.inventory[i] === item) {
+					
+					//remove item from entity inventory
+					entity.inventory.splice(i,1);
+					
+					//check if something already equipped
+					if (entity.equipped[item.equippable]) {
+						
+						//move previously equipped item back to inventory
+						entity.inventory.push(player.equipped[item.equippable]);	
+					}
+					
+					//equip new item
+					entity.equipped[item.equippable] = item;
+					return;								
+				}
+			}			
+		}
 	}
+}
+
+Game.Screen.statAssignmentScreen = {
+	uiParameters: null,
+	statRaising: null,
+    enter: function() { 
+    	this.uiParameters = Game.loadedEnvironment.uiScreens.statAssignmentScreenUI;
+	},
+    exit: function() { 
+	},
+    render: function(display) {
+    	var player = Game.Screen.playScreen.player; //FIXME - player
+		
+		var currentAttackDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.attackCurrentValueDisplay;
+		currentAttackDisplay.text = [player.attackValue];
+		
+		var currentDefenseDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.defenseCurrentValueDisplay;
+		currentDefenseDisplay.text = [player.defenseValue];
+		
+		var currentHpDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.hpCurrentValueDisplay;		
+		currentHpDisplay.text = [player.maxHp];
+		
+		var newAttackDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.attackNewValueDisplay;
+		newAttackDisplay.text = null;
+		
+		var newDefenseDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.defenseNewValueDisplay;
+		newDefenseDisplay.text = null;
+		
+		var newHpDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.hpNewValueDisplay;
+		newHpDisplay.text = null;
+		
+		if (this.statRaising) {
+			switch(this.statRaising){
+				case "attack":
+					newAttackDisplay.text = [player.attackValue + 1];
+					break;
+				case "defense":
+					newDefenseDisplay.text = [player.defenseValue + 1];
+					break;
+				case "health":
+					newHpDisplay.text = [player.maxHp + 1];
+					break;
+			}
+		}
+		
+    	//DRAW UI
+		var interfaceObject = Game.interfaceObject;		
+		interfaceObject.drawUI(this.uiParameters);
+
+    },
+    handleInput: function(inputType, inputData) {    
+        if (inputType === 'mouseup' || inputType === 'touchstart') {	        		
+			var eventPosition = Game.display.eventToPosition(inputData);	
+			if (eventPosition[0] >= 0 && eventPosition[1] >= 0) {
+				this.clickEvaluation(eventPosition);
+			}
+        } 
+    },
+    clickEvaluation: function(eventPosition) {
+    	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+    },
+    statAssignment: function() {
+    	var player = Game.Screen.playScreen.player;
+    	
+    	switch(this.statRaising){
+			case "attack":
+				player.attackValue++;
+				break;
+			case "defense":
+				player.defenseValue++;
+				break;
+			case "health":
+				player.maxHp++;
+				break;
+			default:
+				console.log('No matching stat assignment');
+		}
+		this.statRaising = null;
+    }
 }
 
 Game.Screen.updateTopLeft = function() {

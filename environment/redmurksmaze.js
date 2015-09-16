@@ -152,21 +152,25 @@ Game.RedmurksMaze = {
 		this.uiComponents.menuScreen = {};	
 		var menuComponents = this.uiComponents.menuScreen;
 
-		menuComponents.menuButton = 
+		menuComponents.beginButton = 
 			{	
-				type: 'button',
-				icon: interfaceObject.uiIcons.menuIcon,
-				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
-				y: interfaceObject.tilePixelWidth,
-				width: interfaceObject.tilePixelWidth * 3,
-				height: interfaceObject.tilePixelWidth,
-				clickAction: function() {
+				type: 'temporary', //remove this property after conversion
+				backgroundStyle: 'button01', //'button01', 'dark01', 'light01', 'none' //required
+				roundedCorners: true, //optional
+				//transparency: true, //optional
+				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 1) * interfaceObject.tilePixelWidth, //positioning on screen //required
+				y: interfaceObject.tilePixelWidth, //required
+				width: interfaceObject.tilePixelWidth * 3, //positioning and sizing is defined relative to tile grid //required
+				height: interfaceObject.tilePixelWidth, //required
+				text: ["Begin"], //optional
+				//icon: interfaceObject.uiIcons.menuIcon, //optional
+				clickAction: function() { //optional
 					Game.switchScreen(Game.Screen.playScreen);
 				}					
 			};
 
 		//component parameters to be read by interface drawUI()
-		this.uiScreens.menuScreenUI = [menuComponents.menuButton];		
+		this.uiScreens.menuScreenUI = [menuComponents.beginButton];		
 		
 		//play screen UI components
 		this.uiComponents.playScreen = {};	
@@ -174,11 +178,12 @@ Game.RedmurksMaze = {
 
 		playComponents.menuButton = 
 			{	
-				type: 'button',
+				backgroundStyle: 'button01',
+				roundedCorners: true,
 				icon: interfaceObject.uiIcons.menuIcon,
-				x: 0, //positioning on screen
+				x: 0, 
 				y: 0,
-				width: interfaceObject.tilePixelWidth, //positioning and sizing is defined relative to tile grid
+				width: interfaceObject.tilePixelWidth, 
 				height: interfaceObject.tilePixelWidth,
 				clickAction: function() {
 					Game.switchScreen(Game.Screen.menuScreen);
@@ -187,45 +192,37 @@ Game.RedmurksMaze = {
 
 		playComponents.healButton = 
 			{	
-				type: 'button',
+				backgroundStyle: 'button01',
+				roundedCorners: true,
 				icon: interfaceObject.uiIcons.healIcon,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
 				clickAction: function() {
-					var player = Game.Screen.playScreen.player;
-					player.useHealingPotion();
+					Game.Screen.playScreen.player.useHealingPotion();
 				}				
 			};
 			
 		playComponents.pauseButton = 
 			{	
-				type: 'button',
+				backgroundStyle: 'button01',
+				roundedCorners: true,
 				icon: interfaceObject.uiIcons.pauseIcon,
 				x: 0,
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				width: interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
 				clickAction: function() {
-					var playScreen = Game.Screen.playScreen;
-					var engine = Game.Screen.playScreen.map.engine;
-					
-					if(playScreen.paused === true) {
-						console.log('unlocking engine');
-						engine.unlock();
-						playScreen.paused = false;
-					} else {
-						console.log('locking engine');
-						engine.lock	();	
-						playScreen.paused = true;
-					}
+					Game.Screen.playScreen.pauseToggle();
 				}			
 			};			
 
 		playComponents.messageDisplay = 
-			{	
-				type: 'message display',
+			{	 
+				backgroundStyle: 'dark01',
+				roundedCorners: true, 
+				transparency: true,
 				x: interfaceObject.tilePixelWidth,
 				y: 0,
 				width:(interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
@@ -235,7 +232,9 @@ Game.RedmurksMaze = {
 			
 		playComponents.statsDisplay = 
 			{	
-				type: 'stats display',
+				backgroundStyle: 'dark01',
+				roundedCorners: true, 
+				transparency: true,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				y: 0,
 				width: interfaceObject.tilePixelWidth,
@@ -251,7 +250,8 @@ Game.RedmurksMaze = {
 
 		inventoryComponents.closeButton = 
 			{	
-				type: 'button',
+				backgroundStyle: 'button01',
+				roundedCorners: true,
 				icon: interfaceObject.uiIcons.closeIcon,
 				x: 0,
 				y: 0,
@@ -264,7 +264,7 @@ Game.RedmurksMaze = {
 
 		inventoryComponents.messageDisplay = 
 			{	
-				type: 'message display',
+				backgroundStyle: 'none',
 				x: interfaceObject.tilePixelWidth,
 				y: 0,
 				width:(interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
@@ -274,7 +274,9 @@ Game.RedmurksMaze = {
 
 		inventoryComponents.statsDisplay = 
 			{	
-				type: 'stats display',
+				backgroundStyle: 'dark01',
+				roundedCorners: true, 
+				transparency: true,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				y: 0,
 				width: interfaceObject.tilePixelWidth,
@@ -282,83 +284,28 @@ Game.RedmurksMaze = {
 				text: null					
 			};
 
-		inventoryComponents.groundToInventoryButton = 
+		inventoryComponents.groundInventorySwapButton = 
 			{
-				type: 'button',
+				backgroundStyle: 'button01',
+				roundedCorners: true,
 				icon: interfaceObject.uiIcons.arrowIconLeft,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth * 2,
 				clickAction: function() {
-					var player = Game.Screen.playScreen.player;
+					var player = Game.Screen.playScreen.player; //location of item to remove
 					var	selectedItem = Game.Screen.inventoryScreen.selectedItem;
-					var groundItems = Game.Screen.playScreen.map.items[player.x + ',' + player.y];
-						
-					if (player && selectedItem && groundItems) {						
-		
-						for (var x = 0, y = groundItems.length; x < y; x++){ 
-						
-							if (groundItems[x] === selectedItem) {
-								
-								//remove item from ground
-								groundItems.splice(x,1);			
-								Game.Screen.playScreen.map.setItemsAt(player.x, player.y, groundItems);	
-								
-								//add to player inventory
-								player.inventory.push(selectedItem);								
-								
-								break;
-							}				
-						}
-					}
-					Game.Screen.inventoryScreen.render();
-				}						
-			};
-			
-		inventoryComponents.inventoryToGroundButton = 
-			{
-				type: 'button',
-				icon: interfaceObject.uiIcons.arrowIconRight,
-				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
-				y: interfaceObject.tilePixelWidth * 5,
-				width: interfaceObject.tilePixelWidth,
-				height: interfaceObject.tilePixelWidth * 2,
-				clickAction: function() {
-					var player = Game.Screen.playScreen.player;
-					var selectedItem = Game.Screen.inventoryScreen.selectedItem;
-					
-					if (player && selectedItem) {
-						
-						for (var x = 0, y = player.inventory.length; x < y; x++) {
-						
-							if (player.inventory[x] === selectedItem) {
-								
-								//remove item from player inventory
-								player.inventory.splice(x,1);
-
-								//add item to ground
-								var groundItems = Game.Screen.playScreen.map.items[player.x + ',' + player.y];
-							
-								if (groundItems) {
-									groundItems.push(selectedItem);
-								} else{
-									groundItems = [selectedItem];
-								}
-							
-								Game.Screen.playScreen.map.setItemsAt(player.x, player.y, groundItems);
-						
-								break;								
-							}
-						}
-					}
-					Game.Screen.inventoryScreen.render();
+					var inventoryScreen = Game.Screen.inventoryScreen;
+					inventoryScreen.itemInventoryGroundSwap(selectedItem, player);
+					inventoryScreen.render();
 				}						
 			};
 
-		inventoryComponents.inventoryToEquippedButton = 
+		inventoryComponents.inventoryEquippedSwapButton = 
 			{
-				type: 'button',
+				backgroundStyle: 'button01',
+				roundedCorners: true,
 				icon: interfaceObject.uiIcons.arrowIconUp,
 				x: 0,
 				y: interfaceObject.tilePixelWidth * 2,
@@ -367,69 +314,16 @@ Game.RedmurksMaze = {
 				clickAction: function() {
 					var player = Game.Screen.playScreen.player;
 					var selectedItem = Game.Screen.inventoryScreen.selectedItem;
-						
-					if (player && selectedItem && selectedItem.equippable) {
-		
-						for (var x = 0, y = player.inventory.length; x < y; x++) {
-						
-							if (player.inventory[x] === selectedItem) {
-								
-								//remove item from player inventory
-								player.inventory.splice(x,1);
-								
-								//check if something already equipped
-								if (player.equipped[selectedItem.equippable]) {
-									
-									//move previously equipped item back to inventory
-									player.inventory.push(player.equipped[selectedItem.equippable]);	
-								
-								}
-								
-								//equip new item
-								player.equipped[selectedItem.equippable] = selectedItem;
-
-								break;								
-							}
-						}
-					}
-					Game.Screen.inventoryScreen.render();
-				}						
-			};
-
-		inventoryComponents.equippedToInventoryButton = 
-			{
-				type: 'button',
-				icon: interfaceObject.uiIcons.arrowIconDown,
-				x: interfaceObject.tilePixelWidth * 2,
-				y: interfaceObject.tilePixelWidth * 2,
-				width: interfaceObject.tilePixelWidth * 2,
-				height: interfaceObject.tilePixelWidth,
-				clickAction: function() {
-					var player = Game.Screen.playScreen.player;
-					var selectedItem = Game.Screen.inventoryScreen.selectedItem;
-						
-					if (player && selectedItem) {
-						
-						for (var x in player.equipped) {
-							if (player.equipped[x] === selectedItem) {
-							
-								//remove item from equipped
-								player.equipped[x] = null;
-								
-								//add item to inventory
-								player.inventory.push(selectedItem);
-								
-								break;
-							}
-						}
-					}
-					Game.Screen.inventoryScreen.render();
+					var inventoryScreen = Game.Screen.inventoryScreen;
+					inventoryScreen.itemInventoryEquippedSwap(selectedItem, player);
+					inventoryScreen.render();
 				}						
 			};
 
 		inventoryComponents.groundScrollUpButton = 
 			{
-				type: 'button',
+				backgroundStyle: 'button01',
+				roundedCorners: true,
 				icon: interfaceObject.uiIcons.arrowIconUp,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 3,
@@ -446,7 +340,8 @@ Game.RedmurksMaze = {
 
 		inventoryComponents.groundScrollDownButton = 
 			{
-				type: 'button',
+				backgroundStyle: 'button01',
+				roundedCorners: true,
 				icon: interfaceObject.uiIcons.arrowIconDown,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
@@ -463,7 +358,8 @@ Game.RedmurksMaze = {
 
 		inventoryComponents.inventoryScrollUpButton = 
 			{
-				type: 'button',
+				backgroundStyle: 'button01',
+				roundedCorners: true,
 				icon: interfaceObject.uiIcons.arrowIconUp,
 				x: 0,
 				y: interfaceObject.tilePixelWidth * 3,
@@ -480,7 +376,8 @@ Game.RedmurksMaze = {
 
 		inventoryComponents.inventoryScrollDownButton = 
 			{
-				type: 'button',
+				backgroundStyle: 'button01',
+				roundedCorners: true,
 				icon: interfaceObject.uiIcons.arrowIconDown,
 				x: 0,
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
@@ -497,7 +394,8 @@ Game.RedmurksMaze = {
 			
 		inventoryComponents.equippedDisplay = 
 			{
-				type: 'inventory display',
+				backgroundStyle: 'light01',
+				roundedCorners: true, 
 				x: 0,
 				y: interfaceObject.tilePixelWidth,
 				width: interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth,
@@ -506,7 +404,8 @@ Game.RedmurksMaze = {
 
 		inventoryComponents.inventoryDisplay = 
 			{
-				type: 'inventory display',
+				backgroundStyle: 'light01',
+				roundedCorners: true, 
 				x: interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 3,
 				width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 4),
@@ -515,15 +414,205 @@ Game.RedmurksMaze = {
 
 		inventoryComponents.groundDisplay = 
 			{
-				type: 'inventory display',
+				backgroundStyle: 'light01',
+				roundedCorners: true, 
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
 				height: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2)				
 			};
 			
-		this.uiScreens.inventoryScreenUI = [inventoryComponents.closeButton, inventoryComponents.messageDisplay, inventoryComponents.statsDisplay, inventoryComponents.groundToInventoryButton, inventoryComponents.inventoryToGroundButton, inventoryComponents.equippedDisplay, inventoryComponents.inventoryDisplay, inventoryComponents.groundDisplay, inventoryComponents.groundScrollUpButton, inventoryComponents.groundScrollDownButton, inventoryComponents.inventoryScrollUpButton, inventoryComponents.inventoryScrollDownButton, inventoryComponents.inventoryToEquippedButton, inventoryComponents.equippedToInventoryButton];
+		this.uiScreens.inventoryScreenUI = [inventoryComponents.closeButton, inventoryComponents.messageDisplay, inventoryComponents.statsDisplay, inventoryComponents.groundInventorySwapButton, inventoryComponents.equippedDisplay, inventoryComponents.inventoryDisplay, inventoryComponents.groundDisplay, inventoryComponents.groundScrollUpButton, inventoryComponents.groundScrollDownButton, inventoryComponents.inventoryScrollUpButton, inventoryComponents.inventoryScrollDownButton, inventoryComponents.inventoryEquippedSwapButton];
 		
+		
+		//stat assignment screen UI components
+		this.uiComponents.statAssignmentScreen = {};	
+		var statAssignmentComponents = this.uiComponents.statAssignmentScreen;
+
+		statAssignmentComponents.saveButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				x: ((((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth),
+				y: interfaceObject.tilePixelWidth * 6,
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Confirm and continue"],
+				clickAction: function() {			
+					if (Game.Screen.statAssignmentScreen.statRaising) {
+						Game.Screen.statAssignmentScreen.statAssignment();
+						Game.switchScreen(Game.Screen.playScreen);
+					}					
+				}					
+			};
+			
+		statAssignmentComponents.instructionsDisplay = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Select a skill to improve."]			
+			};	
+
+		statAssignmentComponents.currentValueLabel = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 2,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Current","Value"]			
+			};
+
+		statAssignmentComponents.newValueLabel = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 2,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: ["New","Value"]			
+			};
+
+		statAssignmentComponents.attackLabel = 
+			{	 
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - (interfaceObject.tilePixelWidth * 2),
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Attack"]			
+			};
+
+		statAssignmentComponents.defenseLabel = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - (interfaceObject.tilePixelWidth * 2),
+				y: interfaceObject.tilePixelWidth * 4,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Defense"]			
+			};
+
+		statAssignmentComponents.hpLabel = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - (interfaceObject.tilePixelWidth * 2),
+				y: interfaceObject.tilePixelWidth * 5,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Health"]			
+			}
+
+		statAssignmentComponents.attackCurrentValueDisplay = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: null			
+			};
+
+		statAssignmentComponents.defenseCurrentValueDisplay = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 4,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: null			
+			};
+
+		statAssignmentComponents.hpCurrentValueDisplay = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 5,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: null			
+			};
+
+		statAssignmentComponents.attackIncreaseButton = 
+			{
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.arrowIconUp,
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.Screen.statAssignmentScreen.statRaising = "attack";
+					Game.Screen.statAssignmentScreen.render();
+				}						
+			};
+
+		statAssignmentComponents.defenseIncreaseButton = 
+			{
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.arrowIconUp,
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
+				y: interfaceObject.tilePixelWidth * 4,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.Screen.statAssignmentScreen.statRaising = "defense";
+					Game.Screen.statAssignmentScreen.render();
+				}						
+			};			
+
+		statAssignmentComponents.hpIncreaseButton = 
+			{
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.arrowIconUp,
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
+				y: interfaceObject.tilePixelWidth * 5,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.Screen.statAssignmentScreen.statRaising = "health";
+					Game.Screen.statAssignmentScreen.render();
+				}						
+			};	
+
+		statAssignmentComponents.attackNewValueDisplay = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: null			
+			};
+
+		statAssignmentComponents.defenseNewValueDisplay = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 4,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: null			
+			};
+
+		statAssignmentComponents.hpNewValueDisplay = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 5,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: null			
+			};			
+
+		this.uiScreens.statAssignmentScreenUI = [statAssignmentComponents.saveButton, statAssignmentComponents.instructionsDisplay, statAssignmentComponents.currentValueLabel, statAssignmentComponents.newValueLabel, statAssignmentComponents.attackLabel, statAssignmentComponents.defenseLabel, statAssignmentComponents.hpLabel, statAssignmentComponents.attackCurrentValueDisplay, statAssignmentComponents.defenseCurrentValueDisplay, statAssignmentComponents.hpCurrentValueDisplay, statAssignmentComponents.attackIncreaseButton, statAssignmentComponents.defenseIncreaseButton, statAssignmentComponents.hpIncreaseButton, statAssignmentComponents.attackNewValueDisplay, statAssignmentComponents.defenseNewValueDisplay, statAssignmentComponents.hpNewValueDisplay];
+
 	}
 }
 
@@ -633,7 +722,7 @@ Game.RedmurksMaze.PlayerTemplate = {
     mixins: [Game.RedmurksMaze.Mixins.PlayerActor,
     		Game.Mixins.Attacker, Game.Mixins.Destructible,
     		Game.Mixins.Sight, Game.Mixins.Equipper,
-    		Game.Mixins.ExperienceGainer]
+    		Game.Mixins.ExperienceGainer, Game.Mixins.StatAssigner]
 }
 
 Game.RedmurksMaze.Mixins.SlimeActor = {

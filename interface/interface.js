@@ -113,149 +113,88 @@ var Interface =  {
 			var componentY = componentParameters.y + inset;
 			var componentWidth = componentParameters.width - (inset * 2);
 			var componentHeight = componentParameters.height - (inset * 2);
-			var componentType = componentParameters.type;
-			var componentFont = componentParameters.font;
 			
-			//component type styling & drawing
-			if (componentType === 'message display'){
-				//ctx.globalAlpha = 0.5 //opacity for images
-				ctx.fillStyle = "rgba(0, 0, 0, 0.45)"; //ctx.fillStyle = "#000000";
-				ctx.fillRect(componentX,componentY,componentWidth,componentHeight);
+			var componentBackgroundStyle = componentParameters.backgroundStyle;
+			var componentRoundedCorners = componentParameters.roundedCorners;
+			var componentTransparency = componentParameters.transparency;
+			var componentIcon = componentParameters.icon;
+			var componentText = componentParameters.text;
 			
-				var displayText = componentParameters.text;
+			//component styling & drawing				
+			if (!componentTransparency) {
+				componentTransparency = 1.0;
+			} else {
+				componentTransparency = 0.45;
+			}
 			
-				ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
-				ctx.font = "italic 12px sans-serif";
-
-				if (displayText) {
-					var displayTextLength = displayText.length;
-					var verticalSpacing = componentHeight / (displayTextLength + 1);
-				
-					for (var k = 0; k < displayTextLength; k++) {
-						var displayTextX = componentX + (componentWidth / 2) - (ctx.measureText(displayText[k]).width / 2);
-						var displayTextY = componentY + (verticalSpacing * (k + 1));
-					
-						ctx.fillText(displayText[k],displayTextX,displayTextY);
-					}
-				}		
-			
-			} else if (componentType === 'stats display'){
-				/*icon: {
-					health: Game.interfaceObject.uiIcons.healthIcon,
-					attack: Game.interfaceObject.uiIcons.attackIcon,
-					defense: Game.interfaceObject.uiIcons.defenseIcon,
-				},*/					
-				
-				ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
-				ctx.fillRect(componentX,componentY,componentWidth,componentHeight);
-			
-				var displayText = componentParameters.text;
-			
-				ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
-				ctx.font = "bold 16px sans-serif";
-
-				if (displayText) {
-					var displayTextLength = displayText.length;
-					var verticalSpacing = componentHeight / (displayTextLength + 1);
-				
-					for (var k = 0; k < displayTextLength; k++) {
-						var displayTextX = componentX + (componentWidth / 2) - (ctx.measureText(displayText[k]).width / 2);
-						var displayTextY = componentY + (verticalSpacing * (k + 1));
-					
-						ctx.fillText(displayText[k],displayTextX,displayTextY);
-					
-						/*
-						if (componentParameters.icon
-					
-						var componentIcon = componentParameters.icon;
-					
-						var iconX = componentX + (componentWidth / 2) - (this.uiIcons.pauseIcon.width / 2);
-						var iconY = componentY + (componentHeight / 2) - (this.uiIcons.pauseIcon.height / 2);
-				
-						ctx.drawImage(componentIcon, iconX, iconY, componentIcon.width, componentIcon.height);
-					
-						*/	
-					}
-				}						
-			} else if (componentType === 'button'){
-				
-				//button rect fill/stroke
+			if (componentBackgroundStyle === 'button01') {		
 				var gradient1 = ctx.createLinearGradient(componentX,componentY,componentX,componentY+componentHeight);
 				gradient1.addColorStop("0","#5f5f5f");
 				gradient1.addColorStop("1.0","#454545");
 
 				ctx.fillStyle = gradient1;
 				ctx.strokeStyle = gradient1;
-				//ctx.fillStyle = "rgba(69, 69, 69, 0.75)";
-				//ctx.strokeStyle = "rgba(69, 69, 69, 0.75)";
-				
-				var cornerRadius = 20;
-				ctx.lineJoin = "round";
-				ctx.lineWidth = 20; 
-				
-				ctx.strokeRect(componentX+(cornerRadius/2), componentY+(cornerRadius/2), componentWidth-cornerRadius, componentHeight-cornerRadius);
-				ctx.fillRect(componentX+(cornerRadius/2), componentY+(cornerRadius/2), componentWidth-cornerRadius, componentHeight-cornerRadius);
-	
-				
-				if (!componentParameters.icon) {
-					//button text
-					var gradient2 = ctx.createLinearGradient(componentX,componentY,componentX,componentY+componentHeight);
-					gradient2.addColorStop("0","#000000");
-					gradient2.addColorStop("1.0","#e6e6e6");
-				
-					ctx.strokeStyle = gradient2;
-					ctx.lineWidth = 3; 
-						
-					var buttonText = componentParameters.text[0];
-					var fontSize = 12;
-					var buttonTextX = componentX + (componentWidth / 2) - (ctx.measureText(buttonText).width / 2);
-					var buttonTextY = componentY + (componentHeight / 2); //FIXME - need more precise vertical centering
-				
-					ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
-					ctx.font = fontSize + "px sans-serif";
-				
-					ctx.strokeText(buttonText,buttonTextX,buttonTextY);
-					ctx.fillText(buttonText,buttonTextX,buttonTextY);
-				
-				} else {
-					//button icon
-					var componentIcon = componentParameters.icon;
-					
-					var iconX = componentX + (componentWidth / 2) - (componentIcon.width / 2);
-					var iconY = componentY + (componentHeight / 2) - (componentIcon.height / 2);
-				
-					ctx.drawImage(componentIcon, iconX, iconY, componentIcon.width, componentIcon.height);	
-				}
-
-				//FIXME - if button, then onclick() property action //listener?
-				
-				
-			} else if (componentType === 'inventory display'){
-				var cornerRadius = 20;
-				//ctx.lineJoin = "round";
-				//ctx.lineWidth = 20; 
-				
-				ctx.fillStyle = "rgba(255, 255, 255, 0.45)"; //ctx.fillStyle = "#000000";
-				//ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
-
-				//ctx.strokeRect(componentX+(cornerRadius/2), componentY+(cornerRadius/2), componentWidth-cornerRadius, componentHeight-cornerRadius);
-				//ctx.fillRect(componentX+(cornerRadius/2), componentY+(cornerRadius/2), componentWidth-cornerRadius, componentHeight-cornerRadius);
-				
-				ctx.fillRect(componentX, componentY, componentWidth, componentHeight);
-				
-				/*
-				
-				var c=document.getElementById("myCanvas");
-				var ctx=c.getContext("2d");
-				var img=document.getElementById("lamp");
-				var pat=ctx.createPattern(img,"repeat");
-				ctx.rect(0,0,150,100);
-				ctx.fillStyle=pat;
-				ctx.fill();
-
-				*/
 			
+			} else if (componentBackgroundStyle === 'dark01') {
+				ctx.fillStyle = "rgba(0, 0, 0, " + componentTransparency + ")";
+				ctx.strokeStyle = "rgba(0, 0, 0, " + componentTransparency + ")";
+				  
+			} else if (componentBackgroundStyle === 'light01') {
+				ctx.fillStyle = "rgba(255, 255, 255, " + componentTransparency + ")";
+				ctx.strokeStyle = "rgba(255, 255, 255, " + componentTransparency + ")";
 			}
+			
+			if (componentBackgroundStyle != 'none') {
+				if (componentRoundedCorners) {
+				
+					var cornerRadius = 20;
+					ctx.lineJoin = "round";
+					ctx.lineWidth = 20; 
+
+					ctx.strokeRect(componentX+(cornerRadius/2), componentY+(cornerRadius/2), componentWidth-cornerRadius, componentHeight-cornerRadius);	
+					ctx.fillRect(componentX+(cornerRadius/2), componentY+(cornerRadius/2), componentWidth-cornerRadius, componentHeight-cornerRadius);
+									
+				} else {
+
+					ctx.strokeRect(componentX, componentY, componentWidth, componentHeight);
+					ctx.fillRect(componentX, componentY, componentWidth, componentHeight);
+				}
+			}
+			
+			if (componentIcon) {
+				var iconX = componentX + (componentWidth / 2) - (componentIcon.width / 2);
+				var iconY = componentY + (componentHeight / 2) - (componentIcon.height / 2);
+			
+				ctx.drawImage(componentIcon, iconX, iconY, componentIcon.width, componentIcon.height);					
+			}
+			
+			if (componentText) {
+		
+				var fontSize = 12;
+				
+				ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
+				ctx.font = fontSize + "px sans-serif";
+
+				var componentTextLength = componentText.length;
+				var verticalSpacing = componentHeight / (componentTextLength + 1);
+		
+				for (var k = 0; k < componentTextLength; k++) {
+					var componentTextX = componentX + (componentWidth / 2) - (ctx.measureText(componentText[k]).width / 2);
+					var componentTextY = componentY + (verticalSpacing * (k + 1));
+			
+					ctx.fillText(componentText[k],componentTextX,componentTextY);
+				}
+			}
+			
+			//background image
+			//var c=document.getElementById("myCanvas");
+			//var ctx=c.getContext("2d");
+			//var img=document.getElementById("lamp");
+			//var pat=ctx.createPattern(img,"repeat");
+			//ctx.rect(0,0,150,100);
+			//ctx.fillStyle=pat;
+			//ctx.fill();
+			
     	}
     }
 }

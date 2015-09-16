@@ -49,20 +49,9 @@ Game.Mixins.Destructible = {
             
             attacker.attackTarget = null;
  
-            //attacker experience gain
-            //-relative to difference between attacker and defender in .maxHp, .defenseValue, .attackValue
+            //attacker experience gain   
             if (attacker.experiencePoints) {
-            	var hpDifference = attacker.maxHp - this.maxHp;
-            	hpDifference = Math.max(hpDifference, 1);
-            	
-            	var attackDifference = attacker.getAttackValue() - this.getAttackValue();
-            	attackDifference = Math.max(attackDifference, 1);
-            	
-            	var defenseDifference = attacker.getDefenseValue() - this.getDefenseValue();
-            	defenseDifference = Math.max(defenseDifference, 1);
-            	
-            	var pointsEarned = hpDifference + attackDifference + defenseDifference;
-            	attacker.experiencePoints = attacker.experiencePoints + pointsEarned
+            	attacker.experienceGain(this);
             }
             
             //loot drop            
@@ -108,9 +97,6 @@ Game.Mixins.Attacker = {
             		modifier += this.equipped[x].attackValue;
             	}
             }
-            
-            
- 
         }
         return this.attackValue + modifier;
     },
@@ -195,6 +181,57 @@ Game.Mixins.ExperienceGainer = {
     name: 'ExperienceGainer',
     init: function(template) {
         this.experiencePoints = 1;
+        this.nextExperiencePointThreshold = 2;
+    },
+    experienceGain: function(entityDefeated) {
+		//relative to difference between attacker and defender in .maxHp, .defenseValue, .attackValue
+		var hpDifference = this.maxHp - entityDefeated.maxHp;
+		hpDifference = Math.max(hpDifference, 1);
+		
+		var attackDifference = this.getAttackValue() - entityDefeated.getAttackValue();
+		attackDifference = Math.max(attackDifference, 1);
+		
+		var defenseDifference = this.getDefenseValue() - entityDefeated.getDefenseValue();
+		defenseDifference = Math.max(defenseDifference, 1);
+		
+		var pointsEarned = hpDifference + attackDifference + defenseDifference;
+		this.experiencePoints = this.experiencePoints + pointsEarned
+		
+		//stat gain
+		if (this.experiencePoints >= this.nextExperiencePointThreshold) {
+			
+			if (this.hasMixin('StatAssigner')) {
+				this.statGainSelection();
+			} else {
+				//randomly assign attack/defense/maxHp gain
+				var dice = Math.floor(Math.random() * 3);
+			
+				switch(dice) {
+					case 0:
+						this.attackValue++;
+						break;
+					case 1:
+						this.defenseValue++;
+						break;
+					case 2:
+						this.maxHp++;
+						break;
+				}
+			}
+			
+			//raise next threshold
+			this.nextExperiencePointThreshold = this.nextExperiencePointThreshold + 10; //FIXME - balance
+		
+		}
+    }
+};
+
+Game.Mixins.StatAssigner = {
+    name: 'StatAssigner',
+    init: function(template) {
+    },
+    statGainSelection: function() {
+		Game.switchScreen(Game.Screen.statAssignmentScreen);
     }
 };
 
