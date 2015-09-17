@@ -67,6 +67,36 @@ var Interface =  {
     	closeIcon.width = iconWidth; 	    	
     	this.uiIcons.closeIcon = closeIcon;
     	
+    	var plusIcon = new Image();
+    	plusIcon.src = 'interface/icons/icon-60x60-plus.svg';
+    	plusIcon.height = iconWidth;
+    	plusIcon.width = iconWidth; 	    	
+    	this.uiIcons.plusIcon = plusIcon;
+    	
+    	/*var minusIcon = new Image();
+    	minusIcon.src = 'interface/icons/icon-60x60-minus.svg';
+    	minusIcon.height = iconWidth;
+    	minusIcon.width = iconWidth; 	    	
+    	this.uiIcons.minusIcon = minusIcon;*/
+    	
+    	var arrowIconRightLeft = new Image();
+    	arrowIconRightLeft.src = 'interface/icons/icon-60x60-arrow-right-left.svg';
+    	arrowIconRightLeft.height = iconWidth;
+    	arrowIconRightLeft.width = iconWidth; 	    	
+    	this.uiIcons.arrowIconRightLeft = arrowIconRightLeft;
+    	
+    	var arrowIconUpDown = new Image();
+    	arrowIconUpDown.src = 'interface/icons/icon-60x60-arrow-up-down.svg';
+    	arrowIconUpDown.height = iconWidth;
+    	arrowIconUpDown.width = iconWidth; 	    	
+    	this.uiIcons.arrowIconUpDown = arrowIconUpDown;
+    	
+    	var compassIcon = new Image();
+    	compassIcon.src = 'interface/icons/icon-60x60-compass.svg';
+    	compassIcon.height = iconWidth;
+    	compassIcon.width = iconWidth; 	    	
+    	this.uiIcons.compassIcon = compassIcon;
+    	
     	/*var healthIcon = new Image();
     	healthIcon.src = 'interface/icons/icon-60x60-health.svg';
     	healthIcon.height = iconWidth;
@@ -94,12 +124,15 @@ var Interface =  {
 		this.uiCanvas.height = this.canvasTileHeight * this.tilePixelWidth;
     	this.canvasContainer.appendChild(this.uiCanvas);
     },
+    clearCanvas: function() {
+    	var ctx = this.uiCanvas.getContext("2d");
+    	ctx.clearRect(0, 0, this.uiCanvas.width, this.uiCanvas.height);
+    },
     drawUI: function(parameters) {
 
-    	var ctx = this.uiCanvas.getContext("2d");
+    	this.clearCanvas();
     	
-    	//clear UI canvas
-    	ctx.clearRect(0, 0, this.uiCanvas.width, this.uiCanvas.height);
+    	var ctx = this.uiCanvas.getContext("2d");
     	
     	//parameters array defined in environment
     	for (var i = 0, j = parameters.length; i < j; i++) {	
@@ -140,8 +173,8 @@ var Interface =  {
 				ctx.strokeStyle = "rgba(0, 0, 0, " + componentTransparency + ")";
 				  
 			} else if (componentBackgroundStyle === 'light01') {
-				ctx.fillStyle = "rgba(255, 255, 255, " + componentTransparency + ")";
-				ctx.strokeStyle = "rgba(255, 255, 255, " + componentTransparency + ")";
+				ctx.fillStyle = "rgba(160, 160, 160, " + componentTransparency + ")";
+				ctx.strokeStyle = "rgba(160, 160, 160, " + componentTransparency + ")";
 			}
 			
 			if (componentBackgroundStyle != 'none') {

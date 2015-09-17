@@ -37,5 +37,9 @@ Game.SpecialEffects =  {
 		//ctx.font = fontSize + "px sans-serif";
     	//ctx.drawImage(componentIcon, iconX, iconY, componentIcon.width, componentIcon.height);
 
+    },
+    clearCanvas: function() {
+    	var ctx = this.specialEffectsCanvas.getContext("2d");
+    	ctx.clearRect(0, 0, this.specialEffectsCanvas.width, this.specialEffectsCanvas.height);
     }
 }

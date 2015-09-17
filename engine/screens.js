@@ -595,6 +595,89 @@ Game.Screen.statAssignmentScreen = {
     }
 }
 
+Game.Screen.mapScreen = {
+	uiParameters: null,
+	statRaising: null,
+    enter: function() { 
+    	this.uiParameters = Game.loadedEnvironment.uiScreens.mapScreenUI;
+	},
+    exit: function() { 
+	},
+    render: function(display) {
+    	var map = Game.Screen.playScreen.map;
+    	
+    	//map width & height    	
+    	var tiles = map.tiles;
+    	var tilesWidth = tiles.length;
+    	var tilesHeight = tiles[0].length;
+    	
+    	//canvas width & height in pixels
+    	var interfaceObject = Game.interfaceObject;
+    	var canvasPixelWidth = interfaceObject.canvasContainer.offsetWidth;
+    	var canvasPixelHeight = interfaceObject.canvasContainer.offsetHeight;
+    	
+    	//mapScreenTilePixelWidth
+    	var mapScreenTilePixelWidth = Math.min(canvasPixelWidth, canvasPixelHeight) / Math.max(tilesWidth, tilesHeight);
+    	
+    	//vertical/horizontal centering adjustment
+    	var verticalCenteringAdjustment = (canvasPixelHeight - (tilesHeight * mapScreenTilePixelWidth)) / 2;
+    	var horizontalCenteringAdjustment = (canvasPixelWidth - (tilesHeight * mapScreenTilePixelWidth)) / 2;
+    	
+    	//player position
+    	var player = Game.Screen.playScreen.player; //FIXME - player
+    	var playerX = player.x;
+    	var playerY = player.y;
+    	
+    	var ctx = Game.SpecialEffects.specialEffectsCanvas.getContext("2d");
+    	//var ctx = interfaceObject.uiCanvas.getContext("2d");
+    	ctx.fillStyle = "rgba(160, 160, 160, 1.0)";
+    	
+    	var tileX, tileY;
+    	
+    	for (var i = 0; i < tilesWidth; i++) {
+    		for (var j = 0; j < tilesHeight; j++) {
+    			
+    			tileX = i * mapScreenTilePixelWidth + horizontalCenteringAdjustment;
+				tileY = j * mapScreenTilePixelWidth + verticalCenteringAdjustment;
+    			
+    			//draw square if walkable tile
+    			if (tiles[i][j].walkable) {		
+					ctx.fillStyle = "rgba(96, 96, 96, 1.0)";
+					ctx.fillRect(tileX, tileY, mapScreenTilePixelWidth, mapScreenTilePixelWidth);
+    			}
+    			
+    			//highlight explored tiles
+    			if (map.isExplored(i, j)) {
+ 					ctx.fillStyle = "rgba(160, 160, 160, 1.0)";
+ 					ctx.fillRect(tileX, tileY, mapScreenTilePixelWidth, mapScreenTilePixelWidth);   			
+    			}
+    			
+    			//draw player position
+    			if (i === playerX && j === playerY) {					
+					ctx.fillStyle = "rgba(0, 255, 0, 1.0)";
+					ctx.fillRect(tileX, tileY, mapScreenTilePixelWidth, mapScreenTilePixelWidth);
+    			}
+    		}
+    	}
+    	
+    	//DRAW UI
+		var interfaceObject = Game.interfaceObject;		
+		interfaceObject.drawUI(this.uiParameters);
+
+    },
+    handleInput: function(inputType, inputData) {    
+        if (inputType === 'mouseup' || inputType === 'touchstart') {	        		
+			var eventPosition = Game.display.eventToPosition(inputData);	
+			if (eventPosition[0] >= 0 && eventPosition[1] >= 0) {
+				this.clickEvaluation(eventPosition);
+			}
+        } 
+    },
+    clickEvaluation: function(eventPosition) {
+    	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+    }
+}
+
 Game.Screen.updateTopLeft = function() {
    		var interfaceObject = Game.interfaceObject;	
    		var screenWidth = interfaceObject.canvasTileWidth;

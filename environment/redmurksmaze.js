@@ -242,7 +242,21 @@ Game.RedmurksMaze = {
 				text: null		
 			};			
 
-		this.uiScreens.playScreenUI = [playComponents.menuButton, playComponents.healButton, playComponents.pauseButton, playComponents.messageDisplay, playComponents.statsDisplay];		
+		playComponents.mapButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.compassIcon,
+				x: 0, 
+				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
+				width: interfaceObject.tilePixelWidth, 
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.switchScreen(Game.Screen.mapScreen);
+				}					
+			};
+
+		this.uiScreens.playScreenUI = [playComponents.menuButton, playComponents.healButton, playComponents.pauseButton, playComponents.messageDisplay, playComponents.statsDisplay, playComponents.mapButton];		
 		
 		//inventory screen UI components
 		this.uiComponents.inventoryScreen = {};	
@@ -288,7 +302,7 @@ Game.RedmurksMaze = {
 			{
 				backgroundStyle: 'button01',
 				roundedCorners: true,
-				icon: interfaceObject.uiIcons.arrowIconLeft,
+				icon: interfaceObject.uiIcons.arrowIconRightLeft,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
@@ -306,7 +320,7 @@ Game.RedmurksMaze = {
 			{
 				backgroundStyle: 'button01',
 				roundedCorners: true,
-				icon: interfaceObject.uiIcons.arrowIconUp,
+				icon: interfaceObject.uiIcons.arrowIconUpDown,
 				x: 0,
 				y: interfaceObject.tilePixelWidth * 2,
 				width: interfaceObject.tilePixelWidth * 2,
@@ -540,7 +554,7 @@ Game.RedmurksMaze = {
 			{
 				backgroundStyle: 'button01',
 				roundedCorners: true,
-				icon: interfaceObject.uiIcons.arrowIconUp,
+				icon: interfaceObject.uiIcons.plusIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
@@ -555,7 +569,7 @@ Game.RedmurksMaze = {
 			{
 				backgroundStyle: 'button01',
 				roundedCorners: true,
-				icon: interfaceObject.uiIcons.arrowIconUp,
+				icon: interfaceObject.uiIcons.plusIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
 				y: interfaceObject.tilePixelWidth * 4,
 				width: interfaceObject.tilePixelWidth,
@@ -570,7 +584,7 @@ Game.RedmurksMaze = {
 			{
 				backgroundStyle: 'button01',
 				roundedCorners: true,
-				icon: interfaceObject.uiIcons.arrowIconUp,
+				icon: interfaceObject.uiIcons.plusIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
 				y: interfaceObject.tilePixelWidth * 5,
 				width: interfaceObject.tilePixelWidth,
@@ -612,6 +626,27 @@ Game.RedmurksMaze = {
 			};			
 
 		this.uiScreens.statAssignmentScreenUI = [statAssignmentComponents.saveButton, statAssignmentComponents.instructionsDisplay, statAssignmentComponents.currentValueLabel, statAssignmentComponents.newValueLabel, statAssignmentComponents.attackLabel, statAssignmentComponents.defenseLabel, statAssignmentComponents.hpLabel, statAssignmentComponents.attackCurrentValueDisplay, statAssignmentComponents.defenseCurrentValueDisplay, statAssignmentComponents.hpCurrentValueDisplay, statAssignmentComponents.attackIncreaseButton, statAssignmentComponents.defenseIncreaseButton, statAssignmentComponents.hpIncreaseButton, statAssignmentComponents.attackNewValueDisplay, statAssignmentComponents.defenseNewValueDisplay, statAssignmentComponents.hpNewValueDisplay];
+
+		//map screen UI components
+		this.uiComponents.mapScreen = {};	
+		var mapComponents = this.uiComponents.mapScreen;
+
+		mapComponents.closeButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.closeIcon,
+				x: 0,
+				y: 0,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.SpecialEffects.clearCanvas();
+					Game.switchScreen(Game.Screen.playScreen);
+				}					
+			};
+
+		this.uiScreens.mapScreenUI = [mapComponents.closeButton];
 
 	}
 }
