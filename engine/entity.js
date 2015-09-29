@@ -91,6 +91,12 @@ Game.Entity.prototype.tryMove = function(x, y) {
         }
 
     } else if (tile && tile.walkable) {        		
+		
+		if (!this.hasMixin('LevelChanger') && map.getLevelConnectionAt(x, y)) {
+			console.log('non LevelChanger entity tried to move on to level connection');
+			return false;
+		}
+
 		var oldX = this.x;
 		var oldY = this.y;
 		

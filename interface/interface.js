@@ -93,8 +93,8 @@ var Interface =  {
     	
     	var compassIcon = new Image();
     	compassIcon.src = 'interface/icons/icon-60x60-compass.svg';
-    	compassIcon.height = iconWidth;
-    	compassIcon.width = iconWidth; 	    	
+    	compassIcon.height = iconWidth * 2;
+    	compassIcon.width = iconWidth * 2; 	    	
     	this.uiIcons.compassIcon = compassIcon;
     	
     	/*var healthIcon = new Image();

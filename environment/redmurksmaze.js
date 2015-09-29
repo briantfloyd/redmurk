@@ -3,6 +3,7 @@ Game.RedmurksMaze = {
 	//items: {},
 	uiScreens: {},
 	uiComponents: {},
+	mapParameters: {},
 	init: function() {
 		this.initializeUI();
 		this.initializeTiles();
@@ -53,80 +54,48 @@ Game.RedmurksMaze = {
 			blocksLight: true
 		});
 		
-		/*this.tiles.stairsUpTile = new Game.Tile({
-			character: '<'
-		});
-
-		this.tiles.stairsDownTile = new Game.Tile({
-			character: '>'
-		});*/
-		
 		var tileSetImage = new Image();
 		tileSetImage.src = 'environment/art/tilesheet-master-01.png';
 				
 		Game.display._options.tileSet = tileSetImage;
 	},
-	generateMap: function() {
-		var map = [];
-        var mapWidth = 50; //FIXME
-        var mapHeight = 50;		
+	initiateLevels: function() {	
+		//define parameters
+		this.mapParameters.mapWidth = 50;
+		this.mapParameters.mapHeight = 50;
+		this.mapParameters.mapBornSurvive = {
+							born: [5, 6, 7, 8],
+							survive: [4, 5, 6, 7, 8]
+						};
+		this.mapParameters.generatorType = 'cellular';
+		this.mapParameters.generatorRandomize = 0.5;
+		this.mapParameters.generatorIterations = 3;
+		this.mapParameters.floorTileTypes = [
+						this.tiles.floorTile01, 
+						this.tiles.floorTile02, 
+						this.tiles.floorTile03
+						];
+		this.mapParameters.wallTileTypes = [
+						this.tiles.wallTile01, 
+						this.tiles.wallTile02, 
+						this.tiles.wallTile03
+						];
 		
-		//FIXME - define parameters here, but call on code in the engine
-		//move below to engine
-		for (var x = 0; x < mapWidth; x++) {
-			map.push([]);
-			for (var y = 0; y < mapHeight; y++) {
-				map[x].push(null);
-			}
-		}
-
-		var generator = new ROT.Map.Cellular(mapWidth, mapHeight);
-		generator.randomize(0.5);
-		var totalIterations = 3; //3
-
-		//smoothing map
-		for (var i = 0; i < totalIterations - 1; i++) {
-			generator.create();
-		}
-		//final smoothing pass then update
-		var environment = this;
-		generator.create(function(x,y,v) {
-			var tileVersion, tileVersionTile;
-			if (v === 1) {
-				tileVersion = Math.floor(Math.random() * 3);
-				
-				if (tileVersion === 0) {
-					tileVersionTile = environment.tiles.floorTile01;
-				} else if (tileVersion === 1) {
-					tileVersionTile = environment.tiles.floorTile02;
-				} else if (tileVersion === 2) {
-					tileVersionTile = environment.tiles.floorTile03;	
-				}
-
-				map[x][y] = tileVersionTile;
-				
-			} else {
-				tileVersion = Math.floor(Math.random() * 3);
-				
-				if (tileVersion === 0) {
-					tileVersionTile = environment.tiles.wallTile01;
-				} else if (tileVersion === 1) {
-					tileVersionTile = environment.tiles.wallTile02;
-				} else if (tileVersion === 2) {
-					tileVersionTile = environment.tiles.wallTile03;	
-				}
-
-				map[x][y] = tileVersionTile;
-			}
-		});
+		//generate level
+		var necessaryConnections = {};
+		necessaryConnections.back = false;
+		necessaryConnections.down = true;
+		necessaryConnections.up = false;
 		
-		return map;
+		var newMap = Game.Screen.playScreen.newLevel(necessaryConnections);
+		return newMap;
 	},
 	addEntities: function() {
 		this.player = new Game.Entity(this.PlayerTemplate);
 		Game.Screen.playScreen.player = this.player; //FIXME - Screens may not need this eventually - or have screens refer back to environment?
 		Game.Screen.playScreen.map.addEntityAtRandomPosition(this.player);
 		
+		/*
 		for (var i = 0; i < 50; i++) { //FIXME - temporary
         	Game.Screen.playScreen.map.addEntityAtRandomPosition(new Game.Entity(this.SlimeTemplate));
     	}      	    	
@@ -137,6 +106,9 @@ Game.RedmurksMaze = {
 		for (var i = 0; i < 10; i++) { //FIXME - temporary
 			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.HealingPotionTemplate));
     	} 
+    	*/
+    	
+    	
 		/*for (var i = 0; i < 1000; i++) { //FIXME - temporary
 			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.HealingPotionTemplate));
 			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.SmallSwordTemplate));
@@ -689,6 +661,7 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
 		//if (this.actThrottleTimer === 0 || this.actThrottleTimer === 6) { //slow movement rate?
 			if (this.pathCoordinates.length > 0) { 
 				this.followPath();
+				this.justChangedLevels = null; //reset
 			}
     	//}
     	
@@ -698,8 +671,16 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
     	
     	this.actThrottleTimer--;
     	
+    	//if level connection at coordinate and not midway following path
+    	var levelConnection = this.map.getLevelConnectionAt(this.x, this.y);
+    	
+    	if (levelConnection && this.pathCoordinates.length === 0 && this.justChangedLevels !== true) {
+    		Game.Screen.playScreen.changeLevels(levelConnection);
+    		this.changeLevels(levelConnection);
+    	}
+
     	//if items at coordinate and not midway following path and number of items is greater than 0
-    	if (this.map.getItemsAt(this.x, this.y) && this.pathCoordinates.length === 0 && this.map.getItemsAt(this.x, this.y).length > 0) {
+    	else if (this.map.getItemsAt(this.x, this.y) && this.pathCoordinates.length === 0 && this.map.getItemsAt(this.x, this.y).length > 0) {
     		if (Game.Screen.inventoryScreen.justViewed !== true) {
     			Game.switchScreen(Game.Screen.inventoryScreen);
     		}
@@ -718,13 +699,6 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
 			this.destinationCoordinates = null;
 		}
     },
-    move: function(directionX, directionY) {        
-        var newX = this.x + directionX; //FIXME - player
-        var newY = this.y + directionY;
-        
-        Game.Screen.inventoryScreen.viewed = null;
-        this.tryMove(newX, newY);        
-    },
     useHealingPotion: function() {
 		for (var x = 0, y = this.inventory.length; x < y; x++) {
 		
@@ -742,13 +716,11 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
     }
 }
 
-
-
 Game.RedmurksMaze.PlayerTemplate = {
     name: 'Player',
     character: '@',
 	spriteSheetX: 0, //multiple applied to Game.interfaceObject.tilePixelWidth to determine actual pixel coordinate on spritesheet
-    spriteSheetY: 5,
+    spriteSheetY: 8, //5
     maxHp: 10,
     attackValue: 2,
     defenseValue: 1,
@@ -757,7 +729,8 @@ Game.RedmurksMaze.PlayerTemplate = {
     mixins: [Game.RedmurksMaze.Mixins.PlayerActor,
     		Game.Mixins.Attacker, Game.Mixins.Destructible,
     		Game.Mixins.Sight, Game.Mixins.Equipper,
-    		Game.Mixins.ExperienceGainer, Game.Mixins.StatAssigner]
+    		Game.Mixins.ExperienceGainer, Game.Mixins.StatAssigner,
+    		Game.Mixins.LevelChanger]
 }
 
 Game.RedmurksMaze.Mixins.SlimeActor = {
@@ -769,7 +742,7 @@ Game.RedmurksMaze.SlimeTemplate = {
     name: 'Slime',
     character: 'S',
 	spriteSheetX: 0,
-    spriteSheetY: 9,
+    spriteSheetY: 12, //9
 	maxHp: 10,
 	attackValue: 2,
     defenseValue: 1,
@@ -779,7 +752,6 @@ Game.RedmurksMaze.SlimeTemplate = {
     		Game.Mixins.TaskActor, Game.Mixins.Sight,
     		Game.Mixins.Destructible, Game.Mixins.Attacker]
 }
-
 
 Game.RedmurksMaze.HealingPotionTemplate = {
 	name: 'Healing potion',
@@ -811,4 +783,29 @@ Game.RedmurksMaze.WoodenShieldTemplate = {
 	//wearable: true,
 	equippable: 'shieldhand',
 	mixins: [Game.ItemMixins.Equippable]
+}
+
+Game.RedmurksMaze.StairsDownTemplate = {
+	//name: 'Wooden shield',
+	character: 'stairsdown',
+	spriteSheetX: 0,
+    spriteSheetY: 5,
+    direction: 'down',
+    level: null
+}
+
+Game.RedmurksMaze.StairsUpTemplate = {
+	//name: 'Wooden shield',
+	character: 'stairsup',
+	spriteSheetX: 0,
+    spriteSheetY: 6,
+    direction: 'up',
+    level: null
+}
+
+Game.RedmurksMaze.StairsBlocked = {
+	//name: 'Wooden shield',
+	character: 'stairsblocked',
+	spriteSheetX: 0,
+    spriteSheetY: 7
 }

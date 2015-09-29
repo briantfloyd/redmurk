@@ -5,17 +5,20 @@ Game.Map = function(tiles) {
     this.depth = 0;
     this.entities = {};
     this.items = {};
+    this.fov = [];
+    this.explored = null;
+    
+    this.levelConnections = {};
+    
     //this.scheduler = new ROT.Scheduler.Simple();
     this.scheduler = new ROT.Scheduler.Speed();
-    this.engine = new ROT.Engine(this.scheduler);
-    this.fov = [];
-    this.setupFov();
-    this.explored = null;
+    this.engine = new ROT.Engine(this.scheduler); 
+    
+    this.setupFov();    
     this.setupExploredArray();
 };
 
 Game.Map.prototype.getTile = function(x, y) {
-//console.log(x + ',' + y);
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
         return false;
     } else {    
@@ -81,13 +84,64 @@ Game.Map.prototype.addEntityAtRandomPosition = function(entity) {
     this.addEntity(entity);
 }
 
+Game.Map.prototype.getEmptyFloorPositions = function() {
+    var emptyFloorPositions = [];
+    for (var i = 0, j = this.width; i < j; i++) {
+    	for (var k = 0, l = this.height; k < l; k++) {
+    		if (this.isEmptyFloor(i, k)) {
+    			var emptyPositionCoordinates = {};
+    			emptyPositionCoordinates.x = i;
+    			emptyPositionCoordinates.y = k;
+    			emptyFloorPositions.push(emptyPositionCoordinates);
+    		}
+    	}
+    }
+   
+    if (emptyFloorPositions.length > 0) {
+    	return emptyFloorPositions;
+    }
+    
+    return false;
+}
+
 Game.Map.prototype.getRandomFloorPosition = function() {
-    var x, y;
+    /*var x, y;
     do {
         x = Math.floor(Math.random() * this.width);
         y = Math.floor(Math.random() * this.height);
     } while(!this.isEmptyFloor(x, y));
-    return {x: x, y: y};
+    return {x: x, y: y};*/
+      
+    //slower - but won't hang if no empty floor is found
+    /*var emptyFloorPositions = [];
+    for (var i = 0, j = this.width; i < j; i++) {
+    	for (var k = 0, l = this.height; k < l; k++) {
+    		if (this.isEmptyFloor(i, k)) {
+    			var emptyPositionCoordinates = {};
+    			emptyPositionCoordinates.x = i;
+    			emptyPositionCoordinates.y = k;
+    			emptyFloorPositions.push(emptyPositionCoordinates);
+    		}
+    	}
+    }
+    
+ 
+    
+    if (emptyFloorPositions.length > 0) {
+    	var dice = Math.floor(Math.random() * emptyFloorPositions.length);
+    	return emptyFloorPositions[dice];
+    }*/
+    
+    
+    var emptyFloorPositions = this.getEmptyFloorPositions();
+console.log('emptyFloorPositionslength: ' + emptyFloorPositions.length);       
+
+    if (emptyFloorPositions) {
+    	var dice = Math.floor(Math.random() * emptyFloorPositions.length);
+    	return emptyFloorPositions[dice];
+    }
+    
+    return false; 
 }
 
 Game.Map.prototype.isEmptyFloor = function(x, y) {
@@ -171,7 +225,6 @@ Game.Map.prototype.addItem = function(x, y, item) {
     }
 };
 
-
 Game.Map.prototype.setItemsAt = function(x, y, items) {
     var key = x + ',' + y;
     if (items.length === 0) {
@@ -183,10 +236,46 @@ Game.Map.prototype.setItemsAt = function(x, y, items) {
     }
 };
 
-
 Game.Map.prototype.addItemAtRandomPosition = function(item) {
     var position = this.getRandomFloorPosition();
     this.addItem(position.x, position.y, item);
+};
+
+Game.Map.prototype.getLevelConnectionAt = function(x, y) {
+    return this.levelConnections[x + ',' + y];
+};
+
+Game.Map.prototype.addLevelConnection = function(x, y, levelConnection) {
+    //save position
+    levelConnection.x = x;
+    levelConnection.y = y;
+
+    var key = x + ',' + y;
+    this.levelConnections[key] = levelConnection;
+};
+
+Game.Map.prototype.addLevelConnectionAtRandomPosition = function(levelConnection) {
+	var levelConnectionPosition = null;
+	var emptyFloorPositions = this.getEmptyFloorPositions();
+	
+	if (emptyFloorPositions) {
+		
+		while (emptyFloorPositions.length > 0) {
+			var dice = Math.floor(Math.random() * emptyFloorPositions.length);
+			var possiblePosition = emptyFloorPositions.splice(dice, 1);
+			possiblePosition = possiblePosition[0];
+			
+			if (!this.levelConnections[possiblePosition.x + ',' + possiblePosition.y]) {
+				levelConnectionPosition = possiblePosition;
+				
+				this.addLevelConnection(levelConnectionPosition.x, levelConnectionPosition.y, levelConnection);
+	
+				break;
+			}
+		}
+	} 
+	
+	return levelConnectionPosition;
 };
 
 Game.Map.prototype.inRange = function(entity1, entity2, range) {
@@ -201,3 +290,40 @@ Game.Map.prototype.inRange = function(entity1, entity2, range) {
     }
 };
 
+Game.Map.prototype.distantLevelConnectionPurge = function() {
+	//removes level connections on levels two connections distant
+	//FIXME - node depth to check hard coded - # of depth iterations should be parameter based
+
+	//current node
+	var startingLevel = this;
+	
+	for (var y in startingLevel.levelConnections) {
+	
+		//if has a connection with a level already created
+		if (this.levelConnections[y].connectingLevel) {
+			
+			//one node distance
+			var firstConnectedLevel = this.levelConnections[y].connectingLevel;
+			
+			//check each of that levels connections
+			for (var j in firstConnectedLevel.levelConnections) {
+				
+				//if one of those connects to an already created level that is not the one it just came from
+				if (firstConnectedLevel.levelConnections[j].connectingLevel && firstConnectedLevel.levelConnections[j].connectingLevel != startingLevel) {
+					
+					//two node distance
+					var secondConnectedLevel = firstConnectedLevel.levelConnections[j].connectingLevel;
+					
+					//now sever any further away connections (except the one that brought us here)
+					//note - any connected maps should be garbage collected after connection removed
+					for (var l in secondConnectedLevel.levelConnections) {
+						
+						if (secondConnectedLevel.levelConnections[l].connectingLevel != firstConnectedLevel) {
+							delete secondConnectedLevel.levelConnections[l];							
+						}
+					}
+				}
+			}		
+		}
+	}
+};

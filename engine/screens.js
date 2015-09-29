@@ -24,8 +24,9 @@ Game.Screen.menuScreen = {
 }
 
 Game.Screen.playScreen = {
-	map: null,
+	map: null, //individual (current) level
     player: null,
+    depth: 0, //FIXME should this be here?
     uiParameters: null,
     topLeftX: null,
     topLeftY: null,
@@ -34,11 +35,21 @@ Game.Screen.playScreen = {
 	paused: false,
 	enter: function() {  	        
 	    if (this.map === null) {
-	    	this.map = new Game.Map(Game.loadedEnvironment.generateMap());
-
+	    	//this.map = new Game.Map(Game.loadedEnvironment.initiateLevels());
+	    	
+	    		    	
+	    	//this.levels = Game.loadedEnvironment.initiateLevels();
+	    	//this.map = this.levels.current;
+	    	
+	    	this.map = Game.loadedEnvironment.initiateLevels();
+	    	//this.levels.push(this.map);
+			
+			this.map.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
+			this.map.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
+			
 			Game.loadedEnvironment.addEntities();
 		
-			this.addEngineProcessActors();
+			//this.addEngineProcessActors();
 				
 			this.uiParameters = Game.loadedEnvironment.uiScreens.playScreenUI;
 			
@@ -52,11 +63,11 @@ Game.Screen.playScreen = {
     exit: function() {
     	console.log('locking engine');
     	this.map.engine.lock();
-	},
+	},/*
 	addEngineProcessActors: function() {
 		this.map.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
 		this.map.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
-	},
+	},*/
 	render: function(display) {        
         Game.Screen.updateTopLeft();
         
@@ -118,9 +129,13 @@ Game.Screen.playScreen = {
 					charactersToDraw.push(this.map.getTile(x, y).character);
 					
 					if (visibleCells[x + ',' + y]) {
-					
-						var items = this.map.getItemsAt(x, y);
-				
+						
+						var levelConnection = this.map.getLevelConnectionAt(x, y);
+						if (levelConnection) {
+							charactersToDraw.push(levelConnection.character);
+						}
+						
+						var items = this.map.getItemsAt(x, y);				
 						if (items) {
                             var item = items[items.length - 1];  //FIXME - only grabs topmost item to draw     
                             charactersToDraw.push(item.character);
@@ -148,14 +163,16 @@ Game.Screen.playScreen = {
 	},
     handleInput: function(inputType, inputData) {
         if (inputType === 'keydown') {
+        	Game.Screen.inventoryScreen.viewed = null;
+        	
             if (inputData.keyCode === ROT.VK_LEFT) {
-                this.player.move(-1, 0); //FIXME - player
+                this.player.tryMove(this.player.x -1, this.player.y); //FIXME - player
             } else if (inputData.keyCode === ROT.VK_RIGHT) {
-                this.player.move(1, 0); //FIXME - player
+                this.player.tryMove(this.player.x + 1, this.player.y);
             } else if (inputData.keyCode === ROT.VK_UP) {
-                this.player.move(0, -1); //FIXME - player
+                this.player.tryMove(this.player.x, this.player.y - 1);
             } else if (inputData.keyCode === ROT.VK_DOWN) {
-                this.player.move(0, 1); //FIXME - player
+                this.player.tryMove(this.player.x, this.player.y + 1);
             }
         } else if (inputType === 'mouseup' || inputType === 'touchstart') {			
 			var eventPosition = Game.display.eventToPosition(inputData);	
@@ -239,15 +256,175 @@ Game.Screen.playScreen = {
 			this.map.engine.lock();	
 			this.paused = true;
 		}
+    },
+    newLevel: function(necessaryConnections, sendingLevelConnection) { //sendingLevelConnection optional, not used when creating initial map
+		var newMap;
+		
+		//FIXME? consolidate repeated code
+		
+		//initial level 0 map
+		if (necessaryConnections.down && !necessaryConnections.back && !necessaryConnections.up) {
+			
+			var newStairsDown, newStairsDownPosition;
+			
+			while (!newStairsDownPosition) {
+				console.log('generating new map and receiving connection');
+				newMap = new Game.Map(Game.MapGenerator.generateMap(Game.loadedEnvironment.mapParameters));
+				
+				//stairs down
+				newStairsDown = new Game.LevelConnection(Game.loadedEnvironment.StairsDownTemplate);
+				newStairsDownPosition = newMap.addLevelConnectionAtRandomPosition(newStairsDown);
+			}
+	
+			newStairsDown.direction = 'down';
+			newStairsDown.connectingLevel = null; //assigned on changeLevels()
+			newStairsDown.connectingLevelX = null;
+			newStairsDown.connectingLevelY = null;
+		}
+
+		//other level 0 maps
+		else if (necessaryConnections.down && necessaryConnections.back && !necessaryConnections.up) {
+			
+			var newStairsDown, newStairsDownPosition, newStairsBack, newStairsBackPosition;
+			
+			while (!newStairsDownPosition || !newStairsBackPosition) {
+				console.log('generating new map and receiving and down connections');
+				newMap = new Game.Map(Game.MapGenerator.generateMap(Game.loadedEnvironment.mapParameters));
+				
+				//stairs back
+				if (sendingLevelConnection.direction === 'down') {
+					newStairsBack = new Game.LevelConnection(Game.loadedEnvironment.StairsUpTemplate); 
+					newStairsBack.direction = 'up';
+				} else {
+					newStairsBack = new Game.LevelConnection(Game.loadedEnvironment.StairsDownTemplate);
+					newStairsBack.direction = 'down'; 
+				}
+				
+				newStairsBackPosition = newMap.addLevelConnectionAtRandomPosition(newStairsBack);
+				
+				//stairs down
+				newStairsDown = new Game.LevelConnection(Game.loadedEnvironment.StairsDownTemplate);
+				newStairsDownPosition = newMap.addLevelConnectionAtRandomPosition(newStairsDown);
+			}
+			
+			newStairsBack.connectingLevel = this.map;
+			newStairsBack.connectingLevelX = sendingLevelConnection.x;
+			newStairsBack.connectingLevelY = sendingLevelConnection.y;
+			
+			//add new receiving level connection coordinates to sending level connection for back and forth travel
+			sendingLevelConnection.connectingLevelX = newStairsBackPosition.x;
+			sendingLevelConnection.connectingLevelY = newStairsBackPosition.y;  	
+			
+			newStairsDown.direction = 'down';
+			newStairsDown.connectingLevel = null;
+			newStairsDown.connectingLevelX = null;
+			newStairsDown.connectingLevelY = null;
+		}		
+
+		//other level maps
+		else if (necessaryConnections.down && necessaryConnections.back && necessaryConnections.up) {
+			
+			var newStairsDown, newStairsDownPosition, newStairsBack, newStairsBackPosition, newStairsUp, newStairsUpPosition;
+			
+			while (!newStairsDownPosition || !newStairsBackPosition || !newStairsUpPosition) {
+				console.log('generating new map and receiving and down and up connections');
+				newMap = new Game.Map(Game.MapGenerator.generateMap(Game.loadedEnvironment.mapParameters));
+				
+				//stairs back
+				if (sendingLevelConnection.direction === 'down') {
+					newStairsBack = new Game.LevelConnection(Game.loadedEnvironment.StairsUpTemplate); 
+					newStairsBack.direction = 'up';
+				} else {
+					newStairsBack = new Game.LevelConnection(Game.loadedEnvironment.StairsDownTemplate);
+					newStairsBack.direction = 'down'; 
+				}
+				
+				newStairsBackPosition = newMap.addLevelConnectionAtRandomPosition(newStairsBack);
+				
+				//stairs down
+				newStairsDown = new Game.LevelConnection(Game.loadedEnvironment.StairsDownTemplate);
+				newStairsDownPosition = newMap.addLevelConnectionAtRandomPosition(newStairsDown);
+				
+				//stairs up
+				newStairsUp = new Game.LevelConnection(Game.loadedEnvironment.StairsUpTemplate);
+				newStairsUpPosition = newMap.addLevelConnectionAtRandomPosition(newStairsUp);
+			}
+			
+			newStairsBack.connectingLevel = this.map;
+			newStairsBack.connectingLevelX = sendingLevelConnection.x;
+			newStairsBack.connectingLevelY = sendingLevelConnection.y;
+			
+			//add new receiving level connection coordinates to sending level connection for back and forth travel
+			sendingLevelConnection.connectingLevelX = newStairsBackPosition.x;
+			sendingLevelConnection.connectingLevelY = newStairsBackPosition.y; 
+			
+			newStairsDown.direction = 'down';
+			newStairsDown.connectingLevel = null;
+			newStairsDown.connectingLevelX = null;
+			newStairsDown.connectingLevelY = null;
+			
+			newStairsUp.direction = 'up'; 
+			newStairsUp.connectingLevel = null;
+			newStairsUp.connectingLevelX = null;
+			newStairsUp.connectingLevelY = null;
+		}
+		
+		return newMap;
+    },
+    changeLevels: function(levelConnection) {    	
+
+    	//update depth
+    	if (levelConnection.direction === 'up') {
+    		this.depth--;
+    	} else {
+    		this.depth++;
+    	}
+console.log('new depth: ' + this.depth);
+
+
+    	if (!levelConnection.connectingLevel) {
+    		
+    		var necessaryConnections = {};
+			necessaryConnections.back = true;
+			necessaryConnections.down = true;
+			necessaryConnections.up = false;
+			
+			if (this.depth > 0) {
+				necessaryConnections.up = true;
+			}
+    		
+    		//create new level
+    		var newLevel = this.newLevel(necessaryConnections, levelConnection);
+    		
+    		//save new level reference in sending level connection so it knows where it's going in future
+    		levelConnection.connectingLevel = newLevel; 
+  
+			//clear level connections two nodes distant
+			levelConnection.connectingLevel.distantLevelConnectionPurge();
+		
+			//start the new map engine
+			levelConnection.connectingLevel.engine.start();
+		
+			//add engine process actors to new map
+			levelConnection.connectingLevel.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
+			levelConnection.connectingLevel.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));			
+    	}
+
+    	//lock old map
+    	this.map.engine.lock(); //leave unlocked in future to allow ongoing entity movement?
+    	    	
+    	//set new playscreen map
+    	this.map = levelConnection.connectingLevel;    	
+    	
+    	//unlock new map
+    	this.map.engine.unlock();
     }
 }
 
 Game.Screen.inventoryScreen = {
 	uiParameters: null,
 	justViewed: true,
-	//groundItems: null,
 	displayedItems: [],
-	//groundDisplayFirstItemDisplayed: 0,
 	displaysFirstItemsDisplayed: {
 			inventory: 0,
 			ground: 0,
@@ -650,6 +827,12 @@ Game.Screen.mapScreen = {
     			if (map.isExplored(i, j)) {
  					ctx.fillStyle = "rgba(160, 160, 160, 1.0)";
  					ctx.fillRect(tileX, tileY, mapScreenTilePixelWidth, mapScreenTilePixelWidth);   			
+    			}
+
+    			//draw level connection positions //temporary or keep? only shown if in explored region?
+    			if (map.getLevelConnectionAt(i, j)) {					
+					ctx.fillStyle = "rgba(51, 51, 255, 1.0)";
+					ctx.fillRect(tileX, tileY, mapScreenTilePixelWidth, mapScreenTilePixelWidth);
     			}
     			
     			//draw player position

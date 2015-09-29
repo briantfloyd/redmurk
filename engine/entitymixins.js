@@ -332,3 +332,26 @@ Game.Mixins.TaskActor = {
         }
     }
 };
+
+Game.Mixins.LevelChanger = {
+    name: 'LevelChanger',
+    init: function(template) {
+    },
+    changeLevels: function(levelConnection) {		
+		//FIXME? - NOTE - this only works if levelConnection.connectingLevel exists
+		//would only work for non-player entities if all levels have been pre-generated
+		
+		this.justChangedLevels = true;
+		
+		//remove entity tracking from old map
+		this.map.removeEntity(this);
+		
+		//update entity position in new map
+		this.x = levelConnection.connectingLevelX;
+		this.y = levelConnection.connectingLevelY;
+		
+		//add entity to new map
+		levelConnection.connectingLevel.addEntity(this);
+		
+    }
+};
