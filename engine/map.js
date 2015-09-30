@@ -133,8 +133,7 @@ Game.Map.prototype.getRandomFloorPosition = function() {
     }*/
     
     
-    var emptyFloorPositions = this.getEmptyFloorPositions();
-console.log('emptyFloorPositionslength: ' + emptyFloorPositions.length);       
+    var emptyFloorPositions = this.getEmptyFloorPositions();      
 
     if (emptyFloorPositions) {
     	var dice = Math.floor(Math.random() * emptyFloorPositions.length);
