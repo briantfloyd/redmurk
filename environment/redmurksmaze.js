@@ -1,6 +1,5 @@
 Game.RedmurksMaze = {
 	tiles: {},
-	//items: {},
 	uiScreens: {},
 	uiComponents: {},
 	mapParameters: {},
@@ -90,11 +89,62 @@ Game.RedmurksMaze = {
 		var newMap = Game.Screen.playScreen.newLevel(necessaryConnections);
 		return newMap;
 	},
-	addEntities: function() {
+	addPlayer: function(map) {
 		this.player = new Game.Entity(this.PlayerTemplate);
 		Game.Screen.playScreen.player = this.player; //FIXME - Screens may not need this eventually - or have screens refer back to environment?
-		Game.Screen.playScreen.map.addEntityAtRandomPosition(this.player);
+		map.addEntityAtRandomPosition(this.player);
+	},
+	addEntities: function(map) {
+		//entity strength based on depth and difficulty setting, quantity based on walkable map size	
+		var depth = Game.Screen.playScreen.depth;
+		var difficultySetting = Game.Screen.playScreen.difficultySetting;   	
+    	var emptyFloorPositions = map.getEmptyFloorPositions().length;
+
+
+    	//items
+    	var itemFloorPositions = Math.floor(emptyFloorPositions / 500); //FIXME? may want to tinker with this threshhold
 		
+		//item rarity evaluation
+		var maxRarity = 1 + (depth * difficultySetting); //FIXME? may want to tinker with this threshhold
+		
+		var potentialItemsToDrop = [];
+		
+		//will fall through starting with highest match
+		switch(maxRarity) {
+			case (maxRarity >= 3):
+				potentialItemsToDrop.push(this.WoodenShieldTemplate);
+			case (maxRarity >= 2):
+				potentialItemsToDrop.push(this.SmallSwordTemplate);
+			default:
+				potentialItemsToDrop.push(this.HealingPotionTemplate);
+		}
+		
+		var dice;
+    	for (var b = 0; b < itemFloorPositions; b++) {
+			dice = Math.floor(Math.random() * potentialItemsToDrop.length);
+			map.addItemAtRandomPosition(new Game.Item(potentialItemsToDrop[dice]));
+    	}
+		
+		//entities
+    	var entityFloorPositions =  Math.floor(emptyFloorPositions / 50); //FIXME? may want to tinker with this threshhold - 100 too few
+    	
+    	for (var a = 0; a < entityFloorPositions; a++) {
+    		var newEntity = new Game.Entity(this.SlimeTemplate);
+    		
+    		newEntity.maxHp = newEntity.maxHp * depth * difficultySetting;
+    		newEntity.attackValue = newEntity.attackValue * depth * difficultySetting;
+    		newEntity.defenseValue = newEntity.defenseValue * depth * difficultySetting;
+    		
+    		map.addEntityAtRandomPosition(newEntity);
+    		
+    		//add random item to entity inventory
+    		dice = Math.floor(Math.random() * potentialItemsToDrop.length);
+    		newEntity.inventory.push(new Game.Item(potentialItemsToDrop[dice]));
+    	}
+    	
+
+    	
+
 		/*
 		for (var i = 0; i < 50; i++) { //FIXME - temporary
         	Game.Screen.playScreen.map.addEntityAtRandomPosition(new Game.Entity(this.SlimeTemplate));
@@ -755,6 +805,7 @@ Game.RedmurksMaze.SlimeTemplate = {
 
 Game.RedmurksMaze.HealingPotionTemplate = {
 	name: 'Healing potion',
+	//rarity: 1,
 	character: 'P',
 	spriteSheetX: 0,
     spriteSheetY: 2,	
@@ -765,28 +816,28 @@ Game.RedmurksMaze.HealingPotionTemplate = {
 
 Game.RedmurksMaze.SmallSwordTemplate = {
 	name: 'Small sword',
+	//rarity: 2,
 	character: 'smallsword',
 	spriteSheetX: 0,
     spriteSheetY: 3,	
 	attackValue: 5,
-	//wieldable: true,
 	equippable: 'hand', //must match one of the .equipped property names in Game.Mixins.Equipper - needed for inventory equipping
 	mixins: [Game.ItemMixins.Equippable]
 }
 
 Game.RedmurksMaze.WoodenShieldTemplate = {
 	name: 'Wooden shield',
+	//rarity: 2,
 	character: 'woodenshield',
 	spriteSheetX: 0,
     spriteSheetY: 4,	
 	defenseValue: 5,
-	//wearable: true,
 	equippable: 'shieldhand',
 	mixins: [Game.ItemMixins.Equippable]
 }
 
 Game.RedmurksMaze.StairsDownTemplate = {
-	//name: 'Wooden shield',
+	//name: '',
 	character: 'stairsdown',
 	spriteSheetX: 0,
     spriteSheetY: 5,
@@ -795,7 +846,7 @@ Game.RedmurksMaze.StairsDownTemplate = {
 }
 
 Game.RedmurksMaze.StairsUpTemplate = {
-	//name: 'Wooden shield',
+	//name: '',
 	character: 'stairsup',
 	spriteSheetX: 0,
     spriteSheetY: 6,
@@ -804,7 +855,7 @@ Game.RedmurksMaze.StairsUpTemplate = {
 }
 
 Game.RedmurksMaze.StairsBlocked = {
-	//name: 'Wooden shield',
+	//name: '',
 	character: 'stairsblocked',
 	spriteSheetX: 0,
     spriteSheetY: 7

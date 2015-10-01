@@ -26,6 +26,7 @@ Game.Screen.menuScreen = {
 Game.Screen.playScreen = {
 	map: null, //individual (current) level
     player: null,
+    difficultySetting: 1, //FIXME - move elsewhere eventually? .5, 1, 2, 3 scale? easy,medium,hard,nightmare?
     depth: 0, //FIXME should this be here?
     uiParameters: null,
     topLeftX: null,
@@ -35,21 +36,17 @@ Game.Screen.playScreen = {
 	paused: false,
 	enter: function() {  	        
 	    if (this.map === null) {
-	    	//this.map = new Game.Map(Game.loadedEnvironment.initiateLevels());
-	    	
-	    		    	
-	    	//this.levels = Game.loadedEnvironment.initiateLevels();
-	    	//this.map = this.levels.current;
-	    	
+
 	    	this.map = Game.loadedEnvironment.initiateLevels();
-	    	//this.levels.push(this.map);
 			
+			//this.addEngineProcessActors();
 			this.map.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
 			this.map.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
 			
-			Game.loadedEnvironment.addEntities();
-		
-			//this.addEngineProcessActors();
+			Game.loadedEnvironment.addPlayer(this.map);
+			
+			//pass in map as well?
+			Game.loadedEnvironment.addEntities(this.map);
 				
 			this.uiParameters = Game.loadedEnvironment.uiScreens.playScreenUI;
 			
@@ -407,7 +404,11 @@ console.log('new depth: ' + this.depth);
 		
 			//add engine process actors to new map
 			levelConnection.connectingLevel.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
-			levelConnection.connectingLevel.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));			
+			levelConnection.connectingLevel.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
+			
+			//add entities
+			Game.loadedEnvironment.addEntities(levelConnection.connectingLevel);
+							
     	}
 
     	//lock old map

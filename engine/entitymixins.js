@@ -11,14 +11,6 @@ Game.Mixins.Destructible = {
     getDefenseValue: function() {
         var modifier = 0;
         if (this.hasMixin(Game.Mixins.Equipper)) {
-            /*if (this.weapon) {
-                modifier += this.weapon.defenseValue;
-            }
-            if (this.armor) {
-                modifier += this.armor.defenseValue;
-            }
-            */
-            
             for (var x in this.equipped) {
             	if (this.equipped[x]) {
             		modifier += this.equipped[x].defenseValue;
@@ -54,9 +46,10 @@ Game.Mixins.Destructible = {
             	attacker.experienceGain(this);
             }
             
-            //loot drop            
-            var item = new Game.Item(Game.loadedEnvironment.HealingPotionTemplate);            
-            Game.Screen.playScreen.map.addItem(this.x, this.y, item);
+            //inventory drop            
+            for (var x = 0, y = this.inventory.length; x < y; x++) {
+            	this.map.addItem(this.x, this.y, this.inventory[x]);
+            }            
 
             //deselect if necessary //FIXME - seems like this should be handled by the playScreen itself
             if (Game.Screen.playScreen.selectedEntity && Game.Screen.playScreen.selectedEntity === this) {
@@ -84,13 +77,6 @@ Game.Mixins.Attacker = {
     getAttackValue: function() {
         var modifier = 0;
         if (this.hasMixin(Game.Mixins.Equipper)) {
-            /*if (this.weapon) {
-                modifier += this.weapon.attackValue;
-            }
-            if (this.armor) {
-                modifier += this.armor.attackValue;
-            }*/
- 
              
             for (var x in this.equipped) {
             	if (this.equipped[x]) {
@@ -163,10 +149,7 @@ Game.Mixins.Sight = {
 
 Game.Mixins.Equipper = {
     name: 'Equipper',
-    init: function(template) {
-        //this.weapon = null;
-        //this.armor = null;
-        
+    init: function(template) {  
 		this.equipped = {
 			head: null,
 			body: null,
@@ -220,7 +203,7 @@ Game.Mixins.ExperienceGainer = {
 			}
 			
 			//raise next threshold
-			this.nextExperiencePointThreshold = this.nextExperiencePointThreshold + 10; //FIXME - balance
+			this.nextExperiencePointThreshold = this.nextExperiencePointThreshold * 10; //FIXME - balance
 		
 		}
     }

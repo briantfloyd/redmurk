@@ -4,6 +4,7 @@ Game.Item = function(properties) {
     Game.Glyph.call(this, properties);
 
     this.name = properties['name'] || '';
+    this.rarity = properties['rarity'] || '';
     
 	this.spriteSheetY = properties['spriteSheetY'] || 0;
 	this.spriteSheetX = properties['spriteSheetX'] || 0;
@@ -61,10 +62,7 @@ Game.ItemMixins.Equippable = {
     name: 'Equippable',
     init: function(template) {
         this.attackValue = template['attackValue'] || 0;
-        this.defenseValue = template['defenseValue'] || 0;
-        //this.wieldable = template['wieldable'] || false;
-        //this.wearable = template['wearable'] || false;
-        
+        this.defenseValue = template['defenseValue'] || 0;        
         this.equippable = template['equippable'] || false;
     }
 };
