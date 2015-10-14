@@ -2,7 +2,7 @@ Game.Map = function(tiles) {
     this.tiles = tiles;
     this.width = tiles.length;
     this.height = tiles[0].length;
-    this.depth = 0;
+    this.depth = 0; //FIXME - also on playscreen - using here?
     this.entities = {};
     this.items = {};
     this.fov = [];
@@ -11,8 +11,8 @@ Game.Map = function(tiles) {
     this.levelConnections = {};
     
     //this.scheduler = new ROT.Scheduler.Simple();
-    this.scheduler = new ROT.Scheduler.Speed();
-    this.engine = new ROT.Engine(this.scheduler); 
+    //this.scheduler = new ROT.Scheduler.Speed();
+    //this.engine = new ROT.Engine(this.scheduler); 
     
     this.setupFov();    
     this.setupExploredArray();
@@ -104,35 +104,7 @@ Game.Map.prototype.getEmptyFloorPositions = function() {
     return false;
 }
 
-Game.Map.prototype.getRandomFloorPosition = function() {
-    /*var x, y;
-    do {
-        x = Math.floor(Math.random() * this.width);
-        y = Math.floor(Math.random() * this.height);
-    } while(!this.isEmptyFloor(x, y));
-    return {x: x, y: y};*/
-      
-    //slower - but won't hang if no empty floor is found
-    /*var emptyFloorPositions = [];
-    for (var i = 0, j = this.width; i < j; i++) {
-    	for (var k = 0, l = this.height; k < l; k++) {
-    		if (this.isEmptyFloor(i, k)) {
-    			var emptyPositionCoordinates = {};
-    			emptyPositionCoordinates.x = i;
-    			emptyPositionCoordinates.y = k;
-    			emptyFloorPositions.push(emptyPositionCoordinates);
-    		}
-    	}
-    }
-    
- 
-    
-    if (emptyFloorPositions.length > 0) {
-    	var dice = Math.floor(Math.random() * emptyFloorPositions.length);
-    	return emptyFloorPositions[dice];
-    }*/
-    
-    
+Game.Map.prototype.getRandomFloorPosition = function() {    
     var emptyFloorPositions = this.getEmptyFloorPositions();      
 
     if (emptyFloorPositions) {
@@ -318,6 +290,12 @@ Game.Map.prototype.distantLevelConnectionPurge = function() {
 					for (var l in secondConnectedLevel.levelConnections) {
 						
 						if (secondConnectedLevel.levelConnections[l].connectingLevel != firstConnectedLevel) {
+							//cycle through entities of connected map and remove entities (don't want them retained in scheduler)						
+							for (var m in secondConnectedLevel.levelConnections[l].entities) {
+								console.log("level entity purge: " + secondConnectedLevel.levelConnections[l].entities[m].name);
+								secondConnectedLevel.levelConnections[l].removeEntity(secondConnectedLevel.levelConnections[l].entities[m]);
+							}
+							//delete level connection
 							delete secondConnectedLevel.levelConnections[l];							
 						}
 					}

@@ -24,9 +24,11 @@ Game.Screen.menuScreen = {
 }
 
 Game.Screen.playScreen = {
+	scheduler: null,
+	engine: null,
 	map: null, //individual (current) level
-    player: null,
-    difficultySetting: 1, //FIXME - move elsewhere eventually? .5, 1, 2, 3 scale? easy,medium,hard,nightmare?
+    player: null, //FIXME - move to environment?
+    difficultySetting: 2, //FIXME - move elsewhere eventually? 1, 2, 3, 4 scale? easy,medium,hard,nightmare?
     depth: 0, //FIXME should this be here?
     uiParameters: null,
     topLeftX: null,
@@ -36,35 +38,46 @@ Game.Screen.playScreen = {
 	paused: false,
 	enter: function() {  	        
 	    if (this.map === null) {
-
+			/*
 	    	this.map = Game.loadedEnvironment.initiateLevels();
 			
-			//this.addEngineProcessActors();
 			this.map.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
 			this.map.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
 			
 			Game.loadedEnvironment.addPlayer(this.map);
-			
-			//pass in map as well?
 			Game.loadedEnvironment.addEntities(this.map);
 				
 			this.uiParameters = Game.loadedEnvironment.uiScreens.playScreenUI;
 			
-			this.map.engine.start();	
-				    
-	    } else if (this.paused === false){
+			this.map.engine.start();
+			*/
+			
+			//this.scheduler = new ROT.Scheduler.Simple();
+			this.scheduler = new ROT.Scheduler.Speed();
+			this.engine = new ROT.Engine(this.scheduler); 
+			
+			Game.loadedEnvironment.setMapParameters();
+			this.loadLevel(); //assigns map to this.map
+			
+			this.map.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
+			this.map.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
+			
+			this.uiParameters = Game.loadedEnvironment.uiScreens.playScreenUI;
+			this.player = new Game.Entity(Game.loadedEnvironment.PlayerTemplate); //FIXME - move creation back to environment
+			this.map.addEntityAtRandomPosition(this.player);
+			//this.map.engine.start(); //FIXME - must be after player creation due to player dependencies
+			this.engine.start(); //FIXME - must be after player creation due to player dependencies	
+	    } else if (this.paused === false) {
 	    	console.log('unlocking engine');
-	    	this.map.engine.unlock();	
-	    }	    
+	    	//this.map.engine.unlock();	
+			this.engine.unlock();
+	    }			
 	},
     exit: function() {
     	console.log('locking engine');
-    	this.map.engine.lock();
-	},/*
-	addEngineProcessActors: function() {
-		this.map.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
-		this.map.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
-	},*/
+    	//this.map.engine.lock();
+		this.engine.lock();
+	},
 	render: function(display) {        
         Game.Screen.updateTopLeft();
         
@@ -153,10 +166,8 @@ Game.Screen.playScreen = {
 					);					
 				}
 			}
-		}
-        
+		}    
         Game.interfaceObject.drawUI(this.uiParameters);
-        		
 	},
     handleInput: function(inputType, inputData) {
         if (inputType === 'keydown') {
@@ -246,15 +257,17 @@ Game.Screen.playScreen = {
     pauseToggle: function() {
 		if(this.paused === true) {
 			console.log('unlocking engine');
-			this.map.engine.unlock();
+			//this.map.engine.unlock();
+			this.engine.unlock();
 			this.paused = false;
 		} else {
 			console.log('locking engine');
-			this.map.engine.lock();	
+			//this.map.engine.lock();
+			this.engine.lock();				
 			this.paused = true;
 		}
     },
-    newLevel: function(necessaryConnections, sendingLevelConnection) { //sendingLevelConnection optional, not used when creating initial map
+    newLevel: function(necessaryConnections, sendingLevelConnection) { //sendingLevelConnection optional, not used when creating initial map or for resurrect map
 		var newMap;
 		
 		//FIXME? consolidate repeated code
@@ -265,8 +278,10 @@ Game.Screen.playScreen = {
 			var newStairsDown, newStairsDownPosition;
 			
 			while (!newStairsDownPosition) {
-				console.log('generating new map and receiving connection');
+				console.log('generating new map and down connection');
 				newMap = new Game.Map(Game.MapGenerator.generateMap(Game.loadedEnvironment.mapParameters));
+				newMap.scheduler = this.scheduler;
+				newMap.engine = this.engine;
 				
 				//stairs down
 				newStairsDown = new Game.LevelConnection(Game.loadedEnvironment.StairsDownTemplate);
@@ -287,6 +302,8 @@ Game.Screen.playScreen = {
 			while (!newStairsDownPosition || !newStairsBackPosition) {
 				console.log('generating new map and receiving and down connections');
 				newMap = new Game.Map(Game.MapGenerator.generateMap(Game.loadedEnvironment.mapParameters));
+				newMap.scheduler = this.scheduler;
+				newMap.engine = this.engine;
 				
 				//stairs back
 				if (sendingLevelConnection.direction === 'down') {
@@ -326,6 +343,8 @@ Game.Screen.playScreen = {
 			while (!newStairsDownPosition || !newStairsBackPosition || !newStairsUpPosition) {
 				console.log('generating new map and receiving and down and up connections');
 				newMap = new Game.Map(Game.MapGenerator.generateMap(Game.loadedEnvironment.mapParameters));
+				newMap.scheduler = this.scheduler;
+				newMap.engine = this.engine;
 				
 				//stairs back
 				if (sendingLevelConnection.direction === 'down') {
@@ -368,6 +387,71 @@ Game.Screen.playScreen = {
 		
 		return newMap;
     },
+    loadLevel: function(levelConnection) { //levelConnection - optional parameter
+		//update depth
+    	if (levelConnection && levelConnection.direction === 'up') {
+    		this.depth--;
+    	} else {
+    		this.depth++;
+    	}
+		console.log('new depth: ' + this.depth);	
+    	
+    	//if no levelConnection passed (new game, player resurrect) or no connectingLevel 
+    	if (!levelConnection || levelConnection && !levelConnection.connectingLevel) {
+    		
+    		var necessaryConnections = {};
+    		necessaryConnections.back = true;
+			necessaryConnections.down = true;
+			necessaryConnections.up = false;
+				
+    		if (!levelConnection) {
+				necessaryConnections.back = false;
+    		}
+    		
+    		if (this.depth > 1) {
+				necessaryConnections.up = true;
+			}
+    		
+    		//create new level
+    		var newLevel;
+    		if (levelConnection) {
+    			newLevel = this.newLevel(necessaryConnections, levelConnection);
+    		} else {
+    			newLevel = this.newLevel(necessaryConnections);
+    		}
+    		
+			//FIXME - remove engine process actor generation - only needed on initial game start map
+			/*if (!levelConnection) {
+    		//add engine process actors to new map
+			console.log('creating engine process actors');
+			newLevel.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
+			newLevel.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
+			}*/
+			
+			//add entities
+			Game.loadedEnvironment.addEntities(newLevel);
+			
+			if (levelConnection && !levelConnection.connectingLevel) {
+				//save new level reference in sending level connection so it knows where it's going in future
+				levelConnection.connectingLevel = newLevel; 
+  
+				//clear level connections two nodes distant
+				levelConnection.connectingLevel.distantLevelConnectionPurge();
+			}
+			
+			//set new playscreen map
+    		this.map = newLevel;
+			
+    	} else { //if levelConnection.connectingLevel true
+    		
+    		//set new playscreen map
+    		this.map = levelConnection.connectingLevel;
+    	}
+
+    	//set new playscreen map
+    	//this.map = newLevel;
+
+    }/*,
     changeLevels: function(levelConnection) {    	
 
     	//update depth
@@ -376,8 +460,7 @@ Game.Screen.playScreen = {
     	} else {
     		this.depth++;
     	}
-console.log('new depth: ' + this.depth);
-
+		console.log('new depth: ' + this.depth);
 
     	if (!levelConnection.connectingLevel) {
     		
@@ -386,7 +469,7 @@ console.log('new depth: ' + this.depth);
 			necessaryConnections.down = true;
 			necessaryConnections.up = false;
 			
-			if (this.depth > 0) {
+			if (this.depth > 0) { //(FIXME? if switch to 1 being initial depth)
 				necessaryConnections.up = true;
 			}
     		
@@ -419,7 +502,7 @@ console.log('new depth: ' + this.depth);
     	
     	//unlock new map
     	this.map.engine.unlock();
-    }
+    }*/
 }
 
 Game.Screen.inventoryScreen = {
@@ -848,6 +931,96 @@ Game.Screen.mapScreen = {
 		var interfaceObject = Game.interfaceObject;		
 		interfaceObject.drawUI(this.uiParameters);
 
+    },
+    handleInput: function(inputType, inputData) {    
+        if (inputType === 'mouseup' || inputType === 'touchstart') {	        		
+			var eventPosition = Game.display.eventToPosition(inputData);	
+			if (eventPosition[0] >= 0 && eventPosition[1] >= 0) {
+				this.clickEvaluation(eventPosition);
+			}
+        } 
+    },
+    clickEvaluation: function(eventPosition) {
+    	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+    }
+}
+
+Game.Screen.playerDeathScreen = {
+	uiParameters: null,
+    enter: function() { 
+    	this.uiParameters = Game.loadedEnvironment.uiScreens.playerDeathScreenUI;
+		},
+    exit: function() { 
+	},
+    render: function(display) {
+    	var player = Game.Screen.playScreen.player; //FIXME - player
+
+    	//DRAW UI
+		var interfaceObject = Game.interfaceObject;		
+		interfaceObject.drawUI(this.uiParameters);
+    },
+    handleInput: function(inputType, inputData) {    
+        if (inputType === 'mouseup' || inputType === 'touchstart') {	        		
+			var eventPosition = Game.display.eventToPosition(inputData);	
+			if (eventPosition[0] >= 0 && eventPosition[1] >= 0) {
+				this.clickEvaluation(eventPosition);
+			}
+        } 
+    },
+    clickEvaluation: function(eventPosition) {
+    	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+    }
+}
+
+Game.Screen.newGameScreen = {
+	uiParameters: null,
+	//currentDifficultyLevelName: null,
+    enter: function() { 
+    	this.uiParameters = Game.loadedEnvironment.uiScreens.newGameScreenUI;
+		this.refreshSelectedDifficultyDisplayMessage();
+	},
+    exit: function() { 
+	},
+	raiseDifficultySetting: function() {
+		if (Game.Screen.playScreen.difficultySetting < 4) {
+			Game.Screen.playScreen.difficultySetting++;
+			this.refreshSelectedDifficultyDisplayMessage();
+		}
+	},
+	lowerDifficultySetting: function() {
+		if (Game.Screen.playScreen.difficultySetting > 1) { //FIXME
+			Game.Screen.playScreen.difficultySetting--;
+			this.refreshSelectedDifficultyDisplayMessage();
+		}	
+	},
+	refreshSelectedDifficultyDisplayMessage: function() {
+		var currentDifficultyLevel = Game.Screen.playScreen.difficultySetting;
+		var currentDifficultyLevelName;
+		
+		switch(currentDifficultyLevel) {
+			case 1:
+				currentDifficultyLevelName = ['Easy'];
+				break;
+			case 2:
+				currentDifficultyLevelName = ['Medium'];
+				break;
+			case 3:
+				currentDifficultyLevelName = ['Hard'];
+				break;	
+			case 4:
+				currentDifficultyLevelName = ['For the glory'];
+				break;
+		}	
+
+		var difficultySelectedMessageDisplay = Game.loadedEnvironment.uiComponents.newGameScreen.difficultySelectedMessageDisplay;
+		difficultySelectedMessageDisplay.text = currentDifficultyLevelName;	
+	},
+    render: function(display) {
+    	//var player = Game.Screen.playScreen.player; //FIXME - player
+
+    	//DRAW UI
+		var interfaceObject = Game.interfaceObject;		
+		interfaceObject.drawUI(this.uiParameters);
     },
     handleInput: function(inputType, inputData) {    
         if (inputType === 'mouseup' || inputType === 'touchstart') {	        		

@@ -54,14 +54,14 @@ Game.RedmurksMaze = {
 		});
 		
 		var tileSetImage = new Image();
-		tileSetImage.src = 'environment/art/tilesheet-master-01.png';
+		tileSetImage.src = 'environment/art/tilesheet-master-01.png'; //-line-dark
 				
 		Game.display._options.tileSet = tileSetImage;
 	},
-	initiateLevels: function() {	
+	setMapParameters: function() {
 		//define parameters
-		this.mapParameters.mapWidth = 50;
-		this.mapParameters.mapHeight = 50;
+		this.mapParameters.mapWidth = 15;//50;
+		this.mapParameters.mapHeight = 15;//50;
 		this.mapParameters.mapBornSurvive = {
 							born: [5, 6, 7, 8],
 							survive: [4, 5, 6, 7, 8]
@@ -79,7 +79,7 @@ Game.RedmurksMaze = {
 						this.tiles.wallTile02, 
 						this.tiles.wallTile03
 						];
-		
+		/*
 		//generate level
 		var necessaryConnections = {};
 		necessaryConnections.back = false;
@@ -87,19 +87,25 @@ Game.RedmurksMaze = {
 		necessaryConnections.up = false;
 		
 		var newMap = Game.Screen.playScreen.newLevel(necessaryConnections);
-		return newMap;
+		return newMap;*/
 	},
-	addPlayer: function(map) {
+	/*addPlayer: function(map) { //FIXME - remove method?
 		this.player = new Game.Entity(this.PlayerTemplate);
 		Game.Screen.playScreen.player = this.player; //FIXME - Screens may not need this eventually - or have screens refer back to environment?
 		map.addEntityAtRandomPosition(this.player);
-	},
+	},*/
 	addEntities: function(map) {
 		//entity strength based on depth and difficulty setting, quantity based on walkable map size	
 		var depth = Game.Screen.playScreen.depth;
 		var difficultySetting = Game.Screen.playScreen.difficultySetting;   	
-    	var emptyFloorPositions = map.getEmptyFloorPositions().length;
-
+    	
+		var emptyFloorPositions = map.getEmptyFloorPositions();
+		if (emptyFloorPositions){
+			emptyFloorPositions = map.getEmptyFloorPositions().length;
+		} else {
+			console.log('Insufficient empty floor positions to addEntities');
+			return;
+		}		
 
     	//items
     	var itemFloorPositions = Math.floor(emptyFloorPositions / 500); //FIXME? may want to tinker with this threshhold
@@ -126,8 +132,8 @@ Game.RedmurksMaze = {
     	}
 		
 		//entities
-    	var entityFloorPositions =  Math.floor(emptyFloorPositions / 50); //FIXME? may want to tinker with this threshhold - 100 too few
-    	
+    	var entityFloorPositions =  Math.floor(emptyFloorPositions / 20); //FIXME? may want to tinker with this threshhold - 50 too few
+	
     	for (var a = 0; a < entityFloorPositions; a++) {
     		var newEntity = new Game.Entity(this.SlimeTemplate);
     		
@@ -164,7 +170,6 @@ Game.RedmurksMaze = {
 			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.SmallSwordTemplate));
 			Game.Screen.playScreen.map.addItemAtRandomPosition(new Game.Item(this.WoodenShieldTemplate));
     	}*/
-
 	},
 	initializeUI: function() {
 
@@ -174,9 +179,9 @@ Game.RedmurksMaze = {
 		this.uiComponents.menuScreen = {};	
 		var menuComponents = this.uiComponents.menuScreen;
 
-		menuComponents.beginButton = 
+		menuComponents.newGameButton = 
 			{	
-				type: 'temporary', //remove this property after conversion
+				//type: 'temporary', //remove this property after conversion
 				backgroundStyle: 'button01', //'button01', 'dark01', 'light01', 'none' //required
 				roundedCorners: true, //optional
 				//transparency: true, //optional
@@ -184,15 +189,29 @@ Game.RedmurksMaze = {
 				y: interfaceObject.tilePixelWidth, //required
 				width: interfaceObject.tilePixelWidth * 3, //positioning and sizing is defined relative to tile grid //required
 				height: interfaceObject.tilePixelWidth, //required
-				text: ["Begin"], //optional
+				text: ["Begin new game"], //optional
 				//icon: interfaceObject.uiIcons.menuIcon, //optional
 				clickAction: function() { //optional
-					Game.switchScreen(Game.Screen.playScreen);
+					Game.switchScreen(Game.Screen.newGameScreen);
+				}					
+			};
+
+		menuComponents.resumeGameButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 2,
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Resume saved game"],
+				clickAction: function() {
+					//Game.switchScreen(Game.Screen.playScreen);
 				}					
 			};
 
 		//component parameters to be read by interface drawUI()
-		this.uiScreens.menuScreenUI = [menuComponents.beginButton];		
+		this.uiScreens.menuScreenUI = [menuComponents.newGameButton, menuComponents.resumeGameButton];		
 		
 		//play screen UI components
 		this.uiComponents.playScreen = {};	
@@ -670,6 +689,186 @@ Game.RedmurksMaze = {
 
 		this.uiScreens.mapScreenUI = [mapComponents.closeButton];
 
+		//player death screen UI components
+		this.uiComponents.playerDeathScreen = {};	
+		var playerDeathComponents = this.uiComponents.playerDeathScreen;
+		
+		playerDeathComponents.slainMessageDisplay = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 2,
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				text: ["You have been slain"]			
+			};	
+			
+		playerDeathComponents.continueButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Rise from the dead"],
+				clickAction: function() {
+					Game.loadedEnvironment.playerResurrect();	
+					Game.SpecialEffects.clearCanvas();
+					Game.switchScreen(Game.Screen.playScreen);
+				}					
+			};
+		
+		playerDeathComponents.menuButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.menuIcon,
+				x: 0, 
+				y: 0,
+				width: interfaceObject.tilePixelWidth, 
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.switchScreen(Game.Screen.menuScreen);
+				}					
+			};	
+
+		this.uiScreens.playerDeathScreenUI = [playerDeathComponents.menuButton, playerDeathComponents.slainMessageDisplay, playerDeathComponents.continueButton];
+
+		//newGameScreenUI
+		
+		//new game screen UI components
+		this.uiComponents.newGameScreen = {};	
+		var newGameComponents = this.uiComponents.newGameScreen;
+	
+		newGameComponents.menuButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.menuIcon,
+				x: 0, 
+				y: 0,
+				width: interfaceObject.tilePixelWidth, 
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.switchScreen(Game.Screen.menuScreen);
+				}					
+			};
+
+		newGameComponents.difficultyMessageDisplay = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 2,
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Select difficulty level"]			
+			};
+
+		newGameComponents.difficultySelectedMessageDisplay = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				text: null			
+			};
+
+		newGameComponents.difficultyIncreaseButton = 
+			{
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.plusIcon,
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + (interfaceObject.tilePixelWidth * 2),
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.Screen.newGameScreen.raiseDifficultySetting();
+					Game.Screen.newGameScreen.render();
+				}						
+			};
+
+		newGameComponents.difficultyDecreaseButton = 
+			{
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.minusIcon,
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - (interfaceObject.tilePixelWidth * 2),
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.Screen.newGameScreen.lowerDifficultySetting();
+					Game.Screen.newGameScreen.render();
+				}						
+			};
+		
+		newGameComponents.beginButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 5,
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Begin game"],
+				clickAction: function() {
+					Game.switchScreen(Game.Screen.playScreen);
+				}					
+			};
+		
+		this.uiScreens.newGameScreenUI = [newGameComponents.menuButton, newGameComponents.difficultyMessageDisplay, newGameComponents.difficultySelectedMessageDisplay, newGameComponents.difficultyDecreaseButton, newGameComponents.difficultyIncreaseButton, newGameComponents.beginButton];
+
+	
+	},
+	playerDeath: function() {
+		Game.switchScreen(Game.Screen.playerDeathScreen);	
+	},
+	playerResurrect: function() {				
+		var playScreen = Game.Screen.playScreen;		
+		
+		//want to go up one level, so subtract 2 as 1 will be added when new level generated
+		if (playScreen.depth > 1) {
+			playScreen.depth = playScreen.depth - 2; //want to go up one level, so subtract 2 as 1 will be added when new level generated
+		} else{
+			playScreen.depth = playScreen.depth - 1;
+		}
+		
+		playScreen.loadLevel();
+		playScreen.player.changeLevels(playScreen.map);	
+		
+		//set health to about 5% of max
+		playScreen.player.hp = Math.floor(playScreen.player.maxHp * .05) + 1;
+		
+		//cycle through all equipped and inventory items - 50% chance of losing each
+		var player = playScreen.player;
+		var dice;
+		
+		for (var a in player.equipped) {		
+			dice = Math.floor(Math.random() * 2);
+			
+			if (dice === 0 && player.equipped[a] != null) {
+				console.log('equipped item lost: ' + player.equipped[a].name);
+				player.equipped[a] = null;
+			}
+		}
+		
+		var inventoryLength = player.inventory.length - 1;
+		for (var b = inventoryLength, c = 0; b >= c; b--) { //decrementing due to splicing below
+			dice = Math.floor(Math.random() * 2);
+			
+			if (dice === 0) {
+				console.log('inventory item lost: ' + player.inventory[b].name);
+				player.inventory.splice(b,1);				
+			}		
+		}
+		
+		//reset
+		playScreen.player.attackTarget = null;
+		playScreen.player.pathCoordinates = [];
+		playScreen.player.destinationCoordinates = null;
 	}
 }
 
@@ -680,7 +879,7 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
     groupName: 'Actor',
     actThrottleTimer: 0,
     act: function() {
-
+//console.log('player acting');
     	if (this.actThrottleTimer === 0) {    	
 			if (this.attackTarget) {	
 				var range = 1;
@@ -725,8 +924,9 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
     	var levelConnection = this.map.getLevelConnectionAt(this.x, this.y);
     	
     	if (levelConnection && this.pathCoordinates.length === 0 && this.justChangedLevels !== true) {
-    		Game.Screen.playScreen.changeLevels(levelConnection);
-    		this.changeLevels(levelConnection);
+    		//Game.Screen.playScreen.changeLevels(levelConnection);
+    		Game.Screen.playScreen.loadLevel(levelConnection);
+    		this.changeLevels(levelConnection); //levelChanger entity mixin
     	}
 
     	//if items at coordinate and not midway following path and number of items is greater than 0

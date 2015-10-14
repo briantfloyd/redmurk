@@ -73,11 +73,11 @@ var Interface =  {
     	plusIcon.width = iconWidth; 	    	
     	this.uiIcons.plusIcon = plusIcon;
     	
-    	/*var minusIcon = new Image();
+    	var minusIcon = new Image();
     	minusIcon.src = 'interface/icons/icon-60x60-minus.svg';
     	minusIcon.height = iconWidth;
     	minusIcon.width = iconWidth; 	    	
-    	this.uiIcons.minusIcon = minusIcon;*/
+    	this.uiIcons.minusIcon = minusIcon;
     	
     	var arrowIconRightLeft = new Image();
     	arrowIconRightLeft.src = 'interface/icons/icon-60x60-arrow-right-left.svg';

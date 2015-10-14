@@ -52,13 +52,36 @@ var Game =  {
 	resizeCanvas: function() {		
 		var interfaceObject = Game.interfaceObject;	
 		this.display.setOptions({height: interfaceObject.canvasTileHeight, width: interfaceObject.canvasTileWidth});			
+	},
+	saveGame: function() {
+		if (!this.supportLocalStorage) {
+			return false;
+		} else {
+
+		}
+	},
+	resumeGame: function() {
+		if (!this.supportLocalStorage) {
+			return false;
+		} else {
+
+		}	
+	},
+	supportLocalStorage: function() {
+	    //check for local storage support
+        if(typeof(Storage) !== "undefined") {
+			return true;			
+		} else {
+			console.log('No Web Storage support');
+			return false;
+		}
 	}
 }
 
 window.onload = function() {
     if (!ROT.isSupported()) {
         alert("The rot.js library isn't supported by your browser.");
-    } else {     
+    } else {             
         Game.interfaceObject = Interface;
         Game.interfaceObject.init();    
         

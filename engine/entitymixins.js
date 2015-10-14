@@ -58,6 +58,12 @@ Game.Mixins.Destructible = {
             
             //remove dead entity        
             this.map.removeEntity(this);
+            
+			//if (this === Game.loadedEnvironment.player) { //FIXME - player
+            if (this === Game.Screen.playScreen.player) { //FIXME - player
+            	Game.loadedEnvironment.playerDeath();
+            }
+            
         }
     },
     restHeal: function() {	   
@@ -117,7 +123,7 @@ Game.Mixins.Sight = {
         this.sightRadius = template['sightRadius'] || 3;
     },
     canSee: function(entity) {
-        if (!entity) {
+		if (!entity) {
             return false;
         }
 
@@ -224,7 +230,7 @@ Game.Mixins.TaskActor = {
     init: function(template) {
         this.tasks = template['tasks'] || ['wander']; 
     },
-    act: function() {
+    act: function() {	
         for (var i = 0; i < this.tasks.length; i++) {
             if (this.canDoTask(this.tasks[i])) {
                 this[this.tasks[i]]();
@@ -234,7 +240,8 @@ Game.Mixins.TaskActor = {
     },
     canDoTask: function(task) {
         if (task === 'hunt') {     
-            return this.hasMixin('Sight') && this.canSee(Game.loadedEnvironment.player); //FIXME - player
+            //return this.hasMixin('Sight') && this.canSee(Game.loadedEnvironment.player); //FIXME - player
+			return this.hasMixin('Sight') && this.canSee(Game.Screen.playScreen.player); //FIXME - player
         } else if (task === 'heal') {
 			return this.hp != this.maxHp; //returns true if need to heal
         } else if (task === 'wander') {
@@ -244,7 +251,8 @@ Game.Mixins.TaskActor = {
         }
     },
     hunt: function() {
-        var player = Game.loadedEnvironment.player; //FIXME - player
+        //var player = Game.loadedEnvironment.player; //FIXME - player
+		var player = Game.Screen.playScreen.player; //FIXME - player
 
         // If we are adjacent to the player, then attack instead of hunting.
         var offsets = Math.abs(player.x - this.x) + 
@@ -323,18 +331,31 @@ Game.Mixins.LevelChanger = {
     changeLevels: function(levelConnection) {		
 		//FIXME? - NOTE - this only works if levelConnection.connectingLevel exists
 		//would only work for non-player entities if all levels have been pre-generated
-		
+			
 		this.justChangedLevels = true;
 		
 		//remove entity tracking from old map
-		this.map.removeEntity(this);
+		this.map.removeEntity(this);	
+		/*var key = this.x + ',' + this.y;
+		if (this.map.entities[key] == this) {
+			delete this.map.entities[key];
+		}*/ 
 		
 		//update entity position in new map
-		this.x = levelConnection.connectingLevelX;
-		this.y = levelConnection.connectingLevelY;
+		if (levelConnection.connectingLevelX && levelConnection.connectingLevelY) {
+			this.x = levelConnection.connectingLevelX;
+			this.y = levelConnection.connectingLevelY;
+			
+			//add entity to new map
+			levelConnection.connectingLevel.addEntity(this);
+			/*this.map = levelConnection.connectingLevel;
+			this.map.updateEntityPosition(this);*/
 		
-		//add entity to new map
-		levelConnection.connectingLevel.addEntity(this);
+		} else {
+			levelConnection.addEntityAtRandomPosition(this);  //FIXME - this isn't clear - accepting level connection objects, and ordinary maps from player resurrect
+		}
+		
+		
 		
     }
 };

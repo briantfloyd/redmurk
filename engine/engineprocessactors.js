@@ -7,16 +7,18 @@ Game.Mixins.EngineLockerActor = {
     		return;
     	}
     	this.acting = true;*/
- 	
+ //console.log('EngineLockerActor');	
 		Game.refresh();     
 		   
         //lock the engine
-        this.map.engine.lock();
+        //this.map.engine.lock();
+		Game.Screen.playScreen.engine.lock();
 	
 		//unlock engine after interval - 1/12 second - 83.33 miliseconds
-		var mapEngine = this.map.engine;
+		//var mapEngine = this.map.engine;
+		var mapEngine = Game.Screen.playScreen.engine;
 		window.setTimeout(function(){mapEngine.unlock()}, 83); 
-		
+
 		//this.acting = false;
     }
 };
