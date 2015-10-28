@@ -6,13 +6,8 @@ Game.Map = function(tiles) {
     this.entities = {};
     this.items = {};
     this.fov = [];
-    this.explored = null;
-    
+    this.explored = null;    
     this.levelConnections = {};
-    
-    //this.scheduler = new ROT.Scheduler.Simple();
-    //this.scheduler = new ROT.Scheduler.Speed();
-    //this.engine = new ROT.Engine(this.scheduler); 
     
     this.setupFov();    
     this.setupExploredArray();
@@ -116,7 +111,7 @@ Game.Map.prototype.getRandomFloorPosition = function() {
 }
 
 Game.Map.prototype.isEmptyFloor = function(x, y) {
-	if (this.getTile(x, y).walkable === false  || this.getEntityAt(x, y)) {
+	if (this.getTile(x, y).walkable === false  || this.getEntityAt(x, y) || this.getLevelConnectionAt(x, y)) {
 		return false;
 	} 
 	return true;
@@ -163,6 +158,7 @@ Game.Map.prototype.isExplored = function(x, y) {
 };
 
 Game.Map.prototype.updateEntityPosition = function(entity, oldX, oldY) {
+console.log('here now');
     if (typeof oldX === 'number') {
         var oldKey = oldX + ',' + oldY;
         if (this.entities[oldKey] == entity) {
@@ -188,6 +184,9 @@ Game.Map.prototype.getItemsAt = function(x, y) {
 };
 
 Game.Map.prototype.addItem = function(x, y, item) {
+    item.x = x; //FIXME? added for position placement on save resume
+    item.y = y;
+    
     var key = x + ',' + y;
     if (this.items[key]) {
         this.items[key].push(item);

@@ -59,7 +59,6 @@ Game.Mixins.Destructible = {
             //remove dead entity        
             this.map.removeEntity(this);
             
-			//if (this === Game.loadedEnvironment.player) { //FIXME - player
             if (this === Game.Screen.playScreen.player) { //FIXME - player
             	Game.loadedEnvironment.playerDeath();
             }
@@ -166,6 +165,13 @@ Game.Mixins.Equipper = {
     }
 };
 
+Game.Mixins.InventoryCarrier = {
+    name: 'InventoryCarrier',
+    init: function(template) {  
+		this.inventory = template['inventory'] || [];
+    }
+};
+
 Game.Mixins.ExperienceGainer = {
     name: 'ExperienceGainer',
     init: function(template) {
@@ -240,8 +246,7 @@ Game.Mixins.TaskActor = {
     },
     canDoTask: function(task) {
         if (task === 'hunt') {     
-            //return this.hasMixin('Sight') && this.canSee(Game.loadedEnvironment.player); //FIXME - player
-			return this.hasMixin('Sight') && this.canSee(Game.Screen.playScreen.player); //FIXME - player
+			return this.map === Game.Screen.playScreen.player.map && this.hasMixin('Sight') && this.canSee(Game.Screen.playScreen.player); //FIXME - player
         } else if (task === 'heal') {
 			return this.hp != this.maxHp; //returns true if need to heal
         } else if (task === 'wander') {
@@ -251,7 +256,6 @@ Game.Mixins.TaskActor = {
         }
     },
     hunt: function() {
-        //var player = Game.loadedEnvironment.player; //FIXME - player
 		var player = Game.Screen.playScreen.player; //FIXME - player
 
         // If we are adjacent to the player, then attack instead of hunting.
@@ -283,33 +287,7 @@ Game.Mixins.TaskActor = {
         	
         	sourceEntity.tryMove(nextCoordinateX, nextCoordinateY);
         
-        }
-        //var path = this.findPath(sourceEntity, destX, destY); //FIXME? - computes pathfinding every time
-        
-        /*var path = new ROT.Path.AStar(player.x, player.y, function(x, y) { //FIXME - player
-            // If an entity is present at the tile, can't move there.
-            var entity = source.map.getEntityAt(x, y);
-            if (entity && entity !== player && entity !== source) { //FIXME - player
-                return false;
-            }
-            return source.map.getTile(x, y).walkable;
-        }, {topology: 4});*/
-        
-        
-
-        // move to the second cell  in path that is passed in the callback (the first is the entity's strting point)
-        /*var count = 0;
-        path.compute(sourceEntity.x, sourceEntity.y, function(x, y) {
-            
-            
-            
-            if (count == 1) {
-                sourceEntity.tryMove(x, y);
-            }
-            count++;
-        });*/
-        
-        
+        }  
     },
     heal: function() {
     	this.restHeal();
@@ -327,6 +305,7 @@ Game.Mixins.TaskActor = {
 Game.Mixins.LevelChanger = {
     name: 'LevelChanger',
     init: function(template) {
+    	this.justChangedLevels = true; //start with true in case entity has been spawned on level connection?
     },
     changeLevels: function(levelConnection) {		
 		//FIXME? - NOTE - this only works if levelConnection.connectingLevel exists
@@ -336,26 +315,17 @@ Game.Mixins.LevelChanger = {
 		
 		//remove entity tracking from old map
 		this.map.removeEntity(this);	
-		/*var key = this.x + ',' + this.y;
-		if (this.map.entities[key] == this) {
-			delete this.map.entities[key];
-		}*/ 
-		
+
 		//update entity position in new map
-		if (levelConnection.connectingLevelX && levelConnection.connectingLevelY) {
+		if (levelConnection.connectingLevelX && levelConnection.connectingLevelY) { //levelConnection object has these properties
 			this.x = levelConnection.connectingLevelX;
 			this.y = levelConnection.connectingLevelY;
 			
 			//add entity to new map
 			levelConnection.connectingLevel.addEntity(this);
-			/*this.map = levelConnection.connectingLevel;
-			this.map.updateEntityPosition(this);*/
 		
 		} else {
-			levelConnection.addEntityAtRandomPosition(this);  //FIXME - this isn't clear - accepting level connection objects, and ordinary maps from player resurrect
+			levelConnection.addEntityAtRandomPosition(this); //otherwise was just map object passed in  //FIXME - this isn't clear - changeLevels() accepting level connection objects (in PlayerActor.act()), and ordinary maps from environment playerResurrect()
 		}
-		
-		
-		
     }
 };

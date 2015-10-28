@@ -36,46 +36,41 @@ Game.Screen.playScreen = {
     selectedEntity: null,
     selectedItem: null,
 	paused: false,
-	enter: function() {  	        
+	enter: function(saveData) { //optional parameter passed in on resume saved game    
 	    if (this.map === null) {
-			/*
-	    	this.map = Game.loadedEnvironment.initiateLevels();
-			
-			this.map.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
-			this.map.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
-			
-			Game.loadedEnvironment.addPlayer(this.map);
-			Game.loadedEnvironment.addEntities(this.map);
-				
-			this.uiParameters = Game.loadedEnvironment.uiScreens.playScreenUI;
-			
-			this.map.engine.start();
-			*/
-			
-			//this.scheduler = new ROT.Scheduler.Simple();
 			this.scheduler = new ROT.Scheduler.Speed();
 			this.engine = new ROT.Engine(this.scheduler); 
 			
 			Game.loadedEnvironment.setMapParameters();
-			this.loadLevel(); //assigns map to this.map
+			
+			//if resuming saved game
+			if (saveData) {
+				this.resumeSavedGameLevel(saveData); //assigns map to this.map
+			} else {
+				this.loadLevel(); //assigns map to this.map
+			}
 			
 			this.map.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
 			this.map.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
+			this.map.addEngineProcessActor(new Game.Entity(Game.GameStateSaverTemplate));
 			
 			this.uiParameters = Game.loadedEnvironment.uiScreens.playScreenUI;
-			this.player = new Game.Entity(Game.loadedEnvironment.PlayerTemplate); //FIXME - move creation back to environment
-			this.map.addEntityAtRandomPosition(this.player);
-			//this.map.engine.start(); //FIXME - must be after player creation due to player dependencies
+			
+			//FIXME? move into else statement above, or does player need to be added after engineprocess actors for some reason?
+			if (!saveData) { //if resuming - player added in resumeSavedGameLevel
+				this.player = new Game.Entity(Game.loadedEnvironment.PlayerTemplate); //FIXME - move creation back to environment
+				this.map.addEntityAtRandomPosition(this.player);
+			}
+			
 			this.engine.start(); //FIXME - must be after player creation due to player dependencies	
+			
 	    } else if (this.paused === false) {
 	    	console.log('unlocking engine');
-	    	//this.map.engine.unlock();	
 			this.engine.unlock();
 	    }			
 	},
     exit: function() {
     	console.log('locking engine');
-    	//this.map.engine.lock();
 		this.engine.lock();
 	},
 	render: function(display) {        
@@ -137,10 +132,11 @@ Game.Screen.playScreen = {
 					var charactersToDraw = [];
 										
 					charactersToDraw.push(this.map.getTile(x, y).character);
-					
+										
 					if (visibleCells[x + ',' + y]) {
 						
 						var levelConnection = this.map.getLevelConnectionAt(x, y);
+						
 						if (levelConnection) {
 							charactersToDraw.push(levelConnection.character);
 						}
@@ -233,7 +229,7 @@ Game.Screen.playScreen = {
 					this.selectedItem = items[items.length - 1];
 				}
 			
-			} else if (this.map.isEmptyFloor(eventMapX, eventMapY)) {
+			} else if (this.map.getTile(eventMapX, eventMapY) && this.map.getTile(eventMapX, eventMapY).walkable) { //NOTE - Can't use Map.isEmptyFloor - because it includes level connection check, and entity check was performed above
 			
 				this.selectedEntity = null;
 				this.selectedItem = null;
@@ -257,12 +253,10 @@ Game.Screen.playScreen = {
     pauseToggle: function() {
 		if(this.paused === true) {
 			console.log('unlocking engine');
-			//this.map.engine.unlock();
 			this.engine.unlock();
 			this.paused = false;
 		} else {
 			console.log('locking engine');
-			//this.map.engine.lock();
 			this.engine.lock();				
 			this.paused = true;
 		}
@@ -272,7 +266,7 @@ Game.Screen.playScreen = {
 		
 		//FIXME? consolidate repeated code
 		
-		//initial level 0 map
+		//initial level 0 map (& post resurrect on level 0 map)
 		if (necessaryConnections.down && !necessaryConnections.back && !necessaryConnections.up) {
 			
 			var newStairsDown, newStairsDownPosition;
@@ -287,11 +281,6 @@ Game.Screen.playScreen = {
 				newStairsDown = new Game.LevelConnection(Game.loadedEnvironment.StairsDownTemplate);
 				newStairsDownPosition = newMap.addLevelConnectionAtRandomPosition(newStairsDown);
 			}
-	
-			newStairsDown.direction = 'down';
-			newStairsDown.connectingLevel = null; //assigned on changeLevels()
-			newStairsDown.connectingLevelX = null;
-			newStairsDown.connectingLevelY = null;
 		}
 
 		//other level 0 maps
@@ -308,10 +297,8 @@ Game.Screen.playScreen = {
 				//stairs back
 				if (sendingLevelConnection.direction === 'down') {
 					newStairsBack = new Game.LevelConnection(Game.loadedEnvironment.StairsUpTemplate); 
-					newStairsBack.direction = 'up';
 				} else {
 					newStairsBack = new Game.LevelConnection(Game.loadedEnvironment.StairsDownTemplate);
-					newStairsBack.direction = 'down'; 
 				}
 				
 				newStairsBackPosition = newMap.addLevelConnectionAtRandomPosition(newStairsBack);
@@ -327,12 +314,7 @@ Game.Screen.playScreen = {
 			
 			//add new receiving level connection coordinates to sending level connection for back and forth travel
 			sendingLevelConnection.connectingLevelX = newStairsBackPosition.x;
-			sendingLevelConnection.connectingLevelY = newStairsBackPosition.y;  	
-			
-			newStairsDown.direction = 'down';
-			newStairsDown.connectingLevel = null;
-			newStairsDown.connectingLevelX = null;
-			newStairsDown.connectingLevelY = null;
+			sendingLevelConnection.connectingLevelY = newStairsBackPosition.y;  				
 		}		
 
 		//other level maps
@@ -349,10 +331,8 @@ Game.Screen.playScreen = {
 				//stairs back
 				if (sendingLevelConnection.direction === 'down') {
 					newStairsBack = new Game.LevelConnection(Game.loadedEnvironment.StairsUpTemplate); 
-					newStairsBack.direction = 'up';
 				} else {
 					newStairsBack = new Game.LevelConnection(Game.loadedEnvironment.StairsDownTemplate);
-					newStairsBack.direction = 'down'; 
 				}
 				
 				newStairsBackPosition = newMap.addLevelConnectionAtRandomPosition(newStairsBack);
@@ -373,17 +353,29 @@ Game.Screen.playScreen = {
 			//add new receiving level connection coordinates to sending level connection for back and forth travel
 			sendingLevelConnection.connectingLevelX = newStairsBackPosition.x;
 			sendingLevelConnection.connectingLevelY = newStairsBackPosition.y; 
-			
-			newStairsDown.direction = 'down';
-			newStairsDown.connectingLevel = null;
-			newStairsDown.connectingLevelX = null;
-			newStairsDown.connectingLevelY = null;
-			
-			newStairsUp.direction = 'up'; 
-			newStairsUp.connectingLevel = null;
-			newStairsUp.connectingLevelX = null;
-			newStairsUp.connectingLevelY = null;
 		}
+		
+		//other level (post resurrect) maps
+		else if (necessaryConnections.down && !necessaryConnections.back && necessaryConnections.up) {
+			
+			var newStairsDown, newStairsDownPosition, newStairsUp, newStairsUpPosition;
+
+			while (!newStairsDownPosition || !newStairsUpPosition) {
+				console.log('generating new map and down and up connections');
+				newMap = new Game.Map(Game.MapGenerator.generateMap(Game.loadedEnvironment.mapParameters));
+				newMap.scheduler = this.scheduler;
+				newMap.engine = this.engine;
+
+				//stairs down
+				newStairsDown = new Game.LevelConnection(Game.loadedEnvironment.StairsDownTemplate);
+				newStairsDownPosition = newMap.addLevelConnectionAtRandomPosition(newStairsDown);
+				
+				//stairs up
+				newStairsUp = new Game.LevelConnection(Game.loadedEnvironment.StairsUpTemplate);
+				newStairsUpPosition = newMap.addLevelConnectionAtRandomPosition(newStairsUp);
+			}
+		}
+		
 		
 		return newMap;
     },
@@ -419,15 +411,7 @@ Game.Screen.playScreen = {
     		} else {
     			newLevel = this.newLevel(necessaryConnections);
     		}
-    		
-			//FIXME - remove engine process actor generation - only needed on initial game start map
-			/*if (!levelConnection) {
-    		//add engine process actors to new map
-			console.log('creating engine process actors');
-			newLevel.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
-			newLevel.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
-			}*/
-			
+
 			//add entities
 			Game.loadedEnvironment.addEntities(newLevel);
 			
@@ -447,62 +431,115 @@ Game.Screen.playScreen = {
     		//set new playscreen map
     		this.map = levelConnection.connectingLevel;
     	}
-
-    	//set new playscreen map
-    	//this.map = newLevel;
-
-    }/*,
-    changeLevels: function(levelConnection) {    	
-
-    	//update depth
-    	if (levelConnection.direction === 'up') {
-    		this.depth--;
-    	} else {
-    		this.depth++;
-    	}
-		console.log('new depth: ' + this.depth);
-
-    	if (!levelConnection.connectingLevel) {
-    		
-    		var necessaryConnections = {};
-			necessaryConnections.back = true;
-			necessaryConnections.down = true;
-			necessaryConnections.up = false;
-			
-			if (this.depth > 0) { //(FIXME? if switch to 1 being initial depth)
-				necessaryConnections.up = true;
-			}
-    		
-    		//create new level
-    		var newLevel = this.newLevel(necessaryConnections, levelConnection);
-    		
-    		//save new level reference in sending level connection so it knows where it's going in future
-    		levelConnection.connectingLevel = newLevel; 
-  
-			//clear level connections two nodes distant
-			levelConnection.connectingLevel.distantLevelConnectionPurge();
-		
-			//start the new map engine
-			levelConnection.connectingLevel.engine.start();
-		
-			//add engine process actors to new map
-			levelConnection.connectingLevel.addEngineProcessActor(new Game.Entity(Game.EngineLockerTemplate));
-			levelConnection.connectingLevel.addEngineProcessActor(new Game.Entity(Game.MessageDisplayUpdateTemplate));
-			
-			//add entities
-			Game.loadedEnvironment.addEntities(levelConnection.connectingLevel);
-							
-    	}
-
-    	//lock old map
-    	this.map.engine.lock(); //leave unlocked in future to allow ongoing entity movement?
-    	    	
-    	//set new playscreen map
-    	this.map = levelConnection.connectingLevel;    	
+    },
+    resumeSavedGameLevel: function (saveData) { 
+    	var mapData = saveData.playScreen.map;
     	
-    	//unlock new map
-    	this.map.engine.unlock();
-    }*/
+		//create new level map (cycles through saveData recreating tiles
+		var newMap = new Game.Map(Game.MapGenerator.reGenerateMap(mapData));
+		newMap.scheduler = Game.Screen.playScreen.scheduler;
+		newMap.engine = Game.Screen.playScreen.engine;
+		
+		//update map properties
+		newMap.explored = mapData.explored;
+
+		//cycle through and add saved level connections  	
+		var savedLevelConnections = mapData.levelConnections;
+		var nextLevelConnection;
+		var nextLevelConnectionTemplateType;
+	
+		for (var a in savedLevelConnections) {		
+			nextLevelConnectionTemplateType = savedLevelConnections[a].templateType;				
+			nextLevelConnection = new Game.LevelConnection(Game.loadedEnvironment[nextLevelConnectionTemplateType]);	
+			newMap.addLevelConnection(savedLevelConnections[a].x, savedLevelConnections[a].y, nextLevelConnection);	
+		}
+
+		//cycle through and add saved entities
+		var savedEntities = mapData.entities;
+		var nextEntity;
+		
+		for (var b in savedEntities) {
+			//new entity
+			nextEntity = new Game.Entity(Game.loadedEnvironment[savedEntities[b].templateType]);	
+			
+			if (savedEntities[b].templateType === 'PlayerTemplate') {
+				Game.Screen.playScreen.player = nextEntity;
+			}	
+			
+			//update entity properties with saved values
+			nextEntity.x = savedEntities[b].x;
+			nextEntity.y = savedEntities[b].y;
+			
+			//mixin check
+			if (nextEntity.hasMixin('Destructible')) {	
+				nextEntity.maxHp = savedEntities[b].maxHp;
+				nextEntity.hp = savedEntities[b].hp;
+				nextEntity.defenseValue = savedEntities[b].defenseValue;
+			}
+		
+			if (nextEntity.hasMixin('Attacker')) {	
+				nextEntity.attackValue = savedEntities[b].attackValue;
+			}
+		
+			if (nextEntity.hasMixin('Sight')) {	
+				nextEntity.sightRadius = savedEntities[b].sightRadius;
+			}
+		
+			if (nextEntity.hasMixin('Equipper')) {			
+				nextEntity.equipped = {}; //reset
+			
+				//update check
+				if (savedEntities[b].equipped.head) {
+					nextEntity.equipped.head = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.head.templateType]);
+				}
+			
+				if (savedEntities[b].equipped.body) {
+					nextEntity.equipped.body = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.body.templateType]);
+				}
+			
+				if (savedEntities[b].equipped.hand) {
+					nextEntity.equipped.hand = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.hand.templateType]);
+				}
+			
+				if (savedEntities[b].equipped.shieldhand) {
+					nextEntity.equipped.shieldhand = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.shieldhand.templateType]);
+				}
+			
+				if (savedEntities[b].equipped.accessory) {
+					nextEntity.equipped.accessory = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.accessory.templateType]);
+				}
+			}
+		
+			if (nextEntity.hasMixin('InventoryCarrier')) {	
+				nextEntity.inventory = []; //reset
+				for (var c in savedEntities[b].inventory) {	
+					if (savedEntities[b].inventory[c].templateType) { //otherwise will try to save array methods as well
+						nextEntity.inventory.push(new Game.Item(Game.loadedEnvironment[savedEntities[b].inventory[c].templateType]));
+					}
+				}
+			}
+		
+			if (nextEntity.hasMixin('ExperienceGainer')) {	
+				nextEntity.experiencePoints = savedEntities[b].experiencePoints;
+				nextEntity.nextExperiencePointThreshold = savedEntities[b].nextExperiencePointThreshold;
+			}					
+
+			//addEntity to map
+			newMap.addEntity(nextEntity);
+		}	
+		
+		//cycle through and add saved items
+		var savedItems = mapData.items;
+		var nextItem;
+		
+		for (var d in savedItems) {
+			nextItem = new Game.Item(Game.loadedEnvironment[savedItems[d].templateType]);				
+			newMap.addItem(savedItems[d].x, savedItems[d].y, nextItem);
+		}
+				
+    	//set new playscreen map
+    	this.map = newMap; //initiate
+    }
 }
 
 Game.Screen.inventoryScreen = {
@@ -545,7 +582,6 @@ Game.Screen.inventoryScreen = {
 		var interfaceObject = Game.interfaceObject;		
 		interfaceObject.drawUI(this.uiParameters);
 
-		
 		//DRAW ITEMS OVER UI
 		//equipped display area
 		this.equippedItems = [];
@@ -640,7 +676,6 @@ Game.Screen.inventoryScreen = {
         } 
     },
     clickEvaluation: function(eventPosition) {
-    	//Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
     	var componentClicked = Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
     	
     	if (componentClicked === false) {
@@ -877,12 +912,12 @@ Game.Screen.mapScreen = {
     	var canvasPixelWidth = interfaceObject.canvasContainer.offsetWidth;
     	var canvasPixelHeight = interfaceObject.canvasContainer.offsetHeight;
     	
-    	//mapScreenTilePixelWidth
-    	var mapScreenTilePixelWidth = Math.min(canvasPixelWidth, canvasPixelHeight) / Math.max(tilesWidth, tilesHeight);
+    	//map screen tile pixel dimensions - minimum canvas width/height in pixels divided by maximum canvas width/height in tiles
+    	var mapScreenTilePixelWidth = Math.floor(Math.min(canvasPixelWidth, canvasPixelHeight) / Math.max(tilesWidth, tilesHeight));
     	
     	//vertical/horizontal centering adjustment
-    	var verticalCenteringAdjustment = (canvasPixelHeight - (tilesHeight * mapScreenTilePixelWidth)) / 2;
-    	var horizontalCenteringAdjustment = (canvasPixelWidth - (tilesHeight * mapScreenTilePixelWidth)) / 2;
+    	var verticalCenteringAdjustment = Math.floor((canvasPixelHeight - (tilesHeight * mapScreenTilePixelWidth)) / 2);
+    	var horizontalCenteringAdjustment = Math.floor((canvasPixelWidth - (tilesWidth * mapScreenTilePixelWidth)) / 2);
     	
     	//player position
     	var player = Game.Screen.playScreen.player; //FIXME - player
@@ -890,16 +925,15 @@ Game.Screen.mapScreen = {
     	var playerY = player.y;
     	
     	var ctx = Game.SpecialEffects.specialEffectsCanvas.getContext("2d");
-    	//var ctx = interfaceObject.uiCanvas.getContext("2d");
     	ctx.fillStyle = "rgba(160, 160, 160, 1.0)";
     	
     	var tileX, tileY;
-    	
+   	
     	for (var i = 0; i < tilesWidth; i++) {
     		for (var j = 0; j < tilesHeight; j++) {
-    			
-    			tileX = i * mapScreenTilePixelWidth + horizontalCenteringAdjustment;
-				tileY = j * mapScreenTilePixelWidth + verticalCenteringAdjustment;
+   			
+    			tileX = (i * mapScreenTilePixelWidth);// + horizontalCenteringAdjustment;
+				tileY = (j * mapScreenTilePixelWidth);// + verticalCenteringAdjustment;
     			
     			//draw square if walkable tile
     			if (tiles[i][j].walkable) {		
@@ -907,11 +941,11 @@ Game.Screen.mapScreen = {
 					ctx.fillRect(tileX, tileY, mapScreenTilePixelWidth, mapScreenTilePixelWidth);
     			}
     			
-    			//highlight explored tiles
-    			if (map.isExplored(i, j)) {
- 					ctx.fillStyle = "rgba(160, 160, 160, 1.0)";
+    			/*//highlight explored tiles
+    			if (map.isExplored(i, j)) { //FIXME - includes visible wall tiles, need to rethink order and shades of fills
+ 					ctx.fillStyle = "rgba(160, 160, 160, .5)";
  					ctx.fillRect(tileX, tileY, mapScreenTilePixelWidth, mapScreenTilePixelWidth);   			
-    			}
+    			}*/
 
     			//draw level connection positions //temporary or keep? only shown if in explored region?
     			if (map.getLevelConnectionAt(i, j)) {					
@@ -974,7 +1008,6 @@ Game.Screen.playerDeathScreen = {
 
 Game.Screen.newGameScreen = {
 	uiParameters: null,
-	//currentDifficultyLevelName: null,
     enter: function() { 
     	this.uiParameters = Game.loadedEnvironment.uiScreens.newGameScreenUI;
 		this.refreshSelectedDifficultyDisplayMessage();
@@ -1016,8 +1049,6 @@ Game.Screen.newGameScreen = {
 		difficultySelectedMessageDisplay.text = currentDifficultyLevelName;	
 	},
     render: function(display) {
-    	//var player = Game.Screen.playScreen.player; //FIXME - player
-
     	//DRAW UI
 		var interfaceObject = Game.interfaceObject;		
 		interfaceObject.drawUI(this.uiParameters);

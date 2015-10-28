@@ -5,6 +5,7 @@ Game.Tile = function(properties) {
 	this.blocksLight = (properties['blocksLight'] !== undefined) ? properties['blocksLight'] : false;
 	this.spriteSheetY = properties['spriteSheetY'] || 0;
 	this.spriteSheetX = properties['spriteSheetX'] || 0;
+	this.tileType = properties['tileType'] || null;
 
 	var tilePixelWidth = Game.interfaceObject.tilePixelWidth;
 	

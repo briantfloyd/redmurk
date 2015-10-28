@@ -17,7 +17,13 @@ Game.LevelConnection = function(properties) {
 	Game.display._options.tileMap[this.character] = [this.spriteSheetX, this.spriteSheetY];
 	
 	this.direction = properties['direction'] || null;
-	this.level = properties['level'] || null;
+	this.templateType = properties['templateType'] || null;
+	
+	//this.level = properties['level'] || null;
+	
+	this.connectingLevel = properties['connectingLevel'] || null; //assigned on changeLevels()
+	this.connectingLevelX = properties['connectingLevelX'] || null;
+	this.connectingLevelY = properties['connectingLevelY'] || null;
 	
 	this.x = properties['x'] || null;
 	this.y = properties['y'] || null;

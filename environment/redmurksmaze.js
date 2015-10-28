@@ -12,42 +12,48 @@ Game.RedmurksMaze = {
 		var tilePixelWidth = Game.interfaceObject.tilePixelWidth;
 	
 		this.tiles.floorTile01 = new Game.Tile({
-			character: '.',
+			tileType: 'floorTile01',
+			character: 'floorTile01',
 			spriteSheetX: 0, //multiple applied to Game.interfaceObject.tilePixelWidth to determine actual pixel coordinate on spritesheet
 			spriteSheetY: 0,
 			walkable: true
 			});
 
 		this.tiles.floorTile02 = new Game.Tile({
-			character: '.01',
+			tileType: 'floorTile02',
+			character: 'floorTile02',
 			spriteSheetX: 1, 
 			spriteSheetY: 0,
 			walkable: true
 			});			
 
 		this.tiles.floorTile03 = new Game.Tile({
-			character: '.02',
+			tileType: 'floorTile03',
+			character: 'floorTile03',
 			spriteSheetX: 2,
 			spriteSheetY: 0,
 			walkable: true
 			});
 			
 		this.tiles.wallTile01 = new Game.Tile({
-			character: '#',
+			tileType: 'wallTile01',
+			character: 'wallTile01',
 			spriteSheetX: 0,
 			spriteSheetY: 1,
 			blocksLight: true
 		});
 
 		this.tiles.wallTile02 = new Game.Tile({
-			character: '#01',
+			tileType: 'wallTile02',
+			character: 'wallTile02',
 			spriteSheetX: 1,
 			spriteSheetY: 1,
 			blocksLight: true
 		});
 
 		this.tiles.wallTile03 = new Game.Tile({
-			character: '#02',
+			tileType: 'wallTile03',
+			character: 'wallTile03',
 			spriteSheetX: 2,
 			spriteSheetY: 1,
 			blocksLight: true
@@ -60,8 +66,8 @@ Game.RedmurksMaze = {
 	},
 	setMapParameters: function() {
 		//define parameters
-		this.mapParameters.mapWidth = 15;//50;
-		this.mapParameters.mapHeight = 15;//50;
+		this.mapParameters.mapWidth = 50;//50;
+		this.mapParameters.mapHeight = 50;//50;
 		this.mapParameters.mapBornSurvive = {
 							born: [5, 6, 7, 8],
 							survive: [4, 5, 6, 7, 8]
@@ -79,15 +85,6 @@ Game.RedmurksMaze = {
 						this.tiles.wallTile02, 
 						this.tiles.wallTile03
 						];
-		/*
-		//generate level
-		var necessaryConnections = {};
-		necessaryConnections.back = false;
-		necessaryConnections.down = true;
-		necessaryConnections.up = false;
-		
-		var newMap = Game.Screen.playScreen.newLevel(necessaryConnections);
-		return newMap;*/
 	},
 	/*addPlayer: function(map) { //FIXME - remove method?
 		this.player = new Game.Entity(this.PlayerTemplate);
@@ -181,7 +178,6 @@ Game.RedmurksMaze = {
 
 		menuComponents.newGameButton = 
 			{	
-				//type: 'temporary', //remove this property after conversion
 				backgroundStyle: 'button01', //'button01', 'dark01', 'light01', 'none' //required
 				roundedCorners: true, //optional
 				//transparency: true, //optional
@@ -192,6 +188,7 @@ Game.RedmurksMaze = {
 				text: ["Begin new game"], //optional
 				//icon: interfaceObject.uiIcons.menuIcon, //optional
 				clickAction: function() { //optional
+					Game.Screen.playScreen.map = null; //reset
 					Game.switchScreen(Game.Screen.newGameScreen);
 				}					
 			};
@@ -206,7 +203,7 @@ Game.RedmurksMaze = {
 				height: interfaceObject.tilePixelWidth,
 				text: ["Resume saved game"],
 				clickAction: function() {
-					//Game.switchScreen(Game.Screen.playScreen);
+					Game.resumeGame();
 				}					
 			};
 
@@ -924,7 +921,6 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
     	var levelConnection = this.map.getLevelConnectionAt(this.x, this.y);
     	
     	if (levelConnection && this.pathCoordinates.length === 0 && this.justChangedLevels !== true) {
-    		//Game.Screen.playScreen.changeLevels(levelConnection);
     		Game.Screen.playScreen.loadLevel(levelConnection);
     		this.changeLevels(levelConnection); //levelChanger entity mixin
     	}
@@ -967,11 +963,12 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
 }
 
 Game.RedmurksMaze.PlayerTemplate = {
+    templateType: 'PlayerTemplate',
     name: 'Player',
     character: '@',
 	spriteSheetX: 0, //multiple applied to Game.interfaceObject.tilePixelWidth to determine actual pixel coordinate on spritesheet
     spriteSheetY: 8, //5
-    maxHp: 10,
+    maxHp: 100,
     attackValue: 2,
     defenseValue: 1,
     sightRadius: 4,
@@ -980,7 +977,7 @@ Game.RedmurksMaze.PlayerTemplate = {
     		Game.Mixins.Attacker, Game.Mixins.Destructible,
     		Game.Mixins.Sight, Game.Mixins.Equipper,
     		Game.Mixins.ExperienceGainer, Game.Mixins.StatAssigner,
-    		Game.Mixins.LevelChanger]
+    		Game.Mixins.LevelChanger, Game.Mixins.InventoryCarrier]
 }
 
 Game.RedmurksMaze.Mixins.SlimeActor = {
@@ -989,6 +986,7 @@ Game.RedmurksMaze.Mixins.SlimeActor = {
 }
 
 Game.RedmurksMaze.SlimeTemplate = {
+    templateType: 'SlimeTemplate',
     name: 'Slime',
     character: 'S',
 	spriteSheetX: 0,
@@ -1000,10 +998,12 @@ Game.RedmurksMaze.SlimeTemplate = {
 	tasks: ['hunt', 'heal', 'wander'],
     mixins: [Game.RedmurksMaze.Mixins.SlimeActor, 
     		Game.Mixins.TaskActor, Game.Mixins.Sight,
-    		Game.Mixins.Destructible, Game.Mixins.Attacker]
+    		Game.Mixins.Destructible, Game.Mixins.Attacker,
+    		Game.Mixins.InventoryCarrier]
 }
 
 Game.RedmurksMaze.HealingPotionTemplate = {
+	templateType: 'HealingPotionTemplate',
 	name: 'Healing potion',
 	//rarity: 1,
 	character: 'P',
@@ -1015,6 +1015,7 @@ Game.RedmurksMaze.HealingPotionTemplate = {
 }
 
 Game.RedmurksMaze.SmallSwordTemplate = {
+	templateType: 'SmallSwordTemplate',
 	name: 'Small sword',
 	//rarity: 2,
 	character: 'smallsword',
@@ -1026,6 +1027,7 @@ Game.RedmurksMaze.SmallSwordTemplate = {
 }
 
 Game.RedmurksMaze.WoodenShieldTemplate = {
+	templateType: 'WoodenShieldTemplate',
 	name: 'Wooden shield',
 	//rarity: 2,
 	character: 'woodenshield',
@@ -1037,26 +1039,34 @@ Game.RedmurksMaze.WoodenShieldTemplate = {
 }
 
 Game.RedmurksMaze.StairsDownTemplate = {
-	//name: '',
+	templateType: 'StairsDownTemplate',
 	character: 'stairsdown',
 	spriteSheetX: 0,
     spriteSheetY: 5,
     direction: 'down',
-    level: null
+    x: null,
+    y: null,
+    connectingLevel: null,
+    connectingLevelX: null,
+    connectingLevelY: null
 }
 
 Game.RedmurksMaze.StairsUpTemplate = {
-	//name: '',
+	templateType: 'StairsUpTemplate',
 	character: 'stairsup',
 	spriteSheetX: 0,
     spriteSheetY: 6,
     direction: 'up',
-    level: null
+    x: null,
+    y: null,
+    connectingLevel: null,
+    connectingLevelX: null,
+    connectingLevelY: null
 }
 
-Game.RedmurksMaze.StairsBlocked = {
+/*Game.RedmurksMaze.StairsBlocked = {
 	//name: '',
 	character: 'stairsblocked',
 	spriteSheetX: 0,
     spriteSheetY: 7
-}
+}*/

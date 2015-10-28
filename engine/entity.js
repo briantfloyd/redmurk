@@ -2,6 +2,7 @@ Game.Entity = function(properties) {
     properties = properties || {};
     Game.Glyph.call(this, properties);
     
+    this.templateType = properties['templateType'] || '';
     this.name = properties['name'] || '';
     this.x = properties['x'] || 0;
     this.y = properties['y'] || 0;
@@ -9,7 +10,7 @@ Game.Entity = function(properties) {
     this.attachedMixins = {};
     this.attachedMixinGroups = {};
     this.speed = properties['speed'] || 1200;
-    this.inventory = []; //FIXME? move into mixin?
+    //this.inventory = []; //FIXME? move into mixin?
 	
     this.destinationCoordinates = null;
     this.pathCoordinates = [];
@@ -54,7 +55,7 @@ Game.Entity.prototype.hasMixin = function(obj) {
     }
 }
 
-Game.Entity.prototype.tryMove = function(x, y) {
+Game.Entity.prototype.tryMove = function(x, y) {   
     var map = this.map;
     var tile = map.getTile(x, y);
     var target = map.getEntityAt(x, y);
@@ -90,8 +91,8 @@ Game.Entity.prototype.tryMove = function(x, y) {
             return false;
         }
 
-    } else if (tile && tile.walkable) {        		
-		
+    } else if (tile && tile.walkable) { //NOTE - Can't use Map.isEmptyFloor - because it includes level connection check, and entity check was performed above   		
+console.log('here2');		
 		if (!this.hasMixin('LevelChanger') && map.getLevelConnectionAt(x, y)) {
 			console.log('non LevelChanger entity tried to move on to level connection');
 			return false;
@@ -134,17 +135,8 @@ Game.Entity.prototype.findPath = function(sourceEntity, destX, destY) {
 	}, {topology: 8});
 
 	// move to the second cell  in path that is passed in the callback (the first is the entity's strting point)
-	//var count = 0;
 	path.compute(sourceEntity.x, sourceEntity.y, function(x, y) {
-		
-		
-		
-		/*if (count == 1) {
-			sourceEntity.tryMove(x, y);
-		}
-		count++;*/
-		
-		
+
 		var coordinateObject = {};
 		coordinateObject.x = x;
 		coordinateObject.y = y;
@@ -154,6 +146,4 @@ Game.Entity.prototype.findPath = function(sourceEntity, destX, destY) {
 	
 	//remove first coordinate in path - it's the entity's current coordinate
 	sourceEntity.pathCoordinates.shift();
-
-
 };

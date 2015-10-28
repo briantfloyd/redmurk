@@ -76,6 +76,30 @@ Game.MapGenerator = {
  
 		return this.map;
 	},
+	reGenerateMap: function(mapData) {
+		
+		//var mapData = saveData.playScreen.map;
+		
+		this.mapWidth = mapData.width; 
+		this.mapHeight = mapData.height;
+		
+		var map = [];
+		var nextTileType;
+		
+		for (var x = 0; x < this.mapWidth; x++) {
+			map.push([]);
+			for (var y = 0; y < this.mapHeight; y++) {			
+				//check and insert correct tile type
+				nextTileType = mapData.tiles[x][y];				
+				map[x].push(Game.loadedEnvironment.tiles[nextTileType]);
+			}
+		}
+		
+		//save map for reference by other methods
+		this.map = map;
+		
+		return this.map;
+	},
 	fillEdges: function() {
 		//FIXME? - consolidate repeated code, make edges look more natural
 		var tileVersion, tileVersionTile, dice;

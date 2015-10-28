@@ -2,7 +2,8 @@ var Game =  {
     interfaceObject: null,
     display: null,
 	currentScreen: null, 
-    loadedEnvironment: null, 
+    loadedEnvironment: null,
+    saveData: {}, 
 	init: function() {
 		
 		var interfaceObject = Game.interfaceObject;
@@ -34,14 +35,18 @@ var Game =  {
 		
 		window.addEventListener('resize', this.resizeCanvas());								
     },
-	switchScreen: function(screen) {
+	switchScreen: function(screen, options) { //'options' optional parameter //only used for passing saved game data to entering playScreen
 		if (this.currentScreen !== null) {
 			this.currentScreen.exit();
 		}
 		this.display.clear();
 		this.currentScreen = screen;
 		if (!this.currentScreen !== null) {
-			this.currentScreen.enter();
+			if (options) {
+				this.currentScreen.enter(options);
+			} else {
+				this.currentScreen.enter();
+			}
 			this.refresh();
 		}
 	},
@@ -56,15 +61,23 @@ var Game =  {
 	saveGame: function() {
 		if (!this.supportLocalStorage) {
 			return false;
-		} else {
-
+		} else {	
+			localStorage.setItem('redmurksave01', JSON.stringify(Game.saveData));
 		}
 	},
 	resumeGame: function() {
 		if (!this.supportLocalStorage) {
 			return false;
 		} else {
-
+			var resumedGame = JSON.parse(localStorage.getItem('redmurksave01'));
+	
+			Game.Screen.playScreen.scheduler = null;
+			Game.Screen.playScreen.engine = null;
+			Game.Screen.playScreen.map = null;
+		
+			Game.switchScreen(Game.Screen.playScreen, resumedGame);
+		
+			//console.log(resumedGame);
 		}	
 	},
 	supportLocalStorage: function() {

@@ -3,8 +3,9 @@ Game.Item = function(properties) {
 
     Game.Glyph.call(this, properties);
 
+    this.templateType = properties['templateType'] || '';
     this.name = properties['name'] || '';
-    this.rarity = properties['rarity'] || '';
+    //this.rarity = properties['rarity'] || '';
     
 	this.spriteSheetY = properties['spriteSheetY'] || 0;
 	this.spriteSheetX = properties['spriteSheetX'] || 0;
