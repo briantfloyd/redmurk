@@ -40,12 +40,13 @@ Game.Mixins.GameStateSaverActor = {
 		
 		//playscreen map
 		saveData.playScreen.map = this.saveMap(Game.Screen.playScreen.map);
+		saveData.firstSaveTimeStamp = Game.loadedEnvironment.firstSaveTimeStamp;
 
 		Game.saveGame();
     },
     saveMap: function(liveMap) {
 		var savedMapData = {};
-		
+	
 		savedMapData.width = liveMap.width;
 		savedMapData.height = liveMap.height;
 		//skip .fov - allow to reset
@@ -105,14 +106,31 @@ Game.Mixins.GameStateSaverActor = {
 				}
 			}
 			
+			/*
 			if (mapEntities[a].hasMixin('InventoryCarrier')) {	
 				savedMapData.entities[a].inventory = []; //reset
 				for (var b in mapEntities[a].inventory) {				
 					if (mapEntities[a].inventory[b].templateType) { //otherwise will try to save array methods as well
+//console.log('saving entity inventory item: ' + mapEntities[a].inventory[b].templateType);
 						savedMapData.entities[a].inventory.push(mapEntities[a].inventory[b].templateType);
 					}
 				}
+//console.log(savedMapData.entities[a].inventory);
 			}
+			*/
+			
+			
+			
+			if (mapEntities[a].hasMixin('InventoryCarrier')) {	
+				savedMapData.entities[a].inventory = []; //reset
+				
+				for (var b = 0, i = mapEntities[a].inventory.length; b < i; b++) {
+					savedMapData.entities[a].inventory.push(mapEntities[a].inventory[b].templateType);
+				}
+			}
+
+			
+			
 			
 			if (mapEntities[a].hasMixin('ExperienceGainer')) {	
 				savedMapData.entities[a].experiencePoints = mapEntities[a].experiencePoints;
@@ -167,7 +185,10 @@ Game.Mixins.MessageDisplayUpdateActor = {
  		var player = Game.Screen.playScreen.player;
 //console.log(player);		
 		//play screen stats display
-		Game.loadedEnvironment.uiComponents.playScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.getAttackValue() + "|" + player.getDefenseValue(), player.experiencePoints]; //FIXME - player		
+		Game.loadedEnvironment.uiComponents.playScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.getAttackValue() + "|" + player.getDefenseValue(), player.experiencePoints + "|" + player.nextExperiencePointThreshold]; //FIXME - player		
+		
+		//play screen depth display
+		Game.loadedEnvironment.uiComponents.playScreen.depthDisplay.text = [Game.Screen.playScreen.depth];				
 		
 		//play screen message display
 		var playSelectedEntity = Game.Screen.playScreen.selectedEntity;

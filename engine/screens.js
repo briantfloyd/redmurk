@@ -28,7 +28,7 @@ Game.Screen.playScreen = {
 	engine: null,
 	map: null, //individual (current) level
     player: null, //FIXME - move to environment?
-    difficultySetting: 2, //FIXME - move elsewhere eventually? 1, 2, 3, 4 scale? easy,medium,hard,nightmare?
+    difficultySetting: 2, //FIXME - move elsewhere eventually? 1, 2, 3, 4 scale
     depth: 0, //FIXME should this be here?
     uiParameters: null,
     topLeftX: null,
@@ -37,6 +37,8 @@ Game.Screen.playScreen = {
     selectedItem: null,
 	paused: false,
 	enter: function(saveData) { //optional parameter passed in on resume saved game    
+	    this.selectedEntity = null; //FIXME - best place for this? intended to address mobs remaining selected after death and resurrection on another level
+	    
 	    if (this.map === null) {
 			this.scheduler = new ROT.Scheduler.Speed();
 			this.engine = new ROT.Engine(this.scheduler); 
@@ -96,19 +98,39 @@ Game.Screen.playScreen = {
 				if (this.map.isExplored(x, y)) {			
 					
 					//default tinting - none
+					//
+					//tintForeground = "rgb(255, 0, 0)";
+					//var tintForeground = "rgba(1, 1, 1, 0.0)";
+					//
+					
+					//var tintBackground = "rgb(255, 0, 0)";
+					//var tintBackground = "rgba(0,0,255,0.3)"; //works - so know it is possible
+					//var tintForeground = "rgba(0,0,255,0.3)"; //why doesnt this
+					//var tintForeground = "#000000";
+					
+					
 					var tintForeground = 'transparent';
 					var tintBackground = "rgba(1, 1, 1, 0.0)"; //passing 'transparent' seems to have some problem
 					
 					//visible / distance tinting
 					if (!visibleCells[x + ',' + y]) {
-						tintForeground = "rgba(1, 1, 1, 0.8)";
+						tintBackground = "rgba(1,1,1,0.8)";
 					} else if (x > (this.player.x + 3) || x < (this.player.x - 3) || y > (this.player.y + 3) || y < (this.player.y - 3)) { //FIXME - player
-						tintForeground = "rgba(1, 1, 1, 0.7)";
+						tintBackground = "rgba(1,1,1,0.7)";
 					} else if (x > (this.player.x + 2) || x < (this.player.x - 2) || y > (this.player.y + 2) || y < (this.player.y - 2)) { 
-						tintForeground = "rgba(1, 1, 1, 0.5)";
+						tintBackground = "rgba(1,1,1,0.5)";
 					} else if (x > (this.player.x + 1) || x < (this.player.x - 1) || y > (this.player.y + 1) || y < (this.player.y - 1)) { 
-						tintForeground = "rgba(1, 1, 1, 0.3)";
-					}
+						tintBackground = "rgba(1, 1, 1, 0.3)";
+						//console.log('red tinting');
+						//var tintForeground = "rgba(255,0,0,0.7)";
+						//tintForeground = "rgb(255, 0, 0)";
+						//tintBackground = "rgb(255, 0, 0))";
+					}// else{
+					//	var tintForeground = "rgba(1,1,1,0.0)";
+					//}
+					
+					
+					//FIXME - convert belowto background
 					
 					//destination tinting
 					if (this.player.destinationCoordinates && x === this.player.destinationCoordinates.x && y === this.player.destinationCoordinates.y) {
@@ -119,6 +141,10 @@ Game.Screen.playScreen = {
 					if (this.selectedEntity && x === this.selectedEntity.x && y === this.selectedEntity.y) {
 						tintForeground = "rgba(255, 0, 0, 0.1)";
 					}
+					
+					
+					
+					
 					
 					//selected item tinting
 					/*console.log(this.selectedItem);
@@ -265,7 +291,7 @@ Game.Screen.playScreen = {
 		var newMap;
 		
 		//FIXME? consolidate repeated code
-		
+console.log(necessaryConnections);		
 		//initial level 0 map (& post resurrect on level 0 map)
 		if (necessaryConnections.down && !necessaryConnections.back && !necessaryConnections.up) {
 			
@@ -433,6 +459,10 @@ Game.Screen.playScreen = {
     	}
     },
     resumeSavedGameLevel: function (saveData) { 
+    	
+    	Game.loadedEnvironment.firstSaveTimeStamp = saveData.firstSaveTimeStamp;
+    	this.depth = saveData.playScreen.depth;
+    	
     	var mapData = saveData.playScreen.map;
     	
 		//create new level map (cycles through saveData recreating tiles
@@ -512,11 +542,31 @@ Game.Screen.playScreen = {
 		
 			if (nextEntity.hasMixin('InventoryCarrier')) {	
 				nextEntity.inventory = []; //reset
+
+//FIXME - issue may be due to reading empty inventory of newly created entity as opposed to save object data
+/*console.log(savedEntities[b]);
 				for (var c in savedEntities[b].inventory) {	
+console.log(c);
+console.log(savedEntities[b].inventory[c].templateType)
 					if (savedEntities[b].inventory[c].templateType) { //otherwise will try to save array methods as well
 						nextEntity.inventory.push(new Game.Item(Game.loadedEnvironment[savedEntities[b].inventory[c].templateType]));
 					}
 				}
+	console.log(nextEntity.inventory);	*/
+	
+			
+//console.log(savedEntities[b].inventory);
+				var nextInventoryItem;
+				for (var c = 0, e = savedEntities[b].inventory.length; c < e; c++) {
+					//nextInventoryItem = savedEntities[b].inventory[c].templateType;
+					nextInventoryItem = savedEntities[b].inventory[c];
+//console.log(savedEntities[b].inventory[c]);
+//console.log(nextInventoryItem);
+					nextEntity.inventory.push(new Game.Item(Game.loadedEnvironment[nextInventoryItem]));
+				
+				}
+//console.log(nextEntity.inventory);				
+
 			}
 		
 			if (nextEntity.hasMixin('ExperienceGainer')) {	
@@ -565,7 +615,7 @@ Game.Screen.inventoryScreen = {
 
 		//UPDATE STAT/MESSAGE DISPLAY VALUES
 		//stats display //FIXME - duplicate of MessageDisplayUpdateActor stats display
-		Game.loadedEnvironment.uiComponents.inventoryScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.getAttackValue() + "|" + player.getDefenseValue(), player.experiencePoints]; //FIXME - player		
+		Game.loadedEnvironment.uiComponents.inventoryScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.getAttackValue() + "|" + player.getDefenseValue(), player.experiencePoints + "|" + player.nextExperiencePointThreshold]; //FIXME - player		
 		
 		//message display
 		var inventorySelectedItem = this.selectedItem;
@@ -811,6 +861,161 @@ Game.Screen.inventoryScreen = {
 		}
 	}
 }
+
+Game.Screen.loadGameScreen = {
+	uiParameters: null,
+	savedGames: [],
+	displayedSavedGames: [],
+	firstSavedGameDisplayed: 0,
+	selectedSavedGame: null,
+    enter: function() { 
+    	   this.uiParameters = Game.loadedEnvironment.uiScreens.loadGameScreenUI;
+	},
+    exit: function() { 
+	},
+    render: function(display) {
+    	var player = Game.Screen.playScreen.player; //FIXME - player
+    	
+    	this.savedGames = []; //reset
+    	this.displayedSavedGames = []; 
+	
+    	//DRAW UI
+		var interfaceObject = Game.interfaceObject;		
+		interfaceObject.drawUI(this.uiParameters);
+		
+		
+		//localStorage.clear(); //temp - saved game deletion
+		
+		//indentify saved games, add to array	
+		var keyMatch;
+		for (var x in localStorage) {
+			//console.log(localStorage[x]);
+
+			keyMatch = true;
+			for (var y = 0, z = Game.loadedEnvironment.gameKey.length; y < z; y++) {	
+				//console.log(x[y] + " - " + Game.loadedEnvironment.gameKey[y]);
+				
+				//if any letter at the start of the localStorage object name does not match the game key, break out and move on to next localStorage item
+				if (x[y] != Game.loadedEnvironment.gameKey[y]) { 
+					//console.log('key mismatch');
+					keyMatch = false;
+					break;
+				}
+			}
+			
+			if (keyMatch) {
+				//console.log('key match');
+				this.savedGames.push(x);
+			}
+		}
+		
+		if (this.savedGames.length > 0) {
+		
+			//draw identified saved games over UI display area
+			var spriteSheet = Game.display._options.tileSet;
+			var tilePixelWidth = interfaceObject.tilePixelWidth;
+			var ctx = interfaceObject.uiCanvas.getContext("2d");
+
+			var savedGameDisplayArea = Game.loadedEnvironment.uiComponents.loadGameScreen.savedGameDisplay;
+
+			//how many display positions are available
+			var displayAreaPositions = savedGameDisplayArea.height / tilePixelWidth;
+		
+			//where to begin drawing on UI canvas
+			var displayAreaNextPositionX = savedGameDisplayArea.x;
+			var displayAreaNextPositionY = savedGameDisplayArea.y;	
+		
+			//for (var a = 0, b = this.savedGames.length; a < b; a++) {
+			for (var a = this.firstSavedGameDisplayed, b = this.savedGames.length; a < b; a++) {
+				//console.log(this.savedGames[a]);
+			
+				//break out if no more available display positions
+				if (a >= displayAreaPositions ) { break;}
+
+				ctx.fillStyle = "rgba(0, 0, 0, 1.0)"; //FIXME - shouldn't this be housed in interface.js?
+				ctx.font = "12px sans-serif";
+
+				var textX = displayAreaNextPositionX;// + (savedGameDisplayArea.width / 2) - (ctx.measureText(this.savedGames[a]).width / 2);
+				var textY = displayAreaNextPositionY + tilePixelWidth;// + (ctx.measureText(this.savedGames[a]).height / 2);
+		
+				ctx.fillText(this.savedGames[a],textX,textY);					
+				
+								
+				//selectedSavedGame tinting	
+				if (this.savedGames[a] === this.selectedSavedGame) {
+					ctx.fillStyle = "rgba(0, 255, 0, 0.1)";
+					ctx.fillRect(displayAreaNextPositionX,displayAreaNextPositionY,savedGameDisplayArea.width,tilePixelWidth);
+				}
+			
+				//add to displayed (visible) saved games (used for click evaluation)
+				var newDisplayedSavedGame = {};
+				newDisplayedSavedGame.x = displayAreaNextPositionX;
+				newDisplayedSavedGame.y = displayAreaNextPositionY;
+				newDisplayedSavedGame.savedGame = this.savedGames[a];
+				this.displayedSavedGames.push(newDisplayedSavedGame);
+				
+				displayAreaNextPositionY += tilePixelWidth;
+			}
+		}
+		
+		//FIXME - saved game display details player name, depth, difficulty setting, and time stamp of last save
+
+		
+		
+    },
+    handleInput: function(inputType, inputData) {    
+        if (inputType === 'mouseup' || inputType === 'touchstart') {	        		
+			var eventPosition = Game.display.eventToPosition(inputData);	
+			if (eventPosition[0] >= 0 && eventPosition[1] >= 0) {
+				this.clickEvaluation(eventPosition);
+			}
+        } 
+    },
+    clickEvaluation: function(eventPosition) {
+    	var componentClicked = Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+    	
+    	if (componentClicked === false) {
+    		this.displayedSavedGameClickEvaluation(eventPosition);    	
+    	}
+    },	
+    savedGameDisplayScroll: function(/*display, displayType, */direction/*, items*/) {
+    	if (direction === "up" && this.firstSavedGameDisplayed > 0) {
+    		this.firstSavedGameDisplayed--;
+    	
+    	} else if (direction === "down") {
+    		this.firstSavedGameDisplayed++;
+    	}
+    	this.render();    	
+    },
+    displayedSavedGameClickEvaluation: function(eventPosition) {
+		var tilePixelWidth = Game.interfaceObject.tilePixelWidth;	
+		var clickX = eventPosition[0] * tilePixelWidth;
+		var clickY = eventPosition[1] * tilePixelWidth;
+		
+		var savedGameClicked = false;
+
+		//loop through displayed items checking for position match
+		for (var i = 0, j = this.displayedSavedGames.length; i < j; i++) {
+		
+			var savedGameDisplayWidth = Game.loadedEnvironment.uiComponents.loadGameScreen.savedGameDisplay.width;
+			
+			//if within item boundary coordinates
+			if (clickX >= this.displayedSavedGames[i].x && clickX < (this.displayedSavedGames[i].x + savedGameDisplayWidth) && clickY >= this.displayedSavedGames[i].y && clickY < (this.displayedSavedGames[i].y + tilePixelWidth)) {
+				this.selectedSavedGame = this.displayedSavedGames[i].savedGame;
+				savedGameClicked = true;
+				break;
+			}
+		}
+		
+		if (savedGameClicked === false) {
+			this.selectedSavedGame = null;
+		} 
+		
+		this.render();    
+	}
+}
+
+
 
 Game.Screen.statAssignmentScreen = {
 	uiParameters: null,

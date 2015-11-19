@@ -6,7 +6,7 @@ Game.Mixins.Destructible = {
         this.maxHp = template['maxHp'] || 10;
         this.hp = template['hp'] || this.maxHp;
         this.defenseValue = template['defenseValue'] || 0;
-        this.restHealTimer = 0;
+        this.restHealTimer = 0; //for throttling healing rates for entities acting at different speeds
     },
     getDefenseValue: function() {
         var modifier = 0;
@@ -94,7 +94,8 @@ Game.Mixins.Attacker = {
     attack: function(target) {
         if (target.hasMixin('Destructible')) {
             var max = Math.max(0, this.getAttackValue() - target.getDefenseValue());
-			var damage = 1 + Math.floor(Math.random() * max);
+			//var damage = 1 + Math.floor(Math.random() * max);
+			var damage = Math.floor(Math.random() * 2) + Math.floor(Math.random() * max);
             
             var newMessage = {
             	type: 'attacking',
@@ -176,17 +177,20 @@ Game.Mixins.ExperienceGainer = {
     name: 'ExperienceGainer',
     init: function(template) {
         this.experiencePoints = 1;
-        this.nextExperiencePointThreshold = 2;
+        this.nextExperiencePointThreshold = 10;
     },
     experienceGain: function(entityDefeated) {
 		//relative to difference between attacker and defender in .maxHp, .defenseValue, .attackValue
-		var hpDifference = this.maxHp - entityDefeated.maxHp;
+		//var hpDifference = this.maxHp - entityDefeated.maxHp; //FIXME - balance problem
+		var hpDifference = entityDefeated.maxHp - this.maxHp;
 		hpDifference = Math.max(hpDifference, 1);
 		
-		var attackDifference = this.getAttackValue() - entityDefeated.getAttackValue();
+		//var attackDifference = this.getAttackValue() - entityDefeated.getAttackValue();
+		var attackDifference = entityDefeated.getAttackValue() - this.getAttackValue();
 		attackDifference = Math.max(attackDifference, 1);
 		
-		var defenseDifference = this.getDefenseValue() - entityDefeated.getDefenseValue();
+		//var defenseDifference = this.getDefenseValue() - entityDefeated.getDefenseValue();
+		var defenseDifference = entityDefeated.getDefenseValue() - this.getDefenseValue();
 		defenseDifference = Math.max(defenseDifference, 1);
 		
 		var pointsEarned = hpDifference + attackDifference + defenseDifference;
@@ -215,7 +219,27 @@ Game.Mixins.ExperienceGainer = {
 			}
 			
 			//raise next threshold
-			this.nextExperiencePointThreshold = this.nextExperiencePointThreshold * 10; //FIXME - balance
+			//this.nextExperiencePointThreshold = this.nextExperiencePointThreshold * 10; //FIXME - balance
+			
+			switch (this.nextExperiencePointThreshold) {
+				case 10:
+					this.nextExperiencePointThreshold = 100;
+					break;
+				case 100:
+					this.nextExperiencePointThreshold = 500;
+					break;
+				case 500:
+					this.nextExperiencePointThreshold = 1000;
+					break;
+				case 1000:
+					this.nextExperiencePointThreshold = 2500;
+					break;
+				case 2500:
+					this.nextExperiencePointThreshold = 5000;
+					break;
+				default:
+					this.nextExperiencePointThreshold += 5000;
+			} 
 		
 		}
     }

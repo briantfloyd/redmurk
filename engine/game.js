@@ -62,22 +62,31 @@ var Game =  {
 		if (!this.supportLocalStorage) {
 			return false;
 		} else {	
-			localStorage.setItem('redmurksave01', JSON.stringify(Game.saveData));
+			//localStorage.setItem('redmurksave01', JSON.stringify(Game.saveData));
+		
+			//check if game has been saved previously
+			if (!Game.loadedEnvironment.firstSaveTimeStamp) {
+				Game.loadedEnvironment.firstSaveTimeStamp = new Date().getTime();
+			}
+			
+			//saved game key
+			var savedGameKey = Game.loadedEnvironment.gameKey + "-" + Game.loadedEnvironment.firstSaveTimeStamp;
+			
+			localStorage.setItem(savedGameKey, JSON.stringify(Game.saveData));
 		}
 	},
-	resumeGame: function() {
+	resumeGame: function(selectedSavedGame) {
 		if (!this.supportLocalStorage) {
 			return false;
 		} else {
-			var resumedGame = JSON.parse(localStorage.getItem('redmurksave01'));
+			//var resumedGame = JSON.parse(localStorage.getItem('redmurksave01'));	
+			var resumedGame = JSON.parse(localStorage.getItem(selectedSavedGame));
 	
 			Game.Screen.playScreen.scheduler = null;
 			Game.Screen.playScreen.engine = null;
 			Game.Screen.playScreen.map = null;
-		
-			Game.switchScreen(Game.Screen.playScreen, resumedGame);
-		
-			//console.log(resumedGame);
+			
+			Game.switchScreen(Game.Screen.playScreen,resumedGame);
 		}	
 	},
 	supportLocalStorage: function() {

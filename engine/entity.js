@@ -92,9 +92,9 @@ Game.Entity.prototype.tryMove = function(x, y) {
         }
 
     } else if (tile && tile.walkable) { //NOTE - Can't use Map.isEmptyFloor - because it includes level connection check, and entity check was performed above   		
-console.log('here2');		
+		
 		if (!this.hasMixin('LevelChanger') && map.getLevelConnectionAt(x, y)) {
-			console.log('non LevelChanger entity tried to move on to level connection');
+			//console.log('non LevelChanger entity tried to move on to level connection');
 			return false;
 		}
 

@@ -3,6 +3,8 @@ Game.RedmurksMaze = {
 	uiScreens: {},
 	uiComponents: {},
 	mapParameters: {},
+	gameKey: 'redmurksmaze', //something unique for identifying saved games in localStorage
+	firstSaveTimeStamp: null,
 	init: function() {
 		this.initializeUI();
 		this.initializeTiles();
@@ -66,8 +68,8 @@ Game.RedmurksMaze = {
 	},
 	setMapParameters: function() {
 		//define parameters
-		this.mapParameters.mapWidth = 50;//50;
-		this.mapParameters.mapHeight = 50;//50;
+		this.mapParameters.mapWidth = 50;
+		this.mapParameters.mapHeight = 50;
 		this.mapParameters.mapBornSurvive = {
 							born: [5, 6, 7, 8],
 							survive: [4, 5, 6, 7, 8]
@@ -108,7 +110,8 @@ Game.RedmurksMaze = {
     	var itemFloorPositions = Math.floor(emptyFloorPositions / 500); //FIXME? may want to tinker with this threshhold
 		
 		//item rarity evaluation
-		var maxRarity = 1 + (depth * difficultySetting); //FIXME? may want to tinker with this threshhold
+		//var maxRarity = 1 + (depth * difficultySetting); //FIXME - need to tinker with this threshhold
+		var maxRarity = (difficultySetting / 2) + depth;
 		
 		var potentialItemsToDrop = [];
 		
@@ -134,9 +137,14 @@ Game.RedmurksMaze = {
     	for (var a = 0; a < entityFloorPositions; a++) {
     		var newEntity = new Game.Entity(this.SlimeTemplate);
     		
-    		newEntity.maxHp = newEntity.maxHp * depth * difficultySetting;
-    		newEntity.attackValue = newEntity.attackValue * depth * difficultySetting;
-    		newEntity.defenseValue = newEntity.defenseValue * depth * difficultySetting;
+    		//difficulty range 1-4; if 1, then maxHp is halved; 
+    		newEntity.maxHp = (newEntity.maxHp * (difficultySetting / 2)) + ((difficultySetting / 2) * (depth - 1));
+			newEntity.attackValue = (newEntity.attackValue * (difficultySetting / 2)) + ((difficultySetting / 2) * (depth - 1));
+    		newEntity.defenseValue = (newEntity.defenseValue * (difficultySetting / 2)) + ((difficultySetting / 2) * (depth - 1));
+    		
+    		newEntity.maxHp = Math.floor(newEntity.maxHp);
+    		newEntity.attackValue = Math.floor(newEntity.attackValue);
+    		newEntity.defenseValue = Math.floor(newEntity.defenseValue);
     		
     		map.addEntityAtRandomPosition(newEntity);
     		
@@ -203,7 +211,7 @@ Game.RedmurksMaze = {
 				height: interfaceObject.tilePixelWidth,
 				text: ["Resume saved game"],
 				clickAction: function() {
-					Game.resumeGame();
+					Game.switchScreen(Game.Screen.loadGameScreen);
 				}					
 			};
 
@@ -278,7 +286,19 @@ Game.RedmurksMaze = {
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
 				text: null		
-			};			
+			};
+		
+		playComponents.depthDisplay = 
+			{	
+				backgroundStyle: 'dark01',
+				roundedCorners: true, 
+				transparency: true,
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				text: null		
+			};				
 
 		playComponents.mapButton = 
 			{	
@@ -294,7 +314,7 @@ Game.RedmurksMaze = {
 				}					
 			};
 
-		this.uiScreens.playScreenUI = [playComponents.menuButton, playComponents.healButton, playComponents.pauseButton, playComponents.messageDisplay, playComponents.statsDisplay, playComponents.mapButton];		
+		this.uiScreens.playScreenUI = [playComponents.menuButton, playComponents.healButton, playComponents.pauseButton, playComponents.messageDisplay, playComponents.statsDisplay, playComponents.depthDisplay, playComponents.mapButton];		
 		
 		//inventory screen UI components
 		this.uiComponents.inventoryScreen = {};	
@@ -807,7 +827,7 @@ Game.RedmurksMaze = {
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
-				y: interfaceObject.tilePixelWidth * 5,
+				y: interfaceObject.tilePixelWidth * 4,
 				width: interfaceObject.tilePixelWidth * 3,
 				height: interfaceObject.tilePixelWidth,
 				text: ["Begin game"],
@@ -817,8 +837,93 @@ Game.RedmurksMaze = {
 			};
 		
 		this.uiScreens.newGameScreenUI = [newGameComponents.menuButton, newGameComponents.difficultyMessageDisplay, newGameComponents.difficultySelectedMessageDisplay, newGameComponents.difficultyDecreaseButton, newGameComponents.difficultyIncreaseButton, newGameComponents.beginButton];
+		
+		//load game screen UI components
+		this.uiComponents.loadGameScreen = {};	
+		var loadGameComponents = this.uiComponents.loadGameScreen;
 
-	
+		loadGameComponents.menuButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.menuIcon,
+				x: 0,
+				y: 0,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					Game.switchScreen(Game.Screen.menuScreen);
+				}					
+			};
+
+		loadGameComponents.instructionsDisplay = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: 0,
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Select game to resume."]			
+			};	
+
+		loadGameComponents.loadGameButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Resume game"],
+				clickAction: function() {
+					if (Game.Screen.loadGameScreen.selectedSavedGame) {
+						Game.resumeGame(Game.Screen.loadGameScreen.selectedSavedGame);
+					}
+				}					
+			};
+		
+		loadGameComponents.savedGameDisplay = 
+			{
+				backgroundStyle: 'light01',
+				roundedCorners: true, 
+				x: interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth,
+				width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
+				height: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2)				
+			};
+
+		loadGameComponents.savedGameScrollUpButton = 
+			{
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.arrowIconUp,
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {				
+					var direction = 'up';
+					Game.Screen.loadGameScreen.savedGameDisplayScroll(direction);
+				}					
+			};
+
+		loadGameComponents.savedGameScrollDownButton = 
+			{
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.arrowIconDown,
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					var direction = 'down';
+					Game.Screen.loadGameScreen.savedGameDisplayScroll(direction);		
+				}						
+			};
+
+		this.uiScreens.loadGameScreenUI = [loadGameComponents.menuButton, loadGameComponents.instructionsDisplay, loadGameComponents.savedGameDisplay, loadGameComponents.savedGameScrollUpButton, loadGameComponents.savedGameScrollDownButton, loadGameComponents.loadGameButton];
+
 	},
 	playerDeath: function() {
 		Game.switchScreen(Game.Screen.playerDeathScreen);	
@@ -920,7 +1025,8 @@ Game.RedmurksMaze.Mixins.PlayerActor = {
     	//if level connection at coordinate and not midway following path
     	var levelConnection = this.map.getLevelConnectionAt(this.x, this.y);
     	
-    	if (levelConnection && this.pathCoordinates.length === 0 && this.justChangedLevels !== true) {
+    	//if on levelconnection, if has direction (collapsed connections do not), if have stopped walking, and if have not just changed levels via a level connection
+    	if (levelConnection && levelConnection.direction && this.pathCoordinates.length === 0 && this.justChangedLevels !== true) {
     		Game.Screen.playScreen.loadLevel(levelConnection);
     		this.changeLevels(levelConnection); //levelChanger entity mixin
     	}
@@ -968,7 +1074,7 @@ Game.RedmurksMaze.PlayerTemplate = {
     character: '@',
 	spriteSheetX: 0, //multiple applied to Game.interfaceObject.tilePixelWidth to determine actual pixel coordinate on spritesheet
     spriteSheetY: 8, //5
-    maxHp: 100,
+    maxHp: 10,
     attackValue: 2,
     defenseValue: 1,
     sightRadius: 4,
@@ -1064,9 +1170,11 @@ Game.RedmurksMaze.StairsUpTemplate = {
     connectingLevelY: null
 }
 
-/*Game.RedmurksMaze.StairsBlocked = {
-	//name: '',
-	character: 'stairsblocked',
+Game.RedmurksMaze.StairsCollapsedTemplate = {
+	templateType: 'StairsCollapsedTemplate',
+	character: 'stairscollapsed',
 	spriteSheetX: 0,
-    spriteSheetY: 7
-}*/
+    spriteSheetY: 7,
+    x: null,
+    y: null
+}

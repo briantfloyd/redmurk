@@ -158,7 +158,6 @@ Game.Map.prototype.isExplored = function(x, y) {
 };
 
 Game.Map.prototype.updateEntityPosition = function(entity, oldX, oldY) {
-console.log('here now');
     if (typeof oldX === 'number') {
         var oldKey = oldX + ',' + oldY;
         if (this.entities[oldKey] == entity) {
@@ -288,14 +287,35 @@ Game.Map.prototype.distantLevelConnectionPurge = function() {
 					//note - any connected maps should be garbage collected after connection removed
 					for (var l in secondConnectedLevel.levelConnections) {
 						
-						if (secondConnectedLevel.levelConnections[l].connectingLevel != firstConnectedLevel) {
+						var levelToPurge = secondConnectedLevel.levelConnections[l].connectingLevel;
+						
+						if (levelToPurge && levelToPurge != firstConnectedLevel) {
+						
+							//var levelToPurge = secondConnectedLevel.levelConnections[l].connectingLevel;
+		console.log('levelToPurge');
+		console.log(levelToPurge);			
 							//cycle through entities of connected map and remove entities (don't want them retained in scheduler)						
-							for (var m in secondConnectedLevel.levelConnections[l].entities) {
-								console.log("level entity purge: " + secondConnectedLevel.levelConnections[l].entities[m].name);
-								secondConnectedLevel.levelConnections[l].removeEntity(secondConnectedLevel.levelConnections[l].entities[m]);
+							for (var m in levelToPurge.entities) {
+		console.log("level entity purge: " + levelToPurge.entities[m].name);
+								levelToPurge.removeEntity(levelToPurge.entities[m]);
 							}
+				
+				
+		console.log('adding collapsed stairs');
+		console.log(secondConnectedLevel.levelConnections);
+							
+							//save level connection coordinates for collapsed level connection positioning
+							var newStairsCollapsedX = secondConnectedLevel.levelConnections[l].x;
+							var newStairsCollapsedY = secondConnectedLevel.levelConnections[l].y;
+							
 							//delete level connection
-							delete secondConnectedLevel.levelConnections[l];							
+							delete secondConnectedLevel.levelConnections[l];
+		console.log(secondConnectedLevel.levelConnections);
+							
+							//replace with collapsed level connection
+							var newStairsCollapsed = new Game.LevelConnection(Game.loadedEnvironment.StairsCollapsedTemplate);
+							secondConnectedLevel.addLevelConnection(newStairsCollapsedX,newStairsCollapsedY,newStairsCollapsed);
+		console.log(secondConnectedLevel.levelConnections);
 						}
 					}
 				}
