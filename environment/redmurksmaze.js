@@ -752,6 +752,59 @@ Game.RedmurksMaze = {
 
 		this.uiScreens.playerDeathScreenUI = [playerDeathComponents.menuButton, playerDeathComponents.slainMessageDisplay, playerDeathComponents.continueButton];
 
+
+		//confirm screen UI components
+		this.uiComponents.confirmScreen = {};	
+		var confirmComponents = this.uiComponents.confirmScreen;
+		
+		confirmComponents.confirmMessageDisplay = 
+			{	
+				backgroundStyle: 'none',
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 2,
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				text: null //['Delete this saved game?'] //Game.Screen.confirmScreen.confirmationMessage //FIXME? setting this in Screens confirmScreen render()
+			};	
+			
+		confirmComponents.continueButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth * 2,
+				height: interfaceObject.tilePixelWidth,
+				text: ["Yes"], //FIXME - change to icon?
+				clickAction: function() {
+
+					var confObject = Game.Screen.confirmScreen.confirmationCommandObject;
+					var confMethod = Game.Screen.confirmScreen.confirmationCommandMethod;
+					var confParameters = Game.Screen.confirmScreen.confirmationCommandParameters;
+					
+					confObject[confMethod](confParameters);
+					
+					Game.switchScreen(Game.Screen.confirmScreen.returnScreen);
+				}					
+			};
+
+		confirmComponents.cancelButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.closeIcon,
+				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
+				y: interfaceObject.tilePixelWidth * 3,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {					
+					Game.switchScreen(Game.Screen.confirmScreen.returnScreen);
+				}					
+			};
+
+		this.uiScreens.confirmScreenUI = [confirmComponents.confirmMessageDisplay, confirmComponents.continueButton, confirmComponents.cancelButton];
+
+
 		//newGameScreenUI
 		
 		//new game screen UI components
@@ -872,12 +925,48 @@ Game.RedmurksMaze = {
 				roundedCorners: true,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
-				width: interfaceObject.tilePixelWidth * 3,
+				//width: interfaceObject.tilePixelWidth * 3,
+				width: ((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3)),
 				height: interfaceObject.tilePixelWidth,
 				text: ["Resume game"],
 				clickAction: function() {
 					if (Game.Screen.loadGameScreen.selectedSavedGame) {
 						Game.resumeGame(Game.Screen.loadGameScreen.selectedSavedGame);
+					}
+				}					
+			};
+
+		loadGameComponents.deleteGameButton = 
+			{	
+				backgroundStyle: 'button01',
+				roundedCorners: true,
+				icon: interfaceObject.uiIcons.minusIcon, //FIXME - need trash can icon
+				x: ((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2)),
+				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				clickAction: function() {
+					if (Game.Screen.loadGameScreen.selectedSavedGame) {
+						//localStorage.removeItem(Game.Screen.loadGameScreen.selectedSavedGame);
+						//Game.Screen.loadGameScreen.selectedSavedGame = null;
+						//Game.Screen.loadGameScreen.render();
+						
+						//set message to display 'Delete saved game'
+						Game.Screen.confirmScreen.confirmationMessage = ['Delete this saved game?'];
+						
+						//set command object						
+						Game.Screen.confirmScreen.confirmationCommandObject = localStorage;
+						
+						//set command object method to execute
+						Game.Screen.confirmScreen.confirmationCommandMethod = 'removeItem';
+						
+						//set parameters to pass into command
+						Game.Screen.confirmScreen.confirmationCommandParameters = Game.Screen.loadGameScreen.selectedSavedGame;
+						
+						//set screen to return to after execution or cancelation
+						Game.Screen.confirmScreen.returnScreen = Game.Screen.loadGameScreen;
+						
+						Game.switchScreen(Game.Screen.confirmScreen);
 					}
 				}					
 			};
@@ -922,7 +1011,7 @@ Game.RedmurksMaze = {
 				}						
 			};
 
-		this.uiScreens.loadGameScreenUI = [loadGameComponents.menuButton, loadGameComponents.instructionsDisplay, loadGameComponents.savedGameDisplay, loadGameComponents.savedGameScrollUpButton, loadGameComponents.savedGameScrollDownButton, loadGameComponents.loadGameButton];
+		this.uiScreens.loadGameScreenUI = [loadGameComponents.menuButton, loadGameComponents.instructionsDisplay, loadGameComponents.savedGameDisplay, loadGameComponents.savedGameScrollUpButton, loadGameComponents.savedGameScrollDownButton, loadGameComponents.loadGameButton, loadGameComponents.deleteGameButton];
 
 	},
 	playerDeath: function() {

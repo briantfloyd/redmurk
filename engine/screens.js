@@ -1192,7 +1192,7 @@ Game.Screen.playerDeathScreen = {
     exit: function() { 
 	},
     render: function(display) {
-    	var player = Game.Screen.playScreen.player; //FIXME - player
+    	//var player = Game.Screen.playScreen.player; //FIXME - player
 
     	//DRAW UI
 		var interfaceObject = Game.interfaceObject;		
@@ -1208,6 +1208,49 @@ Game.Screen.playerDeathScreen = {
     },
     clickEvaluation: function(eventPosition) {
     	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+    }
+}
+
+Game.Screen.confirmScreen = {
+	uiParameters: null,
+	confirmationMessage: null,
+	confirmationCommandObject: null, //object with method to execute
+	confirmationCommandMethod: null, //function to execute
+	confirmationCommandParameters: null, //parameters to pass into function
+	returnScreen: null,
+    enter: function() { 
+    	this.uiParameters = Game.loadedEnvironment.uiScreens.confirmScreenUI;    	
+	},
+    exit: function() { 
+    	this.reset();
+	},
+    render: function(display) {
+    	//var player = Game.Screen.playScreen.player; //FIXME - player
+//console.log(this.confirmationMessage);
+
+		Game.loadedEnvironment.uiComponents.confirmScreen.confirmMessageDisplay.text = this.confirmationMessage; //FIXME? couldn't get this to assign in actual ui component in environment
+
+    	//DRAW UI
+		var interfaceObject = Game.interfaceObject;		
+		interfaceObject.drawUI(this.uiParameters);
+    },
+    handleInput: function(inputType, inputData) {    
+        if (inputType === 'mouseup' || inputType === 'touchstart') {	        		
+			var eventPosition = Game.display.eventToPosition(inputData);	
+			if (eventPosition[0] >= 0 && eventPosition[1] >= 0) {
+				this.clickEvaluation(eventPosition);
+			}
+        } 
+    },
+    clickEvaluation: function(eventPosition) {
+    	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+    },
+    reset: function() {
+    	this.confirmationMessage = null;
+    	this.confirmationCommandObject = null;
+    	this.confirmationCommandMethod = null;
+    	this.confirmationCommandParameters = null;
+    	this.returnScreen = null;
     }
 }
 
