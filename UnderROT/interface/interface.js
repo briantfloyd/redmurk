@@ -15,115 +15,115 @@ var Interface =  {
     	var iconWidth = this.tilePixelWidth / 3;
     
     	var pauseIcon = new Image();
-    	pauseIcon.src = '../UnderROT/interface/icons/icon-60x60-pause.svg';
+    	pauseIcon.src = '../underrot/interface/icons/icon-60x60-pause.svg';
     	pauseIcon.height = iconWidth;
     	pauseIcon.width = iconWidth; 	    	
     	this.uiIcons.pauseIcon = pauseIcon;
     	
     	var menuIcon = new Image();
-    	menuIcon.src = '../UnderROT/interface/icons/icon-60x60-menu.svg';
+    	menuIcon.src = '../underrot/interface/icons/icon-60x60-menu.svg';
     	menuIcon.height = iconWidth;
     	menuIcon.width = iconWidth; 	    	
     	this.uiIcons.menuIcon = menuIcon;
     	
     	var healIcon = new Image();
-    	healIcon.src = '../UnderROT/interface/icons/icon-60x60-heal.svg';
+    	healIcon.src = '../underrot/interface/icons/icon-60x60-heal.svg';
     	healIcon.height = this.tilePixelWidth * .7;
     	healIcon.width = this.tilePixelWidth * .7; 	    	
     	this.uiIcons.healIcon = healIcon;
     	
     	/*var arrowIcon = new Image(); //FIXME - way to rotat single image?
-    	arrowIcon.src = '../UnderROT/interface/icons/icon-60x60-arrow.svg';
+    	arrowIcon.src = '../underrot/interface/icons/icon-60x60-arrow.svg';
     	arrowIcon.height = iconWidth;
     	arrowIcon.width = iconWidth; 	    	
     	this.uiIcons.arrowIcon = arrowIcon;*/
     	
     	var arrowIconUp = new Image();
-    	arrowIconUp.src = '../UnderROT/interface/icons/icon-60x60-arrow-up.svg';
+    	arrowIconUp.src = '../underrot/interface/icons/icon-60x60-arrow-up.svg';
     	arrowIconUp.height = iconWidth;
     	arrowIconUp.width = iconWidth; 	    	
     	this.uiIcons.arrowIconUp = arrowIconUp;
     	
     	var arrowIconDown = new Image();
-    	arrowIconDown.src = '../UnderROT/interface/icons/icon-60x60-arrow-down.svg';
+    	arrowIconDown.src = '../underrot/interface/icons/icon-60x60-arrow-down.svg';
     	arrowIconDown.height = iconWidth;
     	arrowIconDown.width = iconWidth; 	    	
     	this.uiIcons.arrowIconDown = arrowIconDown;
     	
     	var arrowIconLeft = new Image();
-    	arrowIconLeft.src = '../UnderROT/interface/icons/icon-60x60-arrow-left.svg';
+    	arrowIconLeft.src = '../underrot/interface/icons/icon-60x60-arrow-left.svg';
     	arrowIconLeft.height = iconWidth;
     	arrowIconLeft.width = iconWidth; 	    	
     	this.uiIcons.arrowIconLeft = arrowIconLeft;
     	
     	var arrowIconRight = new Image();
-    	arrowIconRight.src = '../UnderROT/interface/icons/icon-60x60-arrow-right.svg';
+    	arrowIconRight.src = '../underrot/interface/icons/icon-60x60-arrow-right.svg';
     	arrowIconRight.height = iconWidth;
     	arrowIconRight.width = iconWidth; 	    	
     	this.uiIcons.arrowIconRight = arrowIconRight;
     	
     	var checkmarkIcon = new Image();
-    	checkmarkIcon.src = '../UnderROT/interface/icons/icon-60x60-checkmark.svg';
+    	checkmarkIcon.src = '../underrot/interface/icons/icon-60x60-checkmark.svg';
     	checkmarkIcon.height = iconWidth * 2;
     	checkmarkIcon.width = iconWidth * 2; 	    	
     	this.uiIcons.checkmarkIcon = checkmarkIcon;
     	
     	var closeIcon = new Image();
-    	closeIcon.src = '../UnderROT/interface/icons/icon-60x60-close.svg';
+    	closeIcon.src = '../underrot/interface/icons/icon-60x60-close.svg';
     	closeIcon.height = iconWidth;
     	closeIcon.width = iconWidth; 	    	
     	this.uiIcons.closeIcon = closeIcon;
     	
     	var trashIcon = new Image();
-    	trashIcon.src = '../UnderROT/interface/icons/icon-60x60-trash.svg';
+    	trashIcon.src = '../underrot/interface/icons/icon-60x60-trash.svg';
     	trashIcon.height = iconWidth * 2;
     	trashIcon.width = iconWidth * 2; 	    	
     	this.uiIcons.trashIcon = trashIcon;
     	
     	var plusIcon = new Image();
-    	plusIcon.src = '../UnderROT/interface/icons/icon-60x60-plus.svg';
+    	plusIcon.src = '../underrot/interface/icons/icon-60x60-plus.svg';
     	plusIcon.height = iconWidth;
     	plusIcon.width = iconWidth; 	    	
     	this.uiIcons.plusIcon = plusIcon;
     	
     	var minusIcon = new Image();
-    	minusIcon.src = '../UnderROT/interface/icons/icon-60x60-minus.svg';
+    	minusIcon.src = '../underrot/interface/icons/icon-60x60-minus.svg';
     	minusIcon.height = iconWidth;
     	minusIcon.width = iconWidth; 	    	
     	this.uiIcons.minusIcon = minusIcon;
     	
     	var arrowIconRightLeft = new Image();
-    	arrowIconRightLeft.src = '../UnderROT/interface/icons/icon-60x60-arrow-right-left.svg';
+    	arrowIconRightLeft.src = '../underrot/interface/icons/icon-60x60-arrow-right-left.svg';
     	arrowIconRightLeft.height = iconWidth;
     	arrowIconRightLeft.width = iconWidth; 	    	
     	this.uiIcons.arrowIconRightLeft = arrowIconRightLeft;
     	
     	var arrowIconUpDown = new Image();
-    	arrowIconUpDown.src = '../UnderROT/interface/icons/icon-60x60-arrow-up-down.svg';
+    	arrowIconUpDown.src = '../underrot/interface/icons/icon-60x60-arrow-up-down.svg';
     	arrowIconUpDown.height = iconWidth;
     	arrowIconUpDown.width = iconWidth; 	    	
     	this.uiIcons.arrowIconUpDown = arrowIconUpDown;
     	
     	var compassIcon = new Image();
-    	compassIcon.src = '../UnderROT/interface/icons/icon-60x60-compass.svg';
+    	compassIcon.src = '../underrot/interface/icons/icon-60x60-compass.svg';
     	compassIcon.height = iconWidth * 2;
     	compassIcon.width = iconWidth * 2; 	    	
     	this.uiIcons.compassIcon = compassIcon;
     	
     	var healthIcon = new Image();
-    	healthIcon.src = '../UnderROT/interface/icons/icon-60x60-health.svg';
+    	healthIcon.src = '../underrot/interface/icons/icon-60x60-health.svg';
     	healthIcon.height = iconWidth;
     	healthIcon.width = iconWidth; 	    	
     	this.uiIcons.healthIcon = healthIcon;
 		
 		var attackIcon = new Image();
-    	attackIcon.src = '../UnderROT/interface/icons/icon-60x60-attack.svg';
+    	attackIcon.src = '../underrot/interface/icons/icon-60x60-attack.svg';
     	attackIcon.height = iconWidth;
     	attackIcon.width = iconWidth; 	    	
     	this.uiIcons.attackIcon = attackIcon;
 		
 		var defenseIcon = new Image();
-    	defenseIcon.src = '../UnderROT/interface/icons/icon-60x60-defense.svg';
+    	defenseIcon.src = '../underrot/interface/icons/icon-60x60-defense.svg';
     	defenseIcon.height = iconWidth;
     	defenseIcon.width = iconWidth; 	    	
     	this.uiIcons.defenseIcon = defenseIcon;

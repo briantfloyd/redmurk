@@ -63,7 +63,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		});
 		
 		var tileSetImage = new Image();
-		tileSetImage.src = '../AgainstTheOoze/art/tilesheet-master-01.png'; //-line-dark
+		tileSetImage.src = '../againsttheooze/art/tilesheet-master-01.png'; //-line-dark
 				
 		Game.display._options.tileSet = tileSetImage;
 	},
@@ -674,7 +674,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				//icon: interfaceObject.uiIcons.plusIcon,
-				content: [[interfaceObject.uiIcons.plusIco]],
+				content: [[interfaceObject.uiIcons.plusIcon]],
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
 				y: interfaceObject.tilePixelWidth * 5,
 				width: interfaceObject.tilePixelWidth,
@@ -1242,7 +1242,7 @@ Game.AgainstTheOoze.SlimeTemplate = {
 	spriteSheetX: 0,
     spriteSheetY: 12, //9
 	maxHp: 5,
-	attackValue: 2,
+	attackValue: 1,
     defenseValue: 1,
 	speed: 100,
 	tasks: ['hunt', 'heal', 'wander'],
