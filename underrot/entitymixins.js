@@ -181,17 +181,20 @@ Game.Mixins.ExperienceGainer = {
         this.nextExperiencePointThreshold = 10;
     },
     experienceGain: function(entityDefeated) {
+    
+    	var statHandicap = 2;
+    
 		//relative to difference between attacker and defender in .maxHp, .defenseValue, .attackValue
 		//var hpDifference = this.maxHp - entityDefeated.maxHp; //FIXME - balance problem
-		var hpDifference = entityDefeated.maxHp - this.maxHp;
+		var hpDifference = (entityDefeated.maxHp - this.maxHp) * 10;
 		hpDifference = Math.max(hpDifference, 1);
 		
 		//var attackDifference = this.getAttackValue() - entityDefeated.getAttackValue();
-		var attackDifference = entityDefeated.getAttackValue() - this.getAttackValue();
+		var attackDifference = (entityDefeated.getAttackValue() + statHandicap - this.getAttackValue()) * 10;
 		attackDifference = Math.max(attackDifference, 1);
 		
 		//var defenseDifference = this.getDefenseValue() - entityDefeated.getDefenseValue();
-		var defenseDifference = entityDefeated.getDefenseValue() - this.getDefenseValue();
+		var defenseDifference = (entityDefeated.getDefenseValue() + statHandicap - this.getDefenseValue()) * 10;
 		defenseDifference = Math.max(defenseDifference, 1);
 		
 		var pointsEarned = hpDifference + attackDifference + defenseDifference;

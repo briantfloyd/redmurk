@@ -614,9 +614,8 @@ Game.Screen.inventoryScreen = {
     	
     	this.displayedItems = []; //reset
 
-		//UPDATE STAT/MESSAGE DISPLAY VALUES
-		//stats display //FIXME - duplicate of MessageDisplayUpdateActor stats display
-		Game.loadedEnvironment.uiComponents.inventoryScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.getAttackValue() + "|" + player.getDefenseValue(), player.experiencePoints + "|" + player.nextExperiencePointThreshold]; //FIXME - player		
+		//UPDATE STAT DISPLAY
+		Game.loadedEnvironment.setStatsDisplayContent();
 		
 		//message display
 		var inventorySelectedItem = this.selectedItem;
@@ -624,9 +623,11 @@ Game.Screen.inventoryScreen = {
 		var inventoryMessageDisplay = Game.loadedEnvironment.uiComponents.inventoryScreen.messageDisplay;		
 
 		if (inventorySelectedItem) {
-			inventoryMessageDisplay.text = [inventorySelectedItem.name];
+			//inventoryMessageDisplay.text = [inventorySelectedItem.name];
+			inventoryMessageDisplay.content = [[inventorySelectedItem.name]];
 		} else {
-			inventoryMessageDisplay.text = [''];
+			//inventoryMessageDisplay.text = [''];
+			inventoryMessageDisplay.content = [['']];
 		}	
 		
     	//DRAW UI
@@ -1030,33 +1031,33 @@ Game.Screen.statAssignmentScreen = {
     	var player = Game.Screen.playScreen.player; //FIXME - player
 		
 		var currentAttackDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.attackCurrentValueDisplay;
-		currentAttackDisplay.text = [player.attackValue];
+		currentAttackDisplay.content = [[(player.attackValue).toString()]];
 		
 		var currentDefenseDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.defenseCurrentValueDisplay;
-		currentDefenseDisplay.text = [player.defenseValue];
+		currentDefenseDisplay.content = [[(player.defenseValue).toString()]];
 		
 		var currentHpDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.hpCurrentValueDisplay;		
-		currentHpDisplay.text = [player.maxHp];
+		currentHpDisplay.content = [[(player.maxHp).toString()]];
 		
 		var newAttackDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.attackNewValueDisplay;
-		newAttackDisplay.text = null;
+		newAttackDisplay.content = null;
 		
 		var newDefenseDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.defenseNewValueDisplay;
-		newDefenseDisplay.text = null;
+		newDefenseDisplay.content = null;
 		
 		var newHpDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.hpNewValueDisplay;
-		newHpDisplay.text = null;
+		newHpDisplay.content = null;
 		
 		if (this.statRaising) {
 			switch(this.statRaising){
 				case "attack":
-					newAttackDisplay.text = [player.attackValue + 1];
+					newAttackDisplay.content = [[(player.attackValue + 1).toString()]];
 					break;
 				case "defense":
-					newDefenseDisplay.text = [player.defenseValue + 1];
+					newDefenseDisplay.content = [[(player.defenseValue + 1).toString()]];
 					break;
 				case "health":
-					newHpDisplay.text = [player.maxHp + 1];
+					newHpDisplay.content = [[(player.maxHp + 1).toString()]];
 					break;
 			}
 		}

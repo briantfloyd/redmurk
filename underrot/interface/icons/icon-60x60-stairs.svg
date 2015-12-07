@@ -5,7 +5,11 @@
 	 height="60px" viewBox="0 0 60 60" enable-background="new 0 0 60 60" xml:space="preserve">
 <g id="Layer_1">
 </g>
-<g id="arrow-right">
-	<polygon points="10,0.011 50,30 10,59.989 	"/>
+<g id="stairs">
+	<rect x="0.204" y="41.812" width="60" height="7"/>
+	<rect x="4.063" y="34.041" width="52.281" height="5"/>
+	<rect x="7.43" y="26.898" width="45.548" height="4"/>
+	<rect x="11.315" y="20.724" width="37.37" height="3"/>
+	<rect x="13.642" y="15.716" width="33.124" height="2"/>
 </g>
 </svg>

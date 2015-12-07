@@ -183,62 +183,25 @@ Game.Mixins.MessageDisplayUpdateActor = {
     groupName: 'Actor',
     act: function() {       
  	
-		var interfaceObject = Game.interfaceObject;
- 		var player = Game.Screen.playScreen.player;
-//console.log(player);		
-		//play screen stats display
-		//Game.loadedEnvironment.uiComponents.playScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.getAttackValue() + "|" + player.getDefenseValue(), player.experiencePoints + "|" + player.nextExperiencePointThreshold]; //FIXME - player		
-		var attackValueDisplay, defenseValueDisplay;
-		attackValueDisplay = player.getAttackValue().toString();
-		defenseValueDisplay = player.getDefenseValue().toString();
-		
-		Game.loadedEnvironment.uiComponents.playScreen.statsDisplay.content = [
-																				[interfaceObject.uiIcons.healthIcon, player.hp + "/" + player.maxHp], 
-																				[interfaceObject.uiIcons.attackIcon, attackValueDisplay, "|", interfaceObject.uiIcons.defenseIcon, defenseValueDisplay], 
-																				[player.experiencePoints + "|" + player.nextExperiencePointThreshold]
-																			]; //FIXME - player		
+ 		//update player stats and depth display
+		Game.loadedEnvironment.setStatsDisplayContent();
 
-		
-		//play screen depth display
-		//Game.loadedEnvironment.uiComponents.playScreen.depthDisplay.text = [Game.Screen.playScreen.depth];
-		var depthString = Game.Screen.playScreen.depth.toString();
-		Game.loadedEnvironment.uiComponents.playScreen.depthDisplay.content = [[depthString]];		
-		
 		//play screen message display
 		var playSelectedEntity = Game.Screen.playScreen.selectedEntity;
 		var playSelectedItem = Game.Screen.playScreen.selectedItem;
 		var playMessageDisplay = Game.loadedEnvironment.uiComponents.playScreen.messageDisplay;
 		
 		if (playSelectedEntity) {	
-			//playMessageDisplay.text = [playSelectedEntity.name, playSelectedEntity.hp + "/" + playSelectedEntity.maxHp, playSelectedEntity.getAttackValue() + "|" + playSelectedEntity.getDefenseValue()];
-			//var entityName = playSelectedEntity.name;
 			var entityHp = playSelectedEntity.hp + "/" + playSelectedEntity.maxHp;
 			var entityStats = playSelectedEntity.getAttackValue() + "|" + playSelectedEntity.getDefenseValue();
 			playMessageDisplay.content = [[playSelectedEntity.name], [entityHp], [entityStats]];
 
 			} else if (playSelectedItem) {
-			//playMessageDisplay.text = [playSelectedItem.name];
 			playMessageDisplay.content = [[playSelectedItem.name]];
 		} else {
-			//playMessageDisplay.text = Game.Messages.getLatest(); //FIXME - temporary	
 			var latestMessage = Game.Messages.getLatest(); //FIXME - temporary	
 			playMessageDisplay.content = [[latestMessage[0]]]; 
 		}
-		
-		/*
-		//inventory screen stats display
-		Game.loadedEnvironment.uiComponents.inventoryScreen.statsDisplay.text = [player.hp + "/" + player.maxHp, player.getAttackValue() + "|" + player.getDefenseValue(), player.experiencePoints]; //FIXME - player		
-		
-		//inventory screen message display
-		var inventorySelectedItem = Game.Screen.inventoryScreen.selectedItem;
-
-		var inventoryMessageDisplay = Game.loadedEnvironment.uiComponents.inventoryScreen.messageDisplay;		
-
-		if (inventorySelectedItem) {
-			inventoryMessageDisplay.text = [inventorySelectedItem.name];
-		}		
-		*/
-
     }
 };
 
