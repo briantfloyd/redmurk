@@ -26,7 +26,7 @@ Game.SpecialEffects =  {
 		this.specialEffectsCanvas.width = this.canvasTileWidth * this.tilePixelWidth;
 		this.specialEffectsCanvas.height = this.canvasTileHeight * this.tilePixelWidth;
     	this.canvasContainer.appendChild(this.specialEffectsCanvas);
-    },
+    }/*,
     drawSpecialEffects: function(parameters) {
 
     	//var ctx = this.specialEffectsCanvas.getContext("2d");
@@ -38,7 +38,7 @@ Game.SpecialEffects =  {
 		//ctx.font = fontSize + "px sans-serif";
     	//ctx.drawImage(componentIcon, iconX, iconY, componentIcon.width, componentIcon.height);
 
-    },
+    }*/,
     clearCanvas: function() {
     	var ctx = this.specialEffectsCanvas.getContext("2d");
     	ctx.clearRect(0, 0, this.specialEffectsCanvas.width, this.specialEffectsCanvas.height);

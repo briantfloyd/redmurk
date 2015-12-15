@@ -39,6 +39,7 @@ Game.Screen.playScreen = {
 	paused: false,
 	enter: function(saveData) { //optional parameter passed in on resume saved game    
 	    this.selectedEntity = null; //FIXME - best place for this? intended to address mobs remaining selected after death and resurrection on another level
+		this.selectedItem = null; //FIXME - same as above - inventory items remain selected after exiting inventory
 	    
 	    if (this.map === null) {
 			this.scheduler = new ROT.Scheduler.Speed();
@@ -75,9 +76,14 @@ Game.Screen.playScreen = {
     exit: function() {
     	console.log('locking engine');
 		this.engine.lock();
+		
+		Game.SpecialEffects.clearCanvas(); //FIXME? centralize?
 	},
 	render: function(display) {        
         Game.Screen.updateTopLeft();
+        
+        //clear special effects canvas 
+		Game.SpecialEffects.clearCanvas(); //FIXME? centralize?
         
         var visibleCells = {};
         
@@ -93,7 +99,10 @@ Game.Screen.playScreen = {
                 map.setExplored(x, y, true);
             });
 		
-		var interfaceObject = Game.interfaceObject;	
+		var interfaceObject = Game.interfaceObject;
+		
+		var entityLocations = []; //for entity stat overlay drawing
+		
 		for (var x = this.topLeftX; x < this.topLeftX + interfaceObject.canvasTileWidth; x++) {
 			for (var y = this.topLeftY; y < this.topLeftY + interfaceObject.canvasTileHeight; y++) {
 				if (this.map.isExplored(x, y)) {			
@@ -177,6 +186,14 @@ Game.Screen.playScreen = {
 						var entity = this.map.getEntityAt(x, y);
 						if (entity) {	
 							charactersToDraw.push(entity.character);
+							
+							//save location for entity stat overlay drawing
+							//FIXME - add qualifying parameters - distance, hostile, etc.
+							var entityLocationCoordinates = {};
+							entityLocationCoordinates.x = x;
+							entityLocationCoordinates.y = y;
+							entityLocationCoordinates.entity = entity;
+							entityLocations.push(entityLocationCoordinates);
 						}
 					}
 
@@ -189,8 +206,65 @@ Game.Screen.playScreen = {
 					);					
 				}
 			}
-		}    
-        Game.interfaceObject.drawUI(this.uiParameters);
+		}
+
+		//draw entity stat overlay
+		if (entityLocations.length > 0) {
+		
+			var ctx = Game.SpecialEffects.specialEffectsCanvas.getContext("2d");
+			var nextEntityX, nextEntityY, nextEntity, fontSize, healthPercentage;
+			
+			var iconSize = 20;
+			
+			var valueTextLength, marginHorizontal, marginVertical, entityAttackValue, entityDefenseValue, entityHealthValue;
+			
+			for (var a = 0, b = entityLocations.length; a < b; a++) {
+				nextEntityX = (entityLocations[a].x - this.topLeftX) * interfaceObject.tilePixelWidth;
+				nextEntityY = ((entityLocations[a].y - this.topLeftY) * interfaceObject.tilePixelWidth) + interfaceObject.tilePixelWidth - iconSize;
+				nextEntity = entityLocations[a].entity;
+				
+				ctx.fillStyle = "rgba(255, 255, 255, 1.0)";				
+				fontSize = 12;
+				ctx.font = fontSize + "px sans-serif";
+
+				//attack value
+				entityAttackValue = nextEntity.getAttackValue();				
+				valueTextLength = ctx.measureText(entityAttackValue).width;
+				marginHorizontal = (iconSize - valueTextLength) / 2;
+				marginVertical = (iconSize - fontSize) / 2; //only need to calculate this once
+				
+				ctx.drawImage(interfaceObject.uiIcons.attackIcon, nextEntityX, nextEntityY, iconSize, iconSize);
+				ctx.fillText(entityAttackValue,nextEntityX + marginHorizontal, nextEntityY + fontSize + marginVertical);
+				nextEntityX += iconSize;
+				
+				//defense value
+				entityDefenseValue = nextEntity.getDefenseValue();				
+				valueTextLength = ctx.measureText(entityDefenseValue).width;
+				marginHorizontal = (iconSize - valueTextLength) / 2;	
+				
+				ctx.drawImage(interfaceObject.uiIcons.defenseIcon, nextEntityX, nextEntityY, iconSize, iconSize);
+				ctx.fillText(entityDefenseValue,nextEntityX + marginHorizontal, nextEntityY + fontSize + marginVertical);
+				nextEntityX += iconSize;	
+				
+				//health value
+				healthPercentage = nextEntity.hp / nextEntity.maxHp;
+				if (healthPercentage < .33) {
+					ctx.fillStyle = "rgba(255, 0, 0, 1.0)";
+				} else if (healthPercentage < .66) {
+					ctx.fillStyle = "rgba(252, 171, 0, 1.0)";
+				}
+				
+				entityHealthValue = nextEntity.hp.toString();				
+				valueTextLength = ctx.measureText(entityHealthValue).width;
+				marginHorizontal = (iconSize - valueTextLength) / 2;	
+				
+				ctx.drawImage(interfaceObject.uiIcons.healthIcon, nextEntityX, nextEntityY, iconSize, iconSize);
+				ctx.fillText(entityHealthValue,nextEntityX + marginHorizontal, nextEntityY + fontSize + marginVertical);
+			}
+		}
+		
+		//draw UI    
+        interfaceObject.drawUI(this.uiParameters);
 	},
     handleInput: function(inputType, inputData) {
         if (inputType === 'keydown') {
@@ -608,6 +682,7 @@ Game.Screen.inventoryScreen = {
 	},
     exit: function() { 
     	this.justViewed = true;
+    	//Game.loadedEnvironment.uiComponents.inventoryScreen.messageDisplay.content = [['']]; //FIXME? Right place to be clearing this display?
 	},
     render: function(display) {
     	var player = Game.Screen.playScreen.player; //FIXME - player
@@ -1169,7 +1244,7 @@ Game.Screen.mapScreen = {
     	}
     	
     	//DRAW UI
-		var interfaceObject = Game.interfaceObject;		
+		//var interfaceObject = Game.interfaceObject;		
 		interfaceObject.drawUI(this.uiParameters);
 
     },
@@ -1227,11 +1302,7 @@ Game.Screen.confirmScreen = {
     	this.reset();
 	},
     render: function(display) {
-    	//var player = Game.Screen.playScreen.player; //FIXME - player
-//console.log(this.confirmationMessage);
-
-		//Game.loadedEnvironment.uiComponents.confirmScreen.confirmMessageDisplay.text = this.confirmationMessage; //FIXME? couldn't get this to assign in actual ui component in environment
-		//var messageContent = this.confirmationMessage;
+		//set confirmation message
 		Game.loadedEnvironment.uiComponents.confirmScreen.confirmMessageDisplay.content = this.confirmationMessage;
 		
     	//DRAW UI

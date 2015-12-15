@@ -159,22 +159,22 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		var player = Game.Screen.playScreen.player;
 		var interfaceObject = Game.interfaceObject;
 		
-		var attackValueDisplay, defenseValueDisplay;
+		//inventory stats display (entity stat overlays drawn by playScreen render)
+		var attackValueDisplay, defenseValueDisplay, healthValueDisplay, experienceValueDisplay;
 		attackValueDisplay = player.getAttackValue().toString();
 		defenseValueDisplay = player.getDefenseValue().toString();
+		healthValueDisplay = player.hp.toString();
+		experienceValueDisplay = player.experiencePoints + "|" + player.nextExperiencePointThreshold;
 		
-		var statDisplayContent = [
-									[interfaceObject.uiIcons.healthIcon, player.hp + "/" + player.maxHp], 
-									[interfaceObject.uiIcons.attackIcon, player.getAttackValue().toString(), "|", interfaceObject.uiIcons.defenseIcon, player.getDefenseValue().toString()], //converting integers to string as interface logic utilizes type for interpreting the format/layout of the display
-									[player.experiencePoints + "|" + player.nextExperiencePointThreshold]
-								] //FIXME - player
-		
-		this.uiComponents.playScreen.statsDisplay.content = statDisplayContent;
-		this.uiComponents.inventoryScreen.statsDisplay.content = statDisplayContent;
+		this.uiComponents.inventoryScreen.statsDisplayAttack.content = [[attackValueDisplay]];
+		this.uiComponents.inventoryScreen.statsDisplayDefense.content = [[defenseValueDisplay]];
+		this.uiComponents.inventoryScreen.statsDisplayHealth.content = [[healthValueDisplay]];
+		//this.uiComponents.inventoryScreen.statsDisplayExperience.content = [[experienceValueDisplay]];
+		this.uiComponents.inventoryScreen.statsDisplayExperience.content = [[player.experiencePoints.toString()],[player.nextExperiencePointThreshold.toString()]];
 
 		//depth display
 		var depthString = Game.Screen.playScreen.depth.toString();
-		this.uiComponents.playScreen.depthDisplay.content = [[interfaceObject.uiIcons.stairsIcon, depthString]];		
+		this.uiComponents.playScreen.depthDisplay.content = [[depthString]];		
 						
 	},
 	initializeUI: function() {
@@ -184,17 +184,33 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		//menu screen UI components
 		this.uiComponents.menuScreen = {};	
 		var menuComponents = this.uiComponents.menuScreen;
-
+	
+		menuComponents.gameTitle = 
+			{	
+				backgroundStyle: 'none',
+				textStyle: 'headingText01',
+				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
+				//y: 0,
+				y: (((interfaceObject.canvasTileHeight - 1) / 2) - 1) * interfaceObject.tilePixelWidth, //required
+				width: interfaceObject.tilePixelWidth * 3,
+				height: interfaceObject.tilePixelWidth,
+				content: [["Against the Ooze"]]
+			};
+			
 		menuComponents.newGameButton = 
 			{	
-				backgroundStyle: 'button01', //'button01', 'dark01', 'light01', 'none' //required
+				backgroundStyle: 'button01', //'button01', 'dark01', 'light01', 'icon01', 'none' //required
+				//iconBackground: '', //optional - requires 'icon01' backgroundStyle
 				roundedCorners: true, //optional
 				//transparency: true, //optional
+				textStyle: 'buttonText01', //optional
 				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 1) * interfaceObject.tilePixelWidth, //positioning on screen //required
-				y: interfaceObject.tilePixelWidth, //required
+				//y: interfaceObject.tilePixelWidth, //required
+				y: ((interfaceObject.canvasTileHeight - 1) / 2) * interfaceObject.tilePixelWidth, //required
 				width: interfaceObject.tilePixelWidth * 3, //positioning and sizing is defined relative to tile grid //required
 				height: interfaceObject.tilePixelWidth, //required
-				content: [["Begin new game"]], //optional
+				content: [["New Game"]], //optional
+				//label: 'Start new game', //optional
 				clickAction: function() { //optional
 					Game.Screen.playScreen.map = null; //reset
 					Game.switchScreen(Game.Screen.newGameScreen);
@@ -206,17 +222,18 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
-				y: interfaceObject.tilePixelWidth * 2,
+				//y: interfaceObject.tilePixelWidth * 2,
+				y: (((interfaceObject.canvasTileHeight - 1) / 2) + 1) * interfaceObject.tilePixelWidth, //required
 				width: interfaceObject.tilePixelWidth * 3,
 				height: interfaceObject.tilePixelWidth,
-				content: [["Resume saved game"]],
+				content: [["Load Save"]],
 				clickAction: function() {
 					Game.switchScreen(Game.Screen.loadGameScreen);
 				}					
-			};
+			};	
 
 		//component parameters to be read by interface drawUI()
-		this.uiScreens.menuScreenUI = [menuComponents.newGameButton, menuComponents.resumeGameButton];		
+		this.uiScreens.menuScreenUI = [menuComponents.gameTitle, menuComponents.newGameButton, menuComponents.resumeGameButton];		
 		
 		//play screen UI components
 		this.uiComponents.playScreen = {};	
@@ -224,9 +241,11 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		playComponents.menuButton = 
 			{	
-				backgroundStyle: 'button01',
+				backgroundStyle: 'dark01',
 				roundedCorners: true,
+				transparency: true,
 				content: [[interfaceObject.uiIcons.menuIcon]],
+				label: 'Menu',
 				x: 0, 
 				y: 0,
 				width: interfaceObject.tilePixelWidth, 
@@ -238,9 +257,11 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		playComponents.healButton = 
 			{	
-				backgroundStyle: 'button01',
+				backgroundStyle: 'dark01',
 				roundedCorners: true,
+				transparency: true,
 				content: [[interfaceObject.uiIcons.healIcon]],
+				label: 'Heal',
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
@@ -252,9 +273,11 @@ Game.AgainstTheOoze = { //set as loaded environment below
 			
 		playComponents.pauseButton = 
 			{	
-				backgroundStyle: 'button01',
+				backgroundStyle: 'dark01',
 				roundedCorners: true,
+				transparency: true,
 				content:[[interfaceObject.uiIcons.pauseIcon]],
+				label: 'Pause',
 				x: interfaceObject.tilePixelWidth,
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
@@ -266,45 +289,35 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		playComponents.messageDisplay = 
 			{	 
-				backgroundStyle: 'dark01',
-				roundedCorners: true, 
-				transparency: true,
+				backgroundStyle: 'none',
+				textStyle: 'headingText02',
 				x: interfaceObject.tilePixelWidth,
 				y: 0,
-				width:(interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
+				width:(interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
 				height: interfaceObject.tilePixelWidth,
 				content: null //set by engine process actor	
-			};
-			
-		playComponents.statsDisplay = 
-			{	
-				backgroundStyle: 'light01',//'dark01',
-				roundedCorners: true, 
-				transparency: true,
-				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
-				y: 0,
-				width: interfaceObject.tilePixelWidth * 2,
-				height: interfaceObject.tilePixelWidth,
-				content: null
 			};
 		
 		playComponents.depthDisplay = 
 			{	
-				backgroundStyle: 'dark01',
-				roundedCorners: true, 
-				transparency: true,
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.stairsIcon,
+				textStyle: 'headingText01',
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
-				y: interfaceObject.tilePixelWidth,
+				y: 0,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: null
+				content: null,
+				label: 'Depth',
 			};				
 
 		playComponents.mapButton = 
 			{	
-				backgroundStyle: 'button01',
+				backgroundStyle: 'dark01',
 				roundedCorners: true,
+				transparency: true,
 				content: [[interfaceObject.uiIcons.compassIcon]],
+				label: 'Map',
 				x: 0, 
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth, 
@@ -314,7 +327,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				}					
 			};
 
-		this.uiScreens.playScreenUI = [playComponents.menuButton, playComponents.healButton, playComponents.pauseButton, playComponents.messageDisplay, playComponents.statsDisplay, playComponents.depthDisplay, playComponents.mapButton];		
+		this.uiScreens.playScreenUI = [playComponents.menuButton, playComponents.healButton, playComponents.pauseButton, playComponents.messageDisplay, playComponents.depthDisplay, playComponents.mapButton];		
 		
 		//inventory screen UI components
 		this.uiComponents.inventoryScreen = {};	
@@ -325,6 +338,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				content: [[interfaceObject.uiIcons.closeIcon]],
+				label: 'Close',
 				x: 0,
 				y: 0,
 				width: interfaceObject.tilePixelWidth,
@@ -343,24 +357,60 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				height: interfaceObject.tilePixelWidth,
 				content: null
 			};
-
-		inventoryComponents.statsDisplay = 
+		
+		inventoryComponents.statsDisplayAttack = 
 			{	
-				backgroundStyle: 'dark01',
-				roundedCorners: true, 
-				transparency: true,
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.attackIcon,
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
+				y: 0,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				content: null,
+				label: 'Attack',
+			};		
+		
+		inventoryComponents.statsDisplayDefense = 
+			{	
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.defenseIcon,
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
+				y: 0,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				content: null,
+				label: 'Defense',
+			};				
+		
+		inventoryComponents.statsDisplayHealth = 
+			{	
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.healthIcon,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				y: 0,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: null
+				content: null,
+				label: 'Health',
 			};
-
+		
+		inventoryComponents.statsDisplayExperience = 
+			{	
+				backgroundStyle: 'none',
+				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
+				y: interfaceObject.tilePixelWidth * 2,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth,
+				content: null,
+				label: 'Experience',
+			};		
+			
 		inventoryComponents.groundInventorySwapButton = 
 			{
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				content: [[interfaceObject.uiIcons.arrowIconRightLeft]],
+				label: 'Move',
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
@@ -379,6 +429,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				content: [[interfaceObject.uiIcons.arrowIconUpDown]],
+				label: 'Move',
 				x: 0,
 				y: interfaceObject.tilePixelWidth * 2,
 				width: interfaceObject.tilePixelWidth * 2,
@@ -494,7 +545,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				height: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2)				
 			};
 			
-		this.uiScreens.inventoryScreenUI = [inventoryComponents.closeButton, inventoryComponents.messageDisplay, inventoryComponents.statsDisplay, inventoryComponents.groundInventorySwapButton, inventoryComponents.equippedDisplay, inventoryComponents.inventoryDisplay, inventoryComponents.groundDisplay, inventoryComponents.groundScrollUpButton, inventoryComponents.groundScrollDownButton, inventoryComponents.inventoryScrollUpButton, inventoryComponents.inventoryScrollDownButton, inventoryComponents.inventoryEquippedSwapButton];
+		this.uiScreens.inventoryScreenUI = [inventoryComponents.closeButton, inventoryComponents.messageDisplay, inventoryComponents.statsDisplayAttack, inventoryComponents.statsDisplayDefense, inventoryComponents.statsDisplayHealth, inventoryComponents.statsDisplayExperience, inventoryComponents.groundInventorySwapButton, inventoryComponents.equippedDisplay, inventoryComponents.inventoryDisplay, inventoryComponents.groundDisplay, inventoryComponents.groundScrollUpButton, inventoryComponents.groundScrollDownButton, inventoryComponents.inventoryScrollUpButton, inventoryComponents.inventoryScrollDownButton, inventoryComponents.inventoryEquippedSwapButton];
 		
 		
 		//stat assignment screen UI components
@@ -509,7 +560,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				y: interfaceObject.tilePixelWidth * 6,
 				width: interfaceObject.tilePixelWidth * 3,
 				height: interfaceObject.tilePixelWidth,
-				content: [["Confirm and continue"]],
+				content: [[interfaceObject.uiIcons.checkmarkIcon]],
+				label: 'Confirm',
 				clickAction: function() {			
 					if (Game.Screen.statAssignmentScreen.statRaising) {
 						Game.Screen.statAssignmentScreen.statAssignment();
@@ -521,98 +573,123 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		statAssignmentComponents.instructionsDisplay = 
 			{	
 				backgroundStyle: 'none',
+				textStyle: 'headingText01',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth * 3,
 				height: interfaceObject.tilePixelWidth,
-				content: [["Select a skill to improve."]]
+				content: [["Improve skill"]]
 			};	
 
 		statAssignmentComponents.currentValueLabel = 
 			{	
 				backgroundStyle: 'none',
+				textStyle: 'headingText02',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 2,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: [["Current"],["Value"]]
+				content: [["Current"]]
 			};
 
 		statAssignmentComponents.newValueLabel = 
 			{	
 				backgroundStyle: 'none',
+				textStyle: 'headingText02',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 2,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: [["New"],["Value"]]
+				content: [["New"]]
 			};
 
-		statAssignmentComponents.attackLabel = 
+		/*statAssignmentComponents.attackLabel = 
 			{	 
-				backgroundStyle: 'none',
+				//backgroundStyle: 'none',
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.attackIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - (interfaceObject.tilePixelWidth * 2),
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: [["Attack"]]
+				//content: [["Attack"]],
+				content: [[interfaceObject.uiIcons.attackIcon]],
+				label: "Attack"
 			};
 
 		statAssignmentComponents.defenseLabel = 
 			{	
-				backgroundStyle: 'none',
+				//backgroundStyle: 'none',
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.defenseIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - (interfaceObject.tilePixelWidth * 2),
 				y: interfaceObject.tilePixelWidth * 4,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: [["Defense"]]
+				//content: [["Defense"]]
+				//content: [[interfaceObject.uiIcons.defenseIcon]],
+				label: "Defense"
 			};
 
 		statAssignmentComponents.hpLabel = 
 			{	
-				backgroundStyle: 'none',
+				//backgroundStyle: 'none',
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.healthIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - (interfaceObject.tilePixelWidth * 2),
 				y: interfaceObject.tilePixelWidth * 5,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content:  [["Health"]]
-			}
+				//content:  [["Health"]]
+				//content: [[interfaceObject.uiIcons.healthIcon]],
+				label: "Health"
+			}*/
 
 		statAssignmentComponents.attackCurrentValueDisplay = 
 			{	
-				backgroundStyle: 'none',
+				//backgroundStyle: 'none',
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.attackIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: null
+				content: null,
+				label: "Attack"
 			};
 
 		statAssignmentComponents.defenseCurrentValueDisplay = 
 			{	
-				backgroundStyle: 'none',
+				//backgroundStyle: 'none',
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.defenseIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 4,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: null			
+				content: null,
+				label: "Defense"			
 			};
 
 		statAssignmentComponents.hpCurrentValueDisplay = 
 			{	
-				backgroundStyle: 'none',
+				//backgroundStyle: 'none',
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.healthIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 5,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: null		
+				content: null,
+				label: "Health"		
 			};
 
 		statAssignmentComponents.attackIncreaseButton = 
 			{
 				backgroundStyle: 'button01',
 				roundedCorners: true,
-				content: [[interfaceObject.uiIcons.plusIcon]],
+				content: [[interfaceObject.uiIcons.checkmarkIcon]],
+				label: " ",
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
@@ -627,7 +704,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 			{
 				backgroundStyle: 'button01',
 				roundedCorners: true,
-				content: [[interfaceObject.uiIcons.plusIcon,]],
+				content: [[interfaceObject.uiIcons.checkmarkIcon]],
+				label: " ",
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
 				y: interfaceObject.tilePixelWidth * 4,
 				width: interfaceObject.tilePixelWidth,
@@ -642,7 +720,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 			{
 				backgroundStyle: 'button01',
 				roundedCorners: true,
-				content: [[interfaceObject.uiIcons.plusIcon]],
+				content: [[interfaceObject.uiIcons.checkmarkIcon]],
+				label: " ",
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
 				y: interfaceObject.tilePixelWidth * 5,
 				width: interfaceObject.tilePixelWidth,
@@ -655,35 +734,44 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		statAssignmentComponents.attackNewValueDisplay = 
 			{	
-				backgroundStyle: 'none',
+				//backgroundStyle: 'none',
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.attackIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: null
+				content: null,
+				label: "Attack"
 			};
 
 		statAssignmentComponents.defenseNewValueDisplay = 
 			{	
-				backgroundStyle: 'none',
+				//backgroundStyle: 'none',
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.defenseIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 4,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: null		
+				content: null,
+				label: "Defense"
 			};
 
 		statAssignmentComponents.hpNewValueDisplay = 
 			{	
-				backgroundStyle: 'none',
+				//backgroundStyle: 'none',
+				backgroundStyle: 'icon01',
+				iconBackground: interfaceObject.uiIcons.healthIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 5,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: null			
+				content: null,
+				label: "Health"
 			};			
 
-		this.uiScreens.statAssignmentScreenUI = [statAssignmentComponents.saveButton, statAssignmentComponents.instructionsDisplay, statAssignmentComponents.currentValueLabel, statAssignmentComponents.newValueLabel, statAssignmentComponents.attackLabel, statAssignmentComponents.defenseLabel, statAssignmentComponents.hpLabel, statAssignmentComponents.attackCurrentValueDisplay, statAssignmentComponents.defenseCurrentValueDisplay, statAssignmentComponents.hpCurrentValueDisplay, statAssignmentComponents.attackIncreaseButton, statAssignmentComponents.defenseIncreaseButton, statAssignmentComponents.hpIncreaseButton, statAssignmentComponents.attackNewValueDisplay, statAssignmentComponents.defenseNewValueDisplay, statAssignmentComponents.hpNewValueDisplay];
+		this.uiScreens.statAssignmentScreenUI = [statAssignmentComponents.saveButton, statAssignmentComponents.instructionsDisplay, statAssignmentComponents.currentValueLabel, statAssignmentComponents.newValueLabel, /*statAssignmentComponents.attackLabel, statAssignmentComponents.defenseLabel, statAssignmentComponents.hpLabel, */statAssignmentComponents.attackCurrentValueDisplay, statAssignmentComponents.defenseCurrentValueDisplay, statAssignmentComponents.hpCurrentValueDisplay, statAssignmentComponents.attackIncreaseButton, statAssignmentComponents.defenseIncreaseButton, statAssignmentComponents.hpIncreaseButton, statAssignmentComponents.attackNewValueDisplay, statAssignmentComponents.defenseNewValueDisplay, statAssignmentComponents.hpNewValueDisplay];
 
 		//map screen UI components
 		this.uiComponents.mapScreen = {};	
@@ -694,6 +782,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				content: [[interfaceObject.uiIcons.closeIcon]],
+				label: 'Close',
 				x: 0,
 				y: 0,
 				width: interfaceObject.tilePixelWidth,
@@ -713,11 +802,12 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		playerDeathComponents.slainMessageDisplay = 
 			{	
 				backgroundStyle: 'none',
+				textStyle: 'headingText01',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 2,
 				width: interfaceObject.tilePixelWidth * 3,
 				height: interfaceObject.tilePixelWidth,
-				content: [["You have been slain"]]
+				content: [["You have died"]]
 			};	
 			
 		playerDeathComponents.continueButton = 
@@ -728,7 +818,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth * 3,
 				height: interfaceObject.tilePixelWidth,
-				content: [["Rise from the dead"]],
+				content: [["Resurrect"]],
 				clickAction: function() {
 					Game.loadedEnvironment.playerResurrect();	
 					Game.SpecialEffects.clearCanvas();
@@ -741,6 +831,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				content: [[interfaceObject.uiIcons.menuIcon]],
+				label: 'Menu',
 				x: 0, 
 				y: 0,
 				width: interfaceObject.tilePixelWidth, 
@@ -759,7 +850,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		
 		confirmComponents.confirmMessageDisplay = 
 			{	
-				backgroundStyle: 'light01', //'none',
+				backgroundStyle: 'none',
+				textStyle: 'headingText01',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 2,
 				width: interfaceObject.tilePixelWidth * 3,
@@ -771,7 +863,9 @@ Game.AgainstTheOoze = { //set as loaded environment below
 			{	
 				backgroundStyle: 'button01',
 				roundedCorners: true,
-				content: [[interfaceObject.uiIcons.checkmarkIcon,'Yes']],
+				//content: [[interfaceObject.uiIcons.checkmarkIcon,'Yes']],
+				content: [[interfaceObject.uiIcons.checkmarkIcon]],
+				label: 'Yes',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth * 2,
@@ -793,6 +887,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				content: [[interfaceObject.uiIcons.closeIcon]],
+				label: 'No',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
@@ -816,6 +911,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				content: [[interfaceObject.uiIcons.menuIcon]],
+				label: 'Menu',
 				x: 0, 
 				y: 0,
 				width: interfaceObject.tilePixelWidth, 
@@ -828,11 +924,12 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		newGameComponents.difficultyMessageDisplay = 
 			{	
 				backgroundStyle: 'none',
+				textStyle: 'headingText01',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 2,
 				width: interfaceObject.tilePixelWidth * 3,
 				height: interfaceObject.tilePixelWidth,
-				content: [["Select difficulty level"]]
+				content: [["Select difficulty"]]
 			};
 
 		newGameComponents.difficultySelectedMessageDisplay = 
@@ -850,6 +947,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				content: [[interfaceObject.uiIcons.plusIcon]],
+				label: 'Hard',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + (interfaceObject.tilePixelWidth * 2),
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
@@ -865,6 +963,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				content: [[interfaceObject.uiIcons.minusIcon]],
+				label: 'Easy',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - (interfaceObject.tilePixelWidth * 2),
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
@@ -883,7 +982,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				y: interfaceObject.tilePixelWidth * 4,
 				width: interfaceObject.tilePixelWidth * 3,
 				height: interfaceObject.tilePixelWidth,
-				content: [["Begin game"]],
+				content: [["Start game"]],
 				clickAction: function() {
 					Game.switchScreen(Game.Screen.playScreen);
 				}					
@@ -900,6 +999,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				content: [[interfaceObject.uiIcons.menuIcon]],
+				label: 'Menu',
 				x: 0,
 				y: 0,
 				width: interfaceObject.tilePixelWidth,
@@ -912,18 +1012,21 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		loadGameComponents.instructionsDisplay = 
 			{	
 				backgroundStyle: 'none',
+				textStyle: 'headingText01',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: 0,
 				width: interfaceObject.tilePixelWidth * 3,
 				height: interfaceObject.tilePixelWidth,
-				content: [["Select game to resume."]]
+				content: [["Saved games"]]
 			};	
 
 		loadGameComponents.loadGameButton = 
 			{	
 				backgroundStyle: 'button01',
 				roundedCorners: true,
-				content: [[interfaceObject.uiIcons.checkmarkIcon, 'Resume game']],
+				//content: [[interfaceObject.uiIcons.checkmarkIcon, 'Load game']],
+				content: [[interfaceObject.uiIcons.checkmarkIcon]],
+				label: 'Load',
 				x: interfaceObject.tilePixelWidth,
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
@@ -940,6 +1043,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'button01',
 				roundedCorners: true,
 				content: [[interfaceObject.uiIcons.trashIcon]],
+				label: 'Delete',
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
@@ -948,7 +1052,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 					if (Game.Screen.loadGameScreen.selectedSavedGame) {
 						
 						//set message to display 'Delete saved game'
-						Game.Screen.confirmScreen.confirmationMessage = [[interfaceObject.uiIcons.trashIcon,'Delete this saved game?']];
+						Game.Screen.confirmScreen.confirmationMessage = [['Delete game?']];
 						
 						//set command object						
 						Game.Screen.confirmScreen.confirmationCommandObject = localStorage;
@@ -998,7 +1102,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				content: [[interfaceObject.uiIcons.arrowIconDown]],
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
-				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
 				clickAction: function() {
@@ -1119,7 +1223,10 @@ Game.AgainstTheOoze.Mixins.PlayerActor = {
     	//if items at coordinate and not midway following path and number of items is greater than 0
     	else if (this.map.getItemsAt(this.x, this.y) && this.pathCoordinates.length === 0 && this.map.getItemsAt(this.x, this.y).length > 0) {
     		if (Game.Screen.inventoryScreen.justViewed !== true) {
-    			Game.switchScreen(Game.Screen.inventoryScreen);
+    			//Game.switchScreen(Game.Screen.inventoryScreen);
+				
+				var item = this.map.getItemsAt(this.x, this.y)[0];
+				Game.Screen.inventoryScreen.itemInventoryGroundSwap(item, this);
     		}
     	}
     	

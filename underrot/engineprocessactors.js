@@ -192,15 +192,17 @@ Game.Mixins.MessageDisplayUpdateActor = {
 		var playMessageDisplay = Game.loadedEnvironment.uiComponents.playScreen.messageDisplay;
 		
 		if (playSelectedEntity) {	
-			var entityHp = playSelectedEntity.hp + "/" + playSelectedEntity.maxHp;
-			var entityStats = playSelectedEntity.getAttackValue() + "|" + playSelectedEntity.getDefenseValue();
-			playMessageDisplay.content = [[playSelectedEntity.name], [entityHp], [entityStats]];
+			//var entityHp = playSelectedEntity.hp + "/" + playSelectedEntity.maxHp;
+			//var entityStats = playSelectedEntity.getAttackValue() + "|" + playSelectedEntity.getDefenseValue();
+			//playMessageDisplay.content = [[playSelectedEntity.name], [entityHp], [entityStats]];
+			playMessageDisplay.content = [[playSelectedEntity.name]];
 
-			} else if (playSelectedItem) {
+		} else if (playSelectedItem) {
 			playMessageDisplay.content = [[playSelectedItem.name]];
 		} else {
-			var latestMessage = Game.Messages.getLatest(); //FIXME - temporary	
-			playMessageDisplay.content = [[latestMessage[0]]]; 
+			//var latestMessage = Game.Messages.getLatest(); //FIXME - temporary	
+			//playMessageDisplay.content = [[latestMessage[0]]]; 
+			playMessageDisplay.content = [['']]; 
 		}
     }
 };
