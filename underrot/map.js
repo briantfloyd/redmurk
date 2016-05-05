@@ -195,7 +195,7 @@ Game.Map.prototype.addItem = function(x, y, item) {
     }
 };
 
-Game.Map.prototype.setItemsAt = function(x, y, items) {
+/*Game.Map.prototype.setItemsAt = function(x, y, items) {
     var key = x + ',' + y;
     if (items.length === 0) {
         if (this.items[key]) {
@@ -203,8 +203,8 @@ Game.Map.prototype.setItemsAt = function(x, y, items) {
         }
     } else {
         this.items[key] = items;
-    }
-};
+    }    
+};*/
 
 Game.Map.prototype.addItemAtRandomPosition = function(item) {
     var position = this.getRandomFloorPosition();

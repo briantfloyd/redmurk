@@ -106,22 +106,7 @@ Game.Mixins.GameStateSaverActor = {
 					savedMapData.entities[a].equipped.accessory = mapEntities[a].equipped.accessory.templateType;
 				}
 			}
-			
-			/*
-			if (mapEntities[a].hasMixin('InventoryCarrier')) {	
-				savedMapData.entities[a].inventory = []; //reset
-				for (var b in mapEntities[a].inventory) {				
-					if (mapEntities[a].inventory[b].templateType) { //otherwise will try to save array methods as well
-//console.log('saving entity inventory item: ' + mapEntities[a].inventory[b].templateType);
-						savedMapData.entities[a].inventory.push(mapEntities[a].inventory[b].templateType);
-					}
-				}
-//console.log(savedMapData.entities[a].inventory);
-			}
-			*/
-			
-			
-			
+					
 			if (mapEntities[a].hasMixin('InventoryCarrier')) {	
 				savedMapData.entities[a].inventory = []; //reset
 				
@@ -129,9 +114,6 @@ Game.Mixins.GameStateSaverActor = {
 					savedMapData.entities[a].inventory.push(mapEntities[a].inventory[b].templateType);
 				}
 			}
-
-			
-			
 			
 			if (mapEntities[a].hasMixin('ExperienceGainer')) {	
 				savedMapData.entities[a].experiencePoints = mapEntities[a].experiencePoints;
@@ -143,11 +125,22 @@ Game.Mixins.GameStateSaverActor = {
 		savedMapData.items = {}; //reset
 		
 		var mapItems = liveMap.items;
+		var nextItem;
+		
 		for (var c in mapItems) {
-			savedMapData.items[c] = {};
-			savedMapData.items[c].templateType = mapItems[c].templateType;
-			savedMapData.items[c].x = mapItems[c].x;
-			savedMapData.items[c].y = mapItems[c].y;
+			
+			savedMapData.items[c] = [];
+			
+			//multiple items may be stacked at single coordinate
+			for (var j = 0, k = mapItems[c].length; j  < k; j++){
+				nextItem = {};
+				nextItem.templateType = mapItems[c][j].templateType;
+	//console.log(mapItems[c][j]);
+				nextItem.x = mapItems[c][j].x;
+				nextItem.y = mapItems[c][j].y;
+				
+				savedMapData.items[c].push(nextItem);
+			}
 		}
 		
 		//map explored

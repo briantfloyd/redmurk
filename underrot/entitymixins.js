@@ -4,21 +4,23 @@ Game.Mixins = {};
 Game.Mixins.Destructible = {
     name: 'Destructible',
     init: function(template) {
-        this.maxHp = template['maxHp'] || 10;
+        this.maxHp = template['maxHp'] || 1;
         this.hp = template['hp'] || this.maxHp;
         this.defenseValue = template['defenseValue'] || 0;
         this.restHealTimer = 0; //for throttling healing rates for entities acting at different speeds
     },
     getDefenseValue: function() {
-        var modifier = 0;
+		var modifier = 0;
         if (this.hasMixin(Game.Mixins.Equipper)) {
-            for (var x in this.equipped) {
-            	if (this.equipped[x]) {
+
+			for (var x in this.equipped) {
+           
+				if (this.equipped[x]) {
             		modifier += this.equipped[x].defenseValue;
             	}
             }
         }
-        return this.defenseValue + modifier;
+       return this.defenseValue + modifier;
     },
     takeDamage: function(attacker, damage) {
         this.hp -= damage;
@@ -81,13 +83,12 @@ Game.Mixins.Attacker = {
     	this.attackValue = template['attackValue'] || 1;
     },
     getAttackValue: function() {
-        var modifier = 0;
+		var modifier = 0;
         if (this.hasMixin(Game.Mixins.Equipper)) {
-             
             for (var x in this.equipped) {
-            	if (this.equipped[x]) {
-            		modifier += this.equipped[x].attackValue;
-            	}
+				if (this.equipped[x]) {
+					modifier += this.equipped[x].attackValue;
+				}
             }
         }
         return this.attackValue + modifier;

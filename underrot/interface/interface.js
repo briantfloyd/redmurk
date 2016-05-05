@@ -92,6 +92,18 @@ var Interface =  {
     	var stairsIcon = new Image();
     	stairsIcon.src = '../underrot/interface/icons/icon-60x60-stairs.svg'; 	    	
     	this.uiIcons.stairsIcon = stairsIcon;
+    	
+    	var trophyIcon = new Image();
+    	trophyIcon.src = '../underrot/interface/icons/icon-60x60-trophy.svg'; 	    	
+    	this.uiIcons.trophyIcon = trophyIcon;
+    	
+    	var newGameIcon = new Image();
+    	newGameIcon.src = '../underrot/interface/icons/icon-60x60-new-game.svg'; 	    	
+    	this.uiIcons.newGameIcon = newGameIcon;
+    	
+    	var loadGameIcon = new Image();
+    	loadGameIcon.src = '../underrot/interface/icons/icon-60x60-load-game.svg'; 	    	
+    	this.uiIcons.loadGameIcon = loadGameIcon;
     	    	
     },
     updateCanvasTileDimensions: function() {
@@ -128,8 +140,14 @@ var Interface =  {
     	for (var i = 0, j = parameters.length; i < j; i++) {	
     		
     		var componentParameters = parameters[i];
-    		
-    		var inset = 4;
+   		
+			var inset;
+			
+			if (componentParameters.noInset){
+				inset = 0;
+			} else {
+				inset = 4;
+			}
 		
 			//offset component positioning and sizing to provide padding in between
 			var componentX = componentParameters.x + inset;
@@ -138,12 +156,13 @@ var Interface =  {
 			var componentHeight = componentParameters.height - (inset * 2);
 			
 			var componentBackgroundStyle = componentParameters.backgroundStyle;
-			var componentIconBackground = componentParameters.iconBackground;
+			var componentImageBackground = componentParameters.imageBackground;
 			var componentTextStyle = componentParameters.textStyle;
 			var componentRoundedCorners = componentParameters.roundedCorners;
 			var componentTransparency = componentParameters.transparency;
 			var componentContent = componentParameters.content;
 			var componentLabel = componentParameters.label;
+			var componentOutline = componentParameters.outline;
 			
 			
 			//component styling & drawing				
@@ -184,11 +203,17 @@ var Interface =  {
 				//...
 			}
 			
-			if (componentBackgroundStyle != 'none') {
+			if (componentBackgroundStyle != 'none') { //FIXME - purpose? //WANT TO PULL IMAGEBACKGROUND AND ROUNDED CORNERS OUT FROM THIS CONDITION
 				
-				if (componentIconBackground) {
+				if (componentImageBackground) {
 					//draw icon squared and centered
-					ctx.drawImage(componentIconBackground, componentX, componentY, componentWidth, componentHeight);
+		//console.log('here');
+		//console.log(componentImageBackground);
+		//console.log(componentX + "," + componentY + ";" + componentWidth + "," + componentHeight);
+					
+					ctx.globalAlpha = componentTransparency;
+					ctx.drawImage(componentImageBackground, componentX, componentY, componentWidth, componentHeight);
+					ctx.globalAlpha = 1.0; //reset back
 				
 				} else if (componentRoundedCorners) {
 				
@@ -209,7 +234,15 @@ var Interface =  {
 					ctx.quadraticCurveTo(componentX, componentY + componentHeight, componentX, componentY + componentHeight - cornerRadius);
 					ctx.lineTo(componentX, componentY + cornerRadius);
 					ctx.fill();
-									
+					
+					if (componentOutline) { //FIXME - shouldn't be nested/dependent like this
+						//ctx.strokeStyle = "rgb(160, 160, 160)";
+						//ctx.strokeStyle = "rgba(255, 255, 255, " + componentTransparency + ")";
+						ctx.strokeStyle = "rgb(255, 255, 255)";
+						ctx.lineWidth = .1;
+						ctx.stroke();
+					}
+					
 				} else {
 
 					//ctx.strokeRect(componentX, componentY, componentWidth, componentHeight);
@@ -217,6 +250,7 @@ var Interface =  {
 				}
 			}
 		
+
 
 			//default text styling
 			var fontSize = 18;

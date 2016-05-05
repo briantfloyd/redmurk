@@ -71,11 +71,13 @@ Game.Screen.playScreen = {
 	    } else if (this.paused === false) {
 	    	console.log('unlocking engine');
 			this.engine.unlock();
-	    }			
+	    }	    			
 	},
     exit: function() {
-    	console.log('locking engine');
-		this.engine.lock();
+    	if (this.paused === false) {
+    		console.log('locking engine');
+			this.engine.lock();
+		}
 		
 		Game.SpecialEffects.clearCanvas(); //FIXME? centralize?
 	},
@@ -595,23 +597,23 @@ console.log(necessaryConnections);
 			
 				//update check
 				if (savedEntities[b].equipped.head) {
-					nextEntity.equipped.head = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.head.templateType]);
+					nextEntity.equipped.head = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.head]);
 				}
 			
 				if (savedEntities[b].equipped.body) {
-					nextEntity.equipped.body = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.body.templateType]);
+					nextEntity.equipped.body = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.body]);
 				}
 			
 				if (savedEntities[b].equipped.hand) {
-					nextEntity.equipped.hand = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.hand.templateType]);
+					nextEntity.equipped.hand = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.hand]);
 				}
 			
 				if (savedEntities[b].equipped.shieldhand) {
-					nextEntity.equipped.shieldhand = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.shieldhand.templateType]);
+					nextEntity.equipped.shieldhand = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.shieldhand]);
 				}
 			
 				if (savedEntities[b].equipped.accessory) {
-					nextEntity.equipped.accessory = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.accessory.templateType]);
+					nextEntity.equipped.accessory = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.accessory]);
 				}
 			}
 		
@@ -658,8 +660,15 @@ console.log(savedEntities[b].inventory[c].templateType)
 		var nextItem;
 		
 		for (var d in savedItems) {
-			nextItem = new Game.Item(Game.loadedEnvironment[savedItems[d].templateType]);				
-			newMap.addItem(savedItems[d].x, savedItems[d].y, nextItem);
+//console.log(savedItems[d]);		
+			//multiple items may be at single coordinate
+			for (var e = 0, f = savedItems[d].length; e < f; e++) {
+				nextItem = new Game.Item(Game.loadedEnvironment[savedItems[d][e].templateType]);
+//console.log(nextItem);
+//console.log(savedItems[d][e].x);
+//console.log(savedItems[d][e].y);				
+				newMap.addItem(savedItems[d][e].x, savedItems[d][e].y, nextItem);
+			}
 		}
 				
     	//set new playscreen map
@@ -865,11 +874,21 @@ Game.Screen.inventoryScreen = {
 					if (groundItems[x] === item) {
 						
 						//remove from ground
-						groundItems.splice(x,1);			
-						Game.Screen.playScreen.map.setItemsAt(positionX, positionY, groundItems);									
+						groundItems.splice(x,1);	
 						
 						//add to inventory
-						entity.inventory.push(item);
+						entity.inventory.push(item);		
+						
+						//Game.Screen.playScreen.map.setItemsAt(positionX, positionY, groundItems);	
+						
+						//reset ground - delete everything at position
+						delete Game.Screen.playScreen.map.items[positionX + ',' + positionY];
+						
+						//cycle through remaining items and add back
+						for (var i = 0, j = groundItems.length; i < j; i++) {
+							Game.Screen.playScreen.map.addItem(positionX, positionY, groundItems[i]);
+						}
+
 						return;
 					}				
 				}
@@ -886,13 +905,16 @@ Game.Screen.inventoryScreen = {
 					inventoryItems.splice(i,1);
 
 					//add item to ground
-					if (groundItems) {
+					/*if (groundItems) {
 						groundItems.push(item);
 					} else{
 						groundItems = [item];
 					}
 				
-					Game.Screen.playScreen.map.setItemsAt(positionX, positionY, groundItems);	
+					Game.Screen.playScreen.map.setItemsAt(positionX, positionY, groundItems);*/	
+					
+					Game.Screen.playScreen.map.addItem(positionX, positionY, item);
+					
 					return;								
 				}
 			}			
@@ -1009,7 +1031,7 @@ Game.Screen.loadGameScreen = {
 				//break out if no more available display positions
 				if (a >= displayAreaPositions ) { break;}
 
-				ctx.fillStyle = "rgba(0, 0, 0, 1.0)"; //FIXME - shouldn't this be housed in interface.js?
+				ctx.fillStyle = "rgba(255, 255, 255, 1.0)"; //FIXME - shouldn't this be housed in interface.js?
 				ctx.font = "12px sans-serif";
 
 				var textX = displayAreaNextPositionX;// + (savedGameDisplayArea.width / 2) - (ctx.measureText(this.savedGames[a]).width / 2);

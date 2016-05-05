@@ -116,6 +116,6 @@ window.onload = function() {
         
         Game.loadedEnvironment.init();
                 
-		Game.switchScreen(Game.Screen.menuScreen);
+		//Game.switchScreen(Game.Screen.menuScreen);
     }
 }
