@@ -140,9 +140,17 @@ var Interface =  {
     	for (var i = 0, j = parameters.length; i < j; i++) {	
     		
     		var componentParameters = parameters[i];
-   		
+   			
+			//components considered available by default
+   			var componentAvailable = true;
+   			
+   			//then check if component availability is conditional
+   			if (componentParameters.availabilityCheck) {
+   				componentAvailable = componentParameters.availabilityCheck();			
+   			}
+  			
+   			//inset resizing
 			var inset;
-			
 			if (componentParameters.noInset){
 				inset = 0;
 			} else {
@@ -155,24 +163,8 @@ var Interface =  {
 			var componentWidth = componentParameters.width - (inset * 2);
 			var componentHeight = componentParameters.height - (inset * 2);
 			
-			var componentBackgroundStyle = componentParameters.backgroundStyle;
-			var componentImageBackground = componentParameters.imageBackground;
-			var componentTextStyle = componentParameters.textStyle;
-			var componentRoundedCorners = componentParameters.roundedCorners;
-			var componentTransparency = componentParameters.transparency;
-			var componentContent = componentParameters.content;
-			var componentLabel = componentParameters.label;
-			var componentOutline = componentParameters.outline;
-			
-			
-			//component styling & drawing				
-			if (!componentTransparency) {
-				componentTransparency = 1.0;
-			} else {
-				componentTransparency = 0.45;
-			}
-			
 			//label resizing
+			var componentLabel = componentParameters.label;
 			var labelSize = 12;
 			var labelTopMargin = 5;
 			
@@ -181,98 +173,100 @@ var Interface =  {
 				componentHeight = componentHeight - labelAdjustment;
 				componentWidth = componentWidth - labelAdjustment;
 				componentX = componentX + (labelAdjustment / 2); //only center horizontally, the vertical offset is needed to display the label itself				
-			}	
+			}				
+			
+			//component styling & drawing
+			var componentBackgroundStyle = componentParameters.backgroundStyle;
+			var componentImageBackground = componentParameters.imageBackground;
+			var componentTextStyle = componentParameters.textStyle;
+			var componentRoundedCorners = componentParameters.roundedCorners;
+			var componentTransparency = componentParameters.transparency;
+			var componentContent = componentParameters.content;			
+			var componentOutline = componentParameters.outline;
+							
+			if (!componentTransparency) {
+				componentTransparency = 1.0;
+			} else {
+				componentTransparency = 0.45;
+			}
+
+			if (componentRoundedCorners) {
+				
+				var cornerRadius = 10;
+
+				ctx.beginPath();
+				ctx.moveTo(componentX, componentY + cornerRadius);
+				ctx.quadraticCurveTo(componentX, componentY, componentX + cornerRadius, componentY);
+				ctx.lineTo(componentX + componentWidth - cornerRadius, componentY);
+				ctx.quadraticCurveTo(componentX + componentWidth, componentY, componentX + componentWidth, componentY + cornerRadius);
+				ctx.lineTo(componentX + componentWidth, componentY + componentHeight - cornerRadius);
+				ctx.quadraticCurveTo(componentX + componentWidth, componentY + componentHeight, componentX + componentWidth - cornerRadius, componentY + componentHeight);
+				ctx.lineTo(componentX + cornerRadius, componentY + componentHeight);
+				ctx.quadraticCurveTo(componentX, componentY + componentHeight, componentX, componentY + componentHeight - cornerRadius);
+				ctx.lineTo(componentX, componentY + cornerRadius);
+			}		
+
+			if (componentImageBackground) {
+				ctx.globalAlpha = componentTransparency;
+				ctx.drawImage(componentImageBackground, componentX, componentY, componentWidth, componentHeight);
+				ctx.globalAlpha = 1.0; //reset back
+				
+			}
 			
 			//component background fill
-			if (componentBackgroundStyle === 'button01') {		
-				var gradient1 = ctx.createLinearGradient(componentX,componentY,componentX,componentY+componentHeight);
-				gradient1.addColorStop("0","#5f5f5f");
-				gradient1.addColorStop("1.0","#454545");
-
-				ctx.fillStyle = gradient1;
-				//ctx.strokeStyle = gradient1;
+			if (componentBackgroundStyle) {	
+				if (componentBackgroundStyle === 'dark01') {
+					ctx.fillStyle = "rgba(0, 0, 0, " + componentTransparency + ")";				  
+				} /*else if (componentBackgroundStyle === 'button01') {		
+					var gradient1 = ctx.createLinearGradient(componentX,componentY,componentX,componentY+componentHeight);
+					gradient1.addColorStop("0","#5f5f5f");
+					gradient1.addColorStop("1.0","#454545");
+					ctx.fillStyle = gradient1;
 			
-			} else if (componentBackgroundStyle === 'dark01') {
-				ctx.fillStyle = "rgba(0, 0, 0, " + componentTransparency + ")";
-				//ctx.strokeStyle = "rgba(0, 0, 0, " + componentTransparency + ")";
-				  
-			} else if (componentBackgroundStyle === 'light01') {
-				ctx.fillStyle = "rgba(160, 160, 160, " + componentTransparency + ")";
-				//ctx.strokeStyle = "rgba(160, 160, 160, " + componentTransparency + ")";
-			} else if (componentBackgroundStyle === 'icon01') {
-				//...
+				} else if (componentBackgroundStyle === 'light01') {
+					ctx.fillStyle = "rgba(160, 160, 160, " + componentTransparency + ")";
+				}*/
+				
+				ctx.fill();
 			}
-			
-			if (componentBackgroundStyle != 'none') { //FIXME - purpose? //WANT TO PULL IMAGEBACKGROUND AND ROUNDED CORNERS OUT FROM THIS CONDITION
-				
-				if (componentImageBackground) {
-					//draw icon squared and centered
-		//console.log('here');
-		//console.log(componentImageBackground);
-		//console.log(componentX + "," + componentY + ";" + componentWidth + "," + componentHeight);
-					
-					ctx.globalAlpha = componentTransparency;
-					ctx.drawImage(componentImageBackground, componentX, componentY, componentWidth, componentHeight);
-					ctx.globalAlpha = 1.0; //reset back
-				
-				} else if (componentRoundedCorners) {
-				
-					var cornerRadius = 10;
-					//ctx.lineJoin = "round";
-					//ctx.lineWidth = 20; 
-					//ctx.strokeRect(componentX+(cornerRadius/2), componentY+(cornerRadius/2), componentWidth-cornerRadius, componentHeight-cornerRadius);	
-					//ctx.fillRect(componentX+(cornerRadius/2), componentY+(cornerRadius/2), componentWidth-cornerRadius, componentHeight-cornerRadius);
-					
-					ctx.beginPath();
-					ctx.moveTo(componentX, componentY + cornerRadius);
-					ctx.quadraticCurveTo(componentX, componentY, componentX + cornerRadius, componentY);
-					ctx.lineTo(componentX + componentWidth - cornerRadius, componentY);
-					ctx.quadraticCurveTo(componentX + componentWidth, componentY, componentX + componentWidth, componentY + cornerRadius);
-					ctx.lineTo(componentX + componentWidth, componentY + componentHeight - cornerRadius);
-					ctx.quadraticCurveTo(componentX + componentWidth, componentY + componentHeight, componentX + componentWidth - cornerRadius, componentY + componentHeight);
-					ctx.lineTo(componentX + cornerRadius, componentY + componentHeight);
-					ctx.quadraticCurveTo(componentX, componentY + componentHeight, componentX, componentY + componentHeight - cornerRadius);
-					ctx.lineTo(componentX, componentY + cornerRadius);
-					ctx.fill();
-					
-					if (componentOutline) { //FIXME - shouldn't be nested/dependent like this
-						//ctx.strokeStyle = "rgb(160, 160, 160)";
-						//ctx.strokeStyle = "rgba(255, 255, 255, " + componentTransparency + ")";
-						ctx.strokeStyle = "rgb(255, 255, 255)";
-						ctx.lineWidth = .1;
-						ctx.stroke();
-					}
-					
-				} else {
 
-					//ctx.strokeRect(componentX, componentY, componentWidth, componentHeight);
-					ctx.fillRect(componentX, componentY, componentWidth, componentHeight);
-				}
+			if (componentOutline) { 
+				ctx.strokeStyle = "rgb(255, 255, 255)";
+				ctx.lineWidth = .1;
+				ctx.stroke();
 			}
-		
-
 
 			//default text styling
 			var fontSize = 18;
 			var fontWeight = 'normal';
 			ctx.lineWidth = 2;
-			ctx.fillStyle = "rgba(255, 255, 255, 1.0)";
-			ctx.strokeStyle = "rgba(0, 0, 0, 1.0)";
 			
+			//gray out labels and icons if component not available
+			var labelAndIconTransparency = 1.0;
+			
+			if (!componentAvailable) {
+				labelAndIconTransparency = .45;
+			}
+			
+			ctx.fillStyle = "rgba(255, 255, 255, " + labelAndIconTransparency + ")";
+			ctx.strokeStyle = "rgba(0, 0, 0, " + labelAndIconTransparency + ")";
+			ctx.globalAlpha = labelAndIconTransparency; //reset back to 1.0 below
+
+			//label
 			if (componentLabel) {
 				
 				ctx.font = "normal" + " " + labelSize + "px sans-serif";
 				
 				//label margin
 				var labelLength = ctx.measureText(componentLabel).width;
-				var labelMargin = (componentWidth - labelLength) / 2;
-					
+				var labelMargin = (componentWidth - labelLength) / 2;				
 				
 				//draw label
 				ctx.strokeText(componentLabel,componentX + labelMargin,componentY + componentHeight + labelTopMargin + labelSize);//(fontSize / 2));
 				ctx.fillText(componentLabel,componentX + labelMargin,componentY + componentHeight + labelTopMargin + labelSize);//(fontSize / 2));	//FIXME 	
 			}
 			
+			//content
 			if (componentContent) {
 
 				var componentRowsTotal = componentContent.length;
@@ -289,11 +283,9 @@ var Interface =  {
 					fontWeight = 'bold';
 				}
 				
-				
 				fontSize = fontSize / componentRowsTotal;
 				ctx.font = fontWeight + " " + fontSize + "px sans-serif"; //need to set for text width  measurement to work below
 				
-
 				var componentRowItemX, componentRowItemY, componentRowLength;
 		
 				for (var k = 0; k < componentRowsTotal; k++) {
@@ -301,8 +293,6 @@ var Interface =  {
 					componentRowItemY = componentY + (verticalSpacing * (k + 1));			
 					componentRowLength = componentContent[k].length; //number of array items representing the row
 
-					
-					
 					//calculate length of row's content
 					var rowContentLength = 0;
 					for (var m = 0; m < componentRowLength; m++) {
@@ -342,6 +332,9 @@ var Interface =  {
 					}
 				}
 			}
+			
+			ctx.globalAlpha = 1.0; //reset back
+			
 	
 			//background image
 			//var c=document.getElementById("myCanvas");

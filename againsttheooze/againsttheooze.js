@@ -200,8 +200,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		/*//component options
 		exampleScreenComponents.exampleComponent = 
 			{	
-				backgroundStyle: 'dark01', //'button01', 'dark01', 'light01', 'icon01', 'none' //required
-				imageBackground: '', //optional - requires 'icon01' backgroundStyle
+				backgroundStyle: 'dark01', //optional //'button01', 'light01' 
+				imageBackground: '', //optional
 				noInset: true, //optional
 				roundedCorners: true, //optional
 				transparency: true, //optional //applies to background
@@ -213,6 +213,9 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				height: interfaceObject.tilePixelWidth, //required
 				content: [[interfaceObject.uiIcons.compassIcon," New Game"]], //optional //1st array dimension represents separate rows, 2nd dimension are items in the row
 				label: 'Start new game', //optional //empty label(" ") can be used to match button/icon sizing to others w/labels
+				availabilityCheck: function() { //optional
+					//code to check button availability
+				},
 				clickAction: function() { //optional
 					//code to execute on click
 				}					
@@ -224,10 +227,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		*/
 		
-		
 		menuComponents.gameTitleBackground = 
 			{	
-				backgroundStyle: 'icon01',
 				imageBackground: menuBackgroundImage,
 				noInset: true,
 				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 5) * interfaceObject.tilePixelWidth, //positioning on screen //required
@@ -239,7 +240,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 			
 		/*menuComponents.gameTitle = 
 			{	
-				backgroundStyle: 'none',
 				textStyle: 'headingText01',
 				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
 				y: (((interfaceObject.canvasTileHeight - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
@@ -317,6 +317,9 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
+				availabilityCheck: function() {
+					return Game.Screen.playScreen.player.haveHealingPotion();
+				},
 				clickAction: function() {
 					Game.Screen.playScreen.player.useHealingPotion();
 				}				
@@ -341,7 +344,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		playComponents.messageDisplay = 
 			{	 
-				backgroundStyle: 'none',
 				textStyle: 'headingText02',
 				x: interfaceObject.tilePixelWidth,
 				y: 0,
@@ -352,7 +354,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		
 		/*playComponents.depthDisplay = 
 			{	
-				backgroundStyle: 'icon01',
 				transparency: true,
 				imageBackground: interfaceObject.uiIcons.stairsIcon,
 				textStyle: 'headingText01',
@@ -393,10 +394,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
-				content: [[interfaceObject.uiIcons.closeIcon]],
-				label: 'Close',
+				content: [[interfaceObject.uiIcons.arrowIconLeft]],
+				label: 'Back',
 				x: 0,
 				y: 0,
 				width: interfaceObject.tilePixelWidth,
@@ -408,7 +407,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		inventoryComponents.messageDisplay = 
 			{	
-				backgroundStyle: 'none',
 				x: interfaceObject.tilePixelWidth,
 				y: 0,
 				width:(interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
@@ -418,7 +416,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		
 		inventoryComponents.statsDisplayAttack = 
 			{	
-				backgroundStyle: 'icon01',
 				imageBackground: interfaceObject.uiIcons.attackIcon,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
 				y: 0,
@@ -430,7 +427,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		
 		inventoryComponents.statsDisplayDefense = 
 			{	
-				backgroundStyle: 'icon01',
 				imageBackground: interfaceObject.uiIcons.defenseIcon,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
 				y: 0,
@@ -442,7 +438,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		
 		inventoryComponents.statsDisplayHealth = 
 			{	
-				backgroundStyle: 'icon01',
 				imageBackground: interfaceObject.uiIcons.healthIcon,
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				y: 0,
@@ -454,7 +449,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		
 		inventoryComponents.statsDisplayExperience = 
 			{	
-				backgroundStyle: 'none',
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
 				y: interfaceObject.tilePixelWidth * 2,
 				width: interfaceObject.tilePixelWidth,
@@ -469,8 +463,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				content: [[interfaceObject.uiIcons.arrowIconRightLeft]],
 				label: 'Move',
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
@@ -492,8 +484,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				content: [[interfaceObject.uiIcons.arrowIconUpDown]],
 				label: 'Move',
 				x: interfaceObject.tilePixelWidth,//0,
@@ -515,8 +505,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				content: [[interfaceObject.uiIcons.arrowIconUp]],
 				label: ' ',
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
@@ -538,8 +526,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				content: [[interfaceObject.uiIcons.arrowIconDown]],
 				label: ' ',
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
@@ -561,8 +547,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				content: [[interfaceObject.uiIcons.arrowIconUp]],
 				label: ' ',
 				x: 0,
@@ -584,8 +568,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				content: [[interfaceObject.uiIcons.arrowIconDown]],
 				label: ' ',
 				x: 0,
@@ -607,8 +589,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'light01',
-				//roundedCorners: true, 
 				x: 0,
 				y: interfaceObject.tilePixelWidth,
 				width: interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth,
@@ -621,8 +601,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'light01',
-				//roundedCorners: true, 
 				x: interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 3,
 				width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 4),
@@ -635,8 +613,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'light01',
-				//roundedCorners: true, 
 				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
@@ -655,10 +631,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				x: ((((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth),
-				//y: interfaceObject.tilePixelWidth * 6,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + (interfaceObject.tilePixelWidth * 2),
 				width: interfaceObject.tilePixelWidth * 3,
 				height: interfaceObject.tilePixelWidth,
@@ -674,10 +647,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 			
 		statAssignmentComponents.instructionsDisplay = 
 			{	
-				backgroundStyle: 'none',
 				textStyle: 'headingText01',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
-				//y: interfaceObject.tilePixelWidth,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - (interfaceObject.tilePixelWidth * 2),
 				width: interfaceObject.tilePixelWidth * 3,
 				height: interfaceObject.tilePixelWidth,
@@ -686,10 +657,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		statAssignmentComponents.currentValueLabel = 
 			{	
-				backgroundStyle: 'none',
 				textStyle: 'headingText02',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - (interfaceObject.tilePixelWidth * 2),
-				//y: interfaceObject.tilePixelWidth * 2,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
@@ -698,10 +667,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		statAssignmentComponents.newValueLabel = 
 			{	
-				backgroundStyle: 'none',
 				textStyle: 'headingText02',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + (interfaceObject.tilePixelWidth * 2),
-				//y: interfaceObject.tilePixelWidth * 2,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
@@ -710,10 +677,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		statAssignmentComponents.attackCurrentValueDisplay = 
 			{	
-				backgroundStyle: 'icon01',
 				imageBackground: interfaceObject.uiIcons.attackIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
-				//y: interfaceObject.tilePixelWidth * 3,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
@@ -723,10 +688,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		statAssignmentComponents.defenseCurrentValueDisplay = 
 			{	
-				backgroundStyle: 'icon01',
 				imageBackground: interfaceObject.uiIcons.defenseIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
-				//y: interfaceObject.tilePixelWidth * 4,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
@@ -736,10 +699,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		statAssignmentComponents.hpCurrentValueDisplay = 
 			{	
-				backgroundStyle: 'icon01',
 				imageBackground: interfaceObject.uiIcons.healthIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
-				//y: interfaceObject.tilePixelWidth * 5,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
@@ -753,12 +714,9 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				content: [[interfaceObject.uiIcons.checkmarkIcon]],
 				label: " ",
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
-				//y: interfaceObject.tilePixelWidth * 3,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
@@ -774,12 +732,9 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				content: [[interfaceObject.uiIcons.checkmarkIcon]],
 				label: " ",
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
-				//y: interfaceObject.tilePixelWidth * 4,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
@@ -795,12 +750,9 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				content: [[interfaceObject.uiIcons.checkmarkIcon]],
 				label: " ",
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),
-				//y: interfaceObject.tilePixelWidth * 5,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
@@ -812,10 +764,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		statAssignmentComponents.attackNewValueDisplay = 
 			{	
-				backgroundStyle: 'icon01',
 				imageBackground: interfaceObject.uiIcons.attackIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
-				//y: interfaceObject.tilePixelWidth * 3,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,				
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
@@ -825,10 +775,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		statAssignmentComponents.defenseNewValueDisplay = 
 			{	
-				backgroundStyle: 'icon01',
 				imageBackground: interfaceObject.uiIcons.defenseIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
-				//y: interfaceObject.tilePixelWidth * 4,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2),				
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
@@ -838,10 +786,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		statAssignmentComponents.hpNewValueDisplay = 
 			{	
-				backgroundStyle: 'icon01',
 				imageBackground: interfaceObject.uiIcons.healthIcon,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
-				//y: interfaceObject.tilePixelWidth * 5,
 				y: (((interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,				
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
@@ -861,8 +807,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				content: [[interfaceObject.uiIcons.closeIcon]],
-				label: 'Close',
+				content: [[interfaceObject.uiIcons.arrowIconLeft]],
+				label: 'Back',
 				x: 0,
 				y: 0,
 				width: interfaceObject.tilePixelWidth,
@@ -875,7 +821,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		mapComponents.depthDisplay = 
 			{	
-				backgroundStyle: 'icon01',
 				transparency: true,
 				imageBackground: interfaceObject.uiIcons.stairsIcon,
 				textStyle: 'headingText01',
@@ -894,7 +839,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		
 		playerDeathComponents.slainMessageDisplay = 
 			{	
-				backgroundStyle: 'none',
 				textStyle: 'headingText01',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 2,
@@ -909,8 +853,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth * 3,
@@ -929,8 +871,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				content: [[interfaceObject.uiIcons.menuIcon]],
 				label: 'Menu',
 				x: 0, 
@@ -951,7 +891,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		
 		confirmComponents.confirmMessageDisplay = 
 			{	
-				backgroundStyle: 'none',
 				textStyle: 'headingText01',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y:(((interfaceObject.canvasTileHeight - 1) / 2) - 1) * interfaceObject.tilePixelWidth,//interfaceObject.tilePixelWidth * 2,
@@ -966,8 +905,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				content: [[interfaceObject.uiIcons.checkmarkIcon]],
 				label: 'Yes',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
@@ -992,8 +929,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				//backgroundStyle: 'button01',
-				//roundedCorners: true,
 				content: [[interfaceObject.uiIcons.closeIcon]],
 				label: 'No',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) + interfaceObject.tilePixelWidth,
@@ -1017,8 +952,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				content: [[interfaceObject.uiIcons.menuIcon]],
-				label: 'Menu',
+				content: [[interfaceObject.uiIcons.arrowIconLeft]],
+				label: 'Back',
 				x: 0, 
 				y: 0,
 				width: interfaceObject.tilePixelWidth, 
@@ -1030,7 +965,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		newGameComponents.difficultyMessageDisplay = 
 			{	
-				backgroundStyle: 'none',
 				textStyle: 'headingText01',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 2,
@@ -1041,7 +975,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		newGameComponents.difficultySelectedMessageDisplay = 
 			{	
-				backgroundStyle: 'none',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth * 3,
@@ -1114,8 +1047,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				content: [[interfaceObject.uiIcons.menuIcon]],
-				label: 'Menu',
+				content: [[interfaceObject.uiIcons.arrowIconLeft]],
+				label: 'Back',
 				x: 0,
 				y: 0,
 				width: interfaceObject.tilePixelWidth,
@@ -1127,7 +1060,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		loadGameComponents.instructionsDisplay = 
 			{	
-				backgroundStyle: 'none',
 				textStyle: 'headingText01',
 				x: (((interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth) / 2) - interfaceObject.tilePixelWidth,
 				y: 0,
@@ -1195,9 +1127,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				backgroundStyle: 'dark01',
 				roundedCorners: true,
 				transparency: true,
-				outline: true,
-				//backgroundStyle: 'light01',
-				//roundedCorners: true, 
+				outline: true, 
 				x: 0,//interfaceObject.tilePixelWidth,
 				y: interfaceObject.tilePixelWidth,
 				width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth),// - interfaceObject.tilePixelWidth,
@@ -1371,6 +1301,17 @@ Game.AgainstTheOoze.Mixins.PlayerActor = {
 		if (this.pathCoordinates.length === 0) {
 			this.destinationCoordinates = null;
 		}
+    },
+    haveHealingPotion: function() {
+		for (var x = 0, y = this.inventory.length; x < y; x++) {
+		
+			if (this.inventory[x].name === 'Healing potion') {
+				
+				return true;							
+			}
+		}
+		
+		return false;
     },
     useHealingPotion: function() {
 		for (var x = 0, y = this.inventory.length; x < y; x++) {
