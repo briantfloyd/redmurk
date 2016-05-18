@@ -29,7 +29,7 @@ Game.Screen.playScreen = {
 	engine: null,
 	map: null, //individual (current) level
     player: null, //FIXME - move to environment?
-    difficultySetting: 2, //FIXME - move elsewhere eventually? 1, 2, 3, 4 scale
+    difficultySetting: null, //setting in newGameScreen //2, //FIXME - move elsewhere eventually? 1, 2, 3, 4 scale
     depth: 0, //FIXME should this be here?
     uiParameters: null,
     topLeftX: null,
@@ -1136,25 +1136,28 @@ Game.Screen.statAssignmentScreen = {
 		var currentHpDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.hpCurrentValueDisplay;		
 		currentHpDisplay.content = [[(player.maxHp).toString()]];
 		
-		var newAttackDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.attackNewValueDisplay;
+		/*var newAttackDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.attackNewValueDisplay;
 		newAttackDisplay.content = null;
 		
 		var newDefenseDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.defenseNewValueDisplay;
 		newDefenseDisplay.content = null;
 		
 		var newHpDisplay = Game.loadedEnvironment.uiComponents.statAssignmentScreen.hpNewValueDisplay;
-		newHpDisplay.content = null;
+		newHpDisplay.content = null;*/
 		
 		if (this.statRaising) {
 			switch(this.statRaising){
 				case "attack":
-					newAttackDisplay.content = [[(player.attackValue + 1).toString()]];
+					//newAttackDisplay.content = [[(player.attackValue + 1).toString()]];
+					currentAttackDisplay.content = [[(player.attackValue + 1).toString()]];
 					break;
 				case "defense":
-					newDefenseDisplay.content = [[(player.defenseValue + 1).toString()]];
+					//newDefenseDisplay.content = [[(player.defenseValue + 1).toString()]];
+					currentDefenseDisplay.content = [[(player.defenseValue + 1).toString()]];
 					break;
 				case "health":
-					newHpDisplay.content = [[(player.maxHp + 1).toString()]];
+					//newHpDisplay.content = [[(player.maxHp + 1).toString()]];
+					currentHpDisplay.content = [[(player.maxHp + 1).toString()]];
 					break;
 			}
 		}
@@ -1173,7 +1176,12 @@ Game.Screen.statAssignmentScreen = {
         } 
     },
     clickEvaluation: function(eventPosition) {
-    	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+    	//Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+		var clickedAButton = Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+		if (!clickedAButton) {
+			this.statRaising = null;
+			this.render();
+		}
     },
     statAssignment: function() {
     	var player = Game.Screen.playScreen.player;
@@ -1353,46 +1361,35 @@ Game.Screen.confirmScreen = {
 
 Game.Screen.newGameScreen = {
 	uiParameters: null,
+	difficultySelection: 2,//null, //FIXME? manually setting default value here and on button in environment
     enter: function() { 
     	this.uiParameters = Game.loadedEnvironment.uiScreens.newGameScreenUI;
-		this.refreshSelectedDifficultyDisplayMessage();
 	},
     exit: function() { 
+		Game.Screen.UIclearSelectedComponents(this.uiParameters);
+		this.difficultySelection = null;
 	},
-	raiseDifficultySetting: function() {
-		if (Game.Screen.playScreen.difficultySetting < 4) {
-			Game.Screen.playScreen.difficultySetting++;
-			this.refreshSelectedDifficultyDisplayMessage();
-		}
+	setDifficultySetting: function(difficulty) {
+		switch(difficulty) {
+			case 'easy':
+				this.difficultySelection = 1;
+				break;
+			case 'medium':
+				this.difficultySelection = 2;
+				break;
+			case 'hard':
+				this.difficultySelection = 3;
+				break;
+			case 'nightmare':
+				this.difficultySelection = 4;
+				break;
+			default:
+				this.difficultySelection = null;
+				break;
+		}		
 	},
-	lowerDifficultySetting: function() {
-		if (Game.Screen.playScreen.difficultySetting > 1) { //FIXME
-			Game.Screen.playScreen.difficultySetting--;
-			this.refreshSelectedDifficultyDisplayMessage();
-		}	
-	},
-	refreshSelectedDifficultyDisplayMessage: function() {
-		var currentDifficultyLevel = Game.Screen.playScreen.difficultySetting;
-		var currentDifficultyLevelName;
-		
-		switch(currentDifficultyLevel) {
-			case 1:
-				currentDifficultyLevelName = ['Easy'];
-				break;
-			case 2:
-				currentDifficultyLevelName = ['Medium'];
-				break;
-			case 3:
-				currentDifficultyLevelName = ['Hard'];
-				break;	
-			case 4:
-				currentDifficultyLevelName = ['For the glory'];
-				break;
-		}	
-
-		var difficultySelectedMessageDisplay = Game.loadedEnvironment.uiComponents.newGameScreen.difficultySelectedMessageDisplay;
-		//difficultySelectedMessageDisplay.text = currentDifficultyLevelName;	
-		difficultySelectedMessageDisplay.content = [[currentDifficultyLevelName[0]]];
+	difficultySelected: function() {
+		return this.difficultySelection;
 	},
     render: function(display) {
     	//DRAW UI
@@ -1408,7 +1405,12 @@ Game.Screen.newGameScreen = {
         } 
     },
     clickEvaluation: function(eventPosition) {
-    	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+    	//Game.Screen.UIClickEvaluation(this, eventPosition, this.uiParameters);	
+		var clickedAButton = Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+		if (!clickedAButton) {
+			this.difficultySelection = null;
+			this.render();
+		}
     }
 }
 
@@ -1432,6 +1434,9 @@ Game.Screen.UIClickEvaluation = function(eventPosition, uiParameters) {
 	var clickY = eventPosition[1] * tilePixelWidth;
 	var componentClicked = false;
 	
+	//clear current selection 
+	Game.Screen.UIclearSelectedComponents(uiParameters);
+	
 	//loop through UI components checking for position match
 	for (var i = 0, j = uiParameters.length; i < j; i++) {
 		
@@ -1445,3 +1450,11 @@ Game.Screen.UIClickEvaluation = function(eventPosition, uiParameters) {
 	}
 	return componentClicked;               
 }
+
+Game.Screen.UIclearSelectedComponents = function(uiParameters) {
+	for (var i = 0, j = uiParameters.length; i < j; i++) {
+		if (uiParameters[i].hasOwnProperty('selected')) {
+			uiParameters[i].selected = false;
+		}
+	}
+}	

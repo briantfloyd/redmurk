@@ -22,7 +22,7 @@ var Interface =  {
     	this.uiIcons.menuIcon = menuIcon;
     	
     	var healIcon = new Image();
-    	healIcon.src = '../underrot/interface/icons/icon-60x60-heal.svg';	    	
+    	healIcon.src = '../underrot/interface/icons/icon-60x60-heal-white.svg';	    	
     	this.uiIcons.healIcon = healIcon;
     	
     	/*var arrowIcon = new Image(); //FIXME - way to rotat single image?
@@ -46,7 +46,7 @@ var Interface =  {
     	this.uiIcons.arrowIconRight = arrowIconRight;
     	
     	var checkmarkIcon = new Image();
-    	checkmarkIcon.src = '../underrot/interface/icons/icon-60x60-checkmark.svg';    	
+    	checkmarkIcon.src = '../underrot/interface/icons/icon-60x60-checkmark-white.svg';    	
     	this.uiIcons.checkmarkIcon = checkmarkIcon;
     	
     	var closeIcon = new Image();
@@ -148,13 +148,20 @@ var Interface =  {
    			if (componentParameters.availabilityCheck) {
    				componentAvailable = componentParameters.availabilityCheck();			
    			}
+   			
+   			//selectable/selected check
+   			var componentSelected = false;
+   			
+   			//if (componentParameters.selected) {
+   			if (componentParameters.hasOwnProperty('selected')) {
+   				componentSelected = componentParameters.selected;
+   			}
   			
    			//inset resizing
-			var inset;
+			var inset = 4;
+			
 			if (componentParameters.noInset){
 				inset = 0;
-			} else {
-				inset = 4;
 			}
 		
 			//offset component positioning and sizing to provide padding in between
@@ -187,7 +194,15 @@ var Interface =  {
 			if (!componentTransparency) {
 				componentTransparency = 1.0;
 			} else {
-				componentTransparency = 0.45;
+				//componentTransparency = 0.45;
+				componentTransparency = 0.30;
+				
+				if (componentAvailable) {
+					componentTransparency = 0.60;
+				}
+				if (componentSelected) {
+					componentTransparency = 0.60;//0.90;
+				}
 			}
 
 			if (componentRoundedCorners) {
@@ -215,9 +230,31 @@ var Interface =  {
 			
 			//component background fill
 			if (componentBackgroundStyle) {	
-				if (componentBackgroundStyle === 'dark01') {
-					ctx.fillStyle = "rgba(0, 0, 0, " + componentTransparency + ")";				  
-				} /*else if (componentBackgroundStyle === 'button01') {		
+				if (componentBackgroundStyle === 'hud01') {
+					ctx.fillStyle = "rgba(128, 128, 128, " + componentTransparency + ")";	
+			  
+				} else if (componentBackgroundStyle === 'confirm01') {
+					if (componentAvailable) {
+						ctx.fillStyle = "rgba(0, 255, 0, " + componentTransparency + ")";
+					} else {
+						ctx.fillStyle = "rgba(128, 128, 128, " + componentTransparency + ")";
+					}
+				} else if (componentBackgroundStyle === 'heal01') {
+					if (componentAvailable) {
+						ctx.fillStyle = "rgba(255, 0, 0, " + componentTransparency + ")";
+					} else {
+						ctx.fillStyle = "rgba(128, 128, 128, " + componentTransparency + ")";
+					}
+				} else if (componentBackgroundStyle === 'menu01') {
+					if (componentSelected) {
+						//ctx.fillStyle = "rgba(0, 255, 0, " + componentTransparency + ")";
+						ctx.fillStyle = "rgba(64, 64, 64, " + componentTransparency + ")";
+					} else {
+						ctx.fillStyle = "rgba(0, 0, 0, " + componentTransparency + ")";
+					}
+				}
+				
+				/*else if (componentBackgroundStyle === 'button01') {		
 					var gradient1 = ctx.createLinearGradient(componentX,componentY,componentX,componentY+componentHeight);
 					gradient1.addColorStop("0","#5f5f5f");
 					gradient1.addColorStop("1.0","#454545");
@@ -231,9 +268,19 @@ var Interface =  {
 			}
 
 			if (componentOutline) { 
-				ctx.strokeStyle = "rgb(255, 255, 255)";
-				ctx.lineWidth = .1;
-				ctx.stroke();
+				if (componentAvailable) { //no outline if component not available
+					
+					if (componentSelected) {
+						ctx.strokeStyle = "rgb(255, 255, 255)";
+					} else {
+						var outlineGradient1 = ctx.createLinearGradient(componentX,componentY,componentX+(componentWidth / 4),componentY+componentHeight);
+						outlineGradient1.addColorStop("0","#808080");
+						outlineGradient1.addColorStop("1.0","#ffffff");
+						ctx.strokeStyle = outlineGradient1;
+					}
+					ctx.lineWidth = .3;//.1;
+					ctx.stroke();
+				}
 			}
 
 			//default text styling
@@ -242,15 +289,26 @@ var Interface =  {
 			ctx.lineWidth = 2;
 			
 			//gray out labels and icons if component not available
-			var labelAndIconTransparency = 1.0;
+			/*var labelAndIconTransparency = 1.0;
 			
 			if (!componentAvailable) {
 				labelAndIconTransparency = .45;
+			}*/
+			
+			var labelAndIconTransparency = componentTransparency;
+			
+			if (componentAvailable) {
+				labelAndIconTransparency = 1.0;
 			}
 			
 			ctx.fillStyle = "rgba(255, 255, 255, " + labelAndIconTransparency + ")";
-			ctx.strokeStyle = "rgba(0, 0, 0, " + labelAndIconTransparency + ")";
+			//ctx.strokeStyle = "rgba(0, 0, 0, " + labelAndIconTransparency + ")";
 			ctx.globalAlpha = labelAndIconTransparency; //reset back to 1.0 below
+
+			//highlight component if selected
+			if (componentSelected) {
+				//ctx.strokeStyle = "rgba(102, 255, 102, " + labelAndIconTransparency + ")";
+			}
 
 			//label
 			if (componentLabel) {
@@ -262,7 +320,7 @@ var Interface =  {
 				var labelMargin = (componentWidth - labelLength) / 2;				
 				
 				//draw label
-				ctx.strokeText(componentLabel,componentX + labelMargin,componentY + componentHeight + labelTopMargin + labelSize);//(fontSize / 2));
+				//ctx.strokeText(componentLabel,componentX + labelMargin,componentY + componentHeight + labelTopMargin + labelSize);//(fontSize / 2));
 				ctx.fillText(componentLabel,componentX + labelMargin,componentY + componentHeight + labelTopMargin + labelSize);//(fontSize / 2));	//FIXME 	
 			}
 			
@@ -320,7 +378,7 @@ var Interface =  {
 					//draw row's content
 					for (var l = 0; l < componentRowLength; l++) {
 						if (typeof componentContent[k][l] == 'string') {										
-							ctx.strokeText(componentContent[k][l],componentRowItemX,componentRowItemY + (fontSize / 2));
+							//ctx.strokeText(componentContent[k][l],componentRowItemX,componentRowItemY + (fontSize / 2));
 							ctx.fillText(componentContent[k][l],componentRowItemX,componentRowItemY + (fontSize / 2));	//FIXME 
 							componentRowItemX += ctx.measureText(componentContent[k][l]).width;	
 					
