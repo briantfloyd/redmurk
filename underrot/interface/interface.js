@@ -1,10 +1,51 @@
 /* Copyright (c) 2015, Brian T. Floyd. FreeBSD License. */
 var Interface =  {
 	canvasContainer: document.getElementById('canvas-container'),
+	backCanvasContainer: document.getElementById('back-canvas-container'),
 	tilePixelWidth: 60, //single tile height/width //FIXME - hardcoded - move to environment?
 	canvasTileWidth: null, //# of tiles wide
 	canvasTileHeight: null,
+	backCanvasTileHeight: null,
+	backCanvasTileWidth: null,
+	uiMaxTilesWide: 11, //FIXME - hardcoded - move to environment?
+	uiHalfTilesWide: function() {
+		var halfWidth = ((this.canvasTileWidth - 1) / 2);
+		if (this.canvasTileWidth > this.uiMaxTilesWide) {
+			halfWidth = (this.uiMaxTilesWide - 1) / 2;
+		}
+		return halfWidth;
+	},
+	uiHalfTilesHigh: function() {
+		var halfHeight = ((this.canvasTileHeight - 1) / 2);
+		if (this.canvasTileHeight > this.uiMaxTilesWide) {
+			halfHeight = (this.uiMaxTilesWide - 1) / 2;
+		}
+		return halfHeight;
+	},
+	uiTileHorizontalMargin: function() {
+		var margin = 0;
+		if (this.canvasTileWidth > this.uiMaxTilesWide) {
+			margin = (this.canvasTileWidth - this.uiMaxTilesWide) / 2;
+		} 
+		return margin;
+	}, 
+	uiTileVerticalMargin: function() {
+		var margin = 0;
+		if (this.canvasTileHeight > this.uiMaxTilesWide) {
+			margin = (this.canvasTileHeight - this.uiMaxTilesWide) / 2;
+		} 
+		return margin;
+	},
+	uiMenuScreenTileWidth: function() {
+		var width = Math.min(this.canvasTileWidth, this.uiMaxTilesWide);
+		return width;
+	},
+	uiMenuScreenTileHeight: function() {
+		var height = Math.min(this.canvasTileHeight, this.uiMaxTilesWide);
+		return height;
+	},
 	uiCanvas: null,
+	uiBackCanvas: null,
 	uiIcons: {},
 	init: function() {
 		this.loadIcons();
@@ -110,6 +151,9 @@ var Interface =  {
 
     	this.canvasTileWidth = this.canvasContainer.offsetWidth / this.tilePixelWidth;
     	this.canvasTileHeight = this.canvasContainer.offsetHeight / this.tilePixelWidth;
+		
+		this.backCanvasTileWidth = this.backCanvasContainer.offsetWidth / this.tilePixelWidth;
+    	this.backCanvasTileHeight = this.backCanvasContainer.offsetHeight / this.tilePixelWidth;
 
 //console.log(this.canvasContainer.offsetWidth + ',' + this.canvasContainer.offsetHeight);
 //console.log(this.canvasTileWidth + ',' + this.canvasTileHeight);
@@ -118,6 +162,11 @@ var Interface =  {
 			this.uiCanvas.width = this.canvasTileWidth * this.tilePixelWidth;
 			this.uiCanvas.height = this.canvasTileHeight * this.tilePixelWidth;		
 		}
+
+		if (this.uiBackCanvas !== null) {
+			this.uiBackCanvas.width = this.backCanvasTileWidth * this.tilePixelWidth;
+			this.uiBackCanvas.height = this.backCanvasTileHeight * this.tilePixelWidth;		
+		}		
     },
     createUICanvas: function() {
     	this.uiCanvas = document.createElement('canvas');
@@ -126,21 +175,32 @@ var Interface =  {
 		this.uiCanvas.height = this.canvasTileHeight * this.tilePixelWidth;
     	this.canvasContainer.appendChild(this.uiCanvas);
     },
+    createUIBackCanvas: function() {
+    	this.uiBackCanvas = document.createElement('canvas');
+    	this.uiBackCanvas.id = 'uiBack';
+		this.uiBackCanvas.width = this.backCanvasTileWidth * this.tilePixelWidth;
+		this.uiBackCanvas.height = this.backCanvasTileHeight * this.tilePixelWidth;
+    	this.backCanvasContainer.appendChild(this.uiBackCanvas);
+    },
     clearCanvas: function() {
     	var ctx = this.uiCanvas.getContext("2d");
     	ctx.clearRect(0, 0, this.uiCanvas.width, this.uiCanvas.height);
+		
+		var ctx2 = this.uiBackCanvas.getContext("2d");
+    	ctx2.clearRect(0, 0, this.uiBackCanvas.width, this.uiBackCanvas.height);
     },
     drawUI: function(parameters) {
 
-    	this.clearCanvas();
+    	//this.clearCanvas();
     	
     	var ctx = this.uiCanvas.getContext("2d");
+		var ctx2 = this.uiBackCanvas.getContext("2d");
     	
     	//parameters array defined in environment
     	for (var i = 0, j = parameters.length; i < j; i++) {	
     		
     		var componentParameters = parameters[i];
-   			
+  			
 			//components considered available by default
    			var componentAvailable = true;
    			
@@ -148,7 +208,7 @@ var Interface =  {
    			if (componentParameters.availabilityCheck) {
    				componentAvailable = componentParameters.availabilityCheck();			
    			}
-   			
+		
    			//selectable/selected check
    			var componentSelected = false;
    			
@@ -185,18 +245,23 @@ var Interface =  {
 			//component styling & drawing
 			var componentBackgroundStyle = componentParameters.backgroundStyle;
 			var componentImageBackground = componentParameters.imageBackground;
+			var componentScreenBackground = componentParameters.screenBackground;
+			var componentHorizontalRule = componentParameters.horizontalRule;
 			var componentTextStyle = componentParameters.textStyle;
 			var componentRoundedCorners = componentParameters.roundedCorners;
 			var componentTransparency = componentParameters.transparency;
 			var componentContent = componentParameters.content;			
 			var componentOutline = componentParameters.outline;
-							
+			var componentHighlighted = componentParameters.highlighted;
+			var componentClickHighlight = componentParameters.clickHighlight;
+					
 			if (!componentTransparency) {
 				componentTransparency = 1.0;
+
 			} else {
 				//componentTransparency = 0.45;
 				componentTransparency = 0.30;
-				
+						
 				if (componentAvailable) {
 					componentTransparency = 0.60;
 				}
@@ -219,8 +284,15 @@ var Interface =  {
 				ctx.lineTo(componentX + cornerRadius, componentY + componentHeight);
 				ctx.quadraticCurveTo(componentX, componentY + componentHeight, componentX, componentY + componentHeight - cornerRadius);
 				ctx.lineTo(componentX, componentY + cornerRadius);
-			}		
-
+			}/* else {
+	console.log(componentContent);		
+				console.log(componentX);
+				console.log(componentY);
+				console.log(componentWidth);
+				console.log(componentHeight);
+				ctx.rect(componentX, componentY, componentWidth, componentHeight);
+			}*/	
+			
 			if (componentImageBackground) {
 				ctx.globalAlpha = componentTransparency;
 				ctx.drawImage(componentImageBackground, componentX, componentY, componentWidth, componentHeight);
@@ -228,17 +300,33 @@ var Interface =  {
 				
 			}
 			
+			if (componentScreenBackground) {
+				ctx2.globalAlpha = componentTransparency;
+				ctx2.drawImage(componentScreenBackground, componentX, componentY, componentWidth, componentHeight);
+				ctx2.globalAlpha = 1.0; //reset back
+				
+			}
+			
+			if (componentHorizontalRule) {
+				//ctx.globalAlpha = componentTransparency;
+				ctx.fillStyle = "rgba(128, 128, 128, " + componentTransparency + ")";
+				
+				if (componentHorizontalRule === 'bottom') {
+					ctx.fillRect(componentX, componentY + this.tilePixelWidth - 10, componentWidth, 2);
+				} /*else if (componentHorizontalRule === 'top') {
+					ctx.fillRect(componentX, componentY + this.tilePixelWidth - 10, componentWidth, 2);
+				}*/
+				
+				//ctx.globalAlpha = 1.0; //reset back
+				
+			}
+			
+			
 			//component background fill
 			if (componentBackgroundStyle) {	
 				if (componentBackgroundStyle === 'hud01') {
 					ctx.fillStyle = "rgba(128, 128, 128, " + componentTransparency + ")";	
 			  
-				} else if (componentBackgroundStyle === 'confirm01') {
-					if (componentAvailable) {
-						ctx.fillStyle = "rgba(0, 255, 0, " + componentTransparency + ")";
-					} else {
-						ctx.fillStyle = "rgba(128, 128, 128, " + componentTransparency + ")";
-					}
 				} else if (componentBackgroundStyle === 'heal01') {
 					if (componentAvailable) {
 						ctx.fillStyle = "rgba(255, 0, 0, " + componentTransparency + ")";
@@ -246,29 +334,32 @@ var Interface =  {
 						ctx.fillStyle = "rgba(128, 128, 128, " + componentTransparency + ")";
 					}
 				} else if (componentBackgroundStyle === 'menu01') {
-					if (componentSelected) {
-						//ctx.fillStyle = "rgba(0, 255, 0, " + componentTransparency + ")";
-						ctx.fillStyle = "rgba(64, 64, 64, " + componentTransparency + ")";
+					if (componentClickHighlight) {
+						ctx.fillStyle = "rgba(51, 204, 51, " + componentTransparency + ")";
+					} else if (componentHighlighted) {
+						ctx.fillStyle = "rgba(0, 255, 0, " + componentTransparency + ")";
+					} else if (componentSelected) {	
+						ctx.fillStyle = "rgba(64, 64, 64, " + componentTransparency + ")";		
 					} else {
 						ctx.fillStyle = "rgba(0, 0, 0, " + componentTransparency + ")";
 					}
 				}
 				
-				/*else if (componentBackgroundStyle === 'button01') {		
-					var gradient1 = ctx.createLinearGradient(componentX,componentY,componentX,componentY+componentHeight);
-					gradient1.addColorStop("0","#5f5f5f");
-					gradient1.addColorStop("1.0","#454545");
-					ctx.fillStyle = gradient1;
+				//else if (componentBackgroundStyle === 'button01') {		
+					//var gradient1 = ctx.createLinearGradient(componentX,componentY,componentX,componentY+componentHeight);
+					//gradient1.addColorStop("0","#5f5f5f");
+					//gradient1.addColorStop("1.0","#454545");
+					//ctx.fillStyle = gradient1;
 			
-				} else if (componentBackgroundStyle === 'light01') {
-					ctx.fillStyle = "rgba(160, 160, 160, " + componentTransparency + ")";
-				}*/
+				//} else if (componentBackgroundStyle === 'light01') {
+					//ctx.fillStyle = "rgba(160, 160, 160, " + componentTransparency + ")";
+				//}
 				
 				ctx.fill();
 			}
 
 			if (componentOutline) { 
-				if (componentAvailable) { //no outline if component not available
+				//if (componentAvailable) { //no outline if component not available
 					
 					if (componentSelected) {
 						ctx.strokeStyle = "rgb(255, 255, 255)";
@@ -280,21 +371,15 @@ var Interface =  {
 					}
 					ctx.lineWidth = .3;//.1;
 					ctx.stroke();
-				}
+				//}
 			}
-
+		
 			//default text styling
 			var fontSize = 18;
 			var fontWeight = 'normal';
 			ctx.lineWidth = 2;
 			
 			//gray out labels and icons if component not available
-			/*var labelAndIconTransparency = 1.0;
-			
-			if (!componentAvailable) {
-				labelAndIconTransparency = .45;
-			}*/
-			
 			var labelAndIconTransparency = componentTransparency;
 			
 			if (componentAvailable) {
@@ -331,22 +416,40 @@ var Interface =  {
 				var verticalSpacing = componentHeight / (componentRowsTotal + 1);
 				var iconWidth = Math.min((componentHeight / componentRowsTotal), componentWidth);
 				iconWidth *= .6;	
-				
-				if (componentTextStyle === 'buttonText01') {
-					//
-				} else if (componentTextStyle === 'headingText01') {
+
+				/*if (componentTextStyle === 'savedGameButtonText01') {
+					fontWeight = 'bold';
+					//fontSize = 16;
+				} else */if (componentTextStyle === 'headingText01') {
 					fontWeight = 'bold';
 					fontSize = 24;
 				} else if (componentTextStyle === 'headingText02') {
 					fontWeight = 'bold';
 				}
 				
-				fontSize = fontSize / componentRowsTotal;
-				ctx.font = fontWeight + " " + fontSize + "px sans-serif"; //need to set for text width  measurement to work below
+				//fontSize = fontSize / componentRowsTotal;
+				if (componentRowsTotal > 1) {
+					fontSize = fontSize * Math.pow(.75, componentRowsTotal);
+				}
+				//ctx.font = fontWeight + " " + fontSize + "px sans-serif"; //need to set for text width  measurement to work below
 				
 				var componentRowItemX, componentRowItemY, componentRowLength;
 		
 				for (var k = 0; k < componentRowsTotal; k++) {
+				
+					//FIXME - hack solution for bolding first row of saved game button text	
+					if (componentTextStyle === 'savedGameButtonText01') {
+						if (k === 0) {
+							fontWeight = 'bold';
+							fontSize = 14;
+						} else {
+							fontWeight = 'italic';
+							fontSize = 12;
+						}
+					}
+					
+					ctx.font = fontWeight + " " + fontSize + "px sans-serif"; //need to set for text width  measurement to work below
+			
 					componentRowItemX = componentX;
 					componentRowItemY = componentY + (verticalSpacing * (k + 1));			
 					componentRowLength = componentContent[k].length; //number of array items representing the row
@@ -362,13 +465,13 @@ var Interface =  {
 					}
 	
 					//now further update fontSize based on initial size length comparison, reduce if necessary to fit
-					/*var lengthComparison = 1;
-					if (componentWidth < rowContentLength) {
-						lengthComparison = componentWidth / rowContentLength
+					//var lengthComparison = 1;
+					//if (componentWidth < rowContentLength) {
+						//lengthComparison = componentWidth / rowContentLength
 						//fontSize = fontSize * lengthComparison;
 						//ctx.font = fontSize + "px sans-serif";
 						//iconWidth = iconWidth * lengthComparison;
-					}*/
+					//}
 					
 					//compare row content width to component width				
 					//var rowMargin = (componentWidth - (rowContentLength * lengthComparison)) / 2;	

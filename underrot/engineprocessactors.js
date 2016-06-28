@@ -42,6 +42,7 @@ Game.Mixins.GameStateSaverActor = {
 		//playscreen map
 		saveData.playScreen.map = this.saveMap(Game.Screen.playScreen.map);
 		saveData.firstSaveTimeStamp = Game.loadedEnvironment.firstSaveTimeStamp;
+		saveData.currentSaveTimeStamp = new Date().getTime();
 
 		Game.saveGame();
     },

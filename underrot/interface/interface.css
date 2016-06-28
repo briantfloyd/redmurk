@@ -1,7 +1,9 @@
 /* Copyright (c) 2015, Brian T. Floyd. FreeBSD License. */
 /* ------------------------------------------------------------ */
-/* Horizontal/vertical centering */
-/* http://blog.sklambert.com/responsive-html5-canvas-game/ */
+/* Horizontal/vertical centering 
+http://blog.sklambert.com/responsive-html5-canvas-game/ 
+http://lynn.io/2014/02/22/modalin/
+*/
 body {
    background-color: #000;
 }
@@ -18,16 +20,31 @@ body {
    vertical-align: middle;
 }
 .canvas-container {
-   position: relative;
+   /*position: relative;*/
+   position: fixed;
    margin: 0 auto;
    height: 300px;
    width: 420px;
-   background-color: #ddd;
+   /*background-color: #ddd;*/
+   left: 50%;
+   top: 50%;
+   transform: translate(-50%, -50%);   
+}
+.back-canvas-container {
+   /*position: relative;*/
+   position: fixed;
+   margin: 0 auto;
+   height: 300px;
+   width: 420px;
+   /*background-color: #ddd;*/
+   left: 50%;
+   top: 50%;
+   transform: translate(-50%, -50%);   
 }
 canvas {
    width: 100%;
    height: auto;
-   position: absolute; top: 0; left: 0; 
+   position: absolute; /*top: 0; left: 0; */
 }
 
 /* ------------------------------------------------------------ */
@@ -35,6 +52,7 @@ canvas {
 /* https://css-tricks.com/snippets/css/media-queries-for-standard-devices/ */
 
 /* Width */
+/* canvas-container */
 @media only screen 
   and (min-device-width: 320px) {
 
@@ -55,7 +73,7 @@ canvas {
   and (min-device-width: 768px) {
 
 	.canvas-container {
-	   width: 660px; /*720px;*/
+	   width: 660px;
 	}
 }
 
@@ -67,7 +85,112 @@ canvas {
 	}
 }
 
+/* back-canvas-container */
+/*@media only screen 
+  and (min-device-width: 320px) {
+
+	.back-canvas-container {
+	   width: 420px;
+	}
+}
+
+@media only screen 
+  and (min-device-width: 480px) {
+
+	.back-canvas-container {
+	   width: 660px;
+	}
+}
+
+@media only screen 
+  and (min-device-width: 768px) {
+
+	.back-canvas-container {
+	   width: 1020px;
+	}
+}
+
+@media only screen 
+  and (min-device-width: 1024px) {
+
+	.back-canvas-container {
+	   width: 1500px;
+	}
+}*/
+
+@media only screen 
+  and (min-device-width: 320px) {
+
+	.back-canvas-container {
+	   width: 420px;
+	}
+}
+@media only screen 
+  and (min-device-width: 420px) {
+
+	.back-canvas-container {
+	   width: 540px;
+	}
+}
+@media only screen 
+  and (min-device-width: 540px) {
+
+	.back-canvas-container {
+	   width: 660px;
+	}
+}
+@media only screen 
+  and (min-device-width: 660px) {
+
+	.back-canvas-container {
+	   width: 780px;
+	}
+}
+@media only screen 
+  and (min-device-width: 780px) {
+
+	.back-canvas-container {
+	   width: 900px;
+	}
+}
+@media only screen 
+  and (min-device-width: 900px) {
+
+	.back-canvas-container {
+	   width: 1020px;
+	}
+}
+@media only screen 
+  and (min-device-width: 1020px) {
+
+	.back-canvas-container {
+	   width: 1140px;
+	}
+}
+@media only screen 
+  and (min-device-width: 1140px) {
+
+	.back-canvas-container {
+	   width: 1260px;
+	}
+}
+@media only screen 
+  and (min-device-width: 1260px) {
+
+	.back-canvas-container {
+	   width: 1380px;
+	}
+}
+@media only screen 
+  and (min-device-width: 1380px) {
+
+	.back-canvas-container {
+	   width: 1500px;
+	}
+}
+
 /* Height */
+/* canvas-container */
 @media only screen 
   and (min-device-height: 320px) {
 
@@ -88,7 +211,7 @@ canvas {
   and (min-device-height: 768px) {
 
 	.canvas-container {
-	   height: 660px;/*720px;*/
+	   height: 660px;
 	}
 }
 
@@ -99,5 +222,106 @@ canvas {
 	   height: 1020px;
 	}
 }
+/* back-canvas-container */
+/*@media only screen 
+  and (min-device-height: 320px) {
 
+	.back-canvas-container {
+	   height: 420px;
+	}
+}
 
+@media only screen 
+  and (min-device-height: 480px) {
+
+	.back-canvas-container {
+	   height: 660px;
+	}
+}
+
+@media only screen 
+  and (min-device-height: 768px) {
+
+	.back-canvas-container {
+	   height: 1020px;
+	}
+}
+
+@media only screen 
+  and (min-device-height: 1024px) {
+
+	.back-canvas-container {
+	   height: 1500px;
+	}
+}*/
+
+@media only screen 
+  and (min-device-height: 320px) {
+
+	.back-canvas-container {
+	   height: 420px;
+	}
+}
+@media only screen 
+  and (min-device-height: 420px) {
+
+	.back-canvas-container {
+	   height: 540px;
+	}
+}
+@media only screen 
+  and (min-device-height: 540px) {
+
+	.back-canvas-container {
+	   height: 660px;
+	}
+}
+@media only screen 
+  and (min-device-height: 660px) {
+
+	.back-canvas-container {
+	   height: 780px;
+	}
+}
+@media only screen 
+  and (min-device-height: 780px) {
+
+	.back-canvas-container {
+	   height: 900px;
+	}
+}
+@media only screen 
+  and (min-device-height: 900px) {
+
+	.back-canvas-container {
+	   height: 1020px;
+	}
+}
+@media only screen 
+  and (min-device-height: 1020px) {
+
+	.back-canvas-container {
+	   height: 1140px;
+	}
+}
+@media only screen 
+  and (min-device-height: 1140px) {
+
+	.back-canvas-container {
+	   height: 1260px;
+	}
+}
+@media only screen 
+  and (min-device-height: 1260px) {
+
+	.back-canvas-container {
+	   height: 1380px;
+	}
+}
+@media only screen 
+  and (min-device-height: 1380px) {
+
+	.back-canvas-container {
+	   height: 1500px;
+	}
+}

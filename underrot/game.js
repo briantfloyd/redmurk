@@ -8,7 +8,7 @@ var Game =  {
 	init: function() {
 		
 		var interfaceObject = Game.interfaceObject;
-			
+		
         this.display = new ROT.Display({
         	layout: 'tile',
         	width: interfaceObject.canvasTileWidth,
@@ -52,8 +52,8 @@ var Game =  {
 		}
 	},
 	refresh: function() {
-		this.display.clear();
-        this.currentScreen.render(this.display);
+		this.display.clear();  		
+        this.currentScreen.render(this.display);       
 	},
 	resizeCanvas: function() {		
 		var interfaceObject = Game.interfaceObject;	
@@ -62,11 +62,13 @@ var Game =  {
 	saveGame: function() {
 		if (!this.supportLocalStorage) {
 			return false;
-		} else {			
+		} else {		
 			//check if game has been saved previously
 			if (!Game.loadedEnvironment.firstSaveTimeStamp) {
-				Game.loadedEnvironment.firstSaveTimeStamp = new Date().getTime();
+				Game.loadedEnvironment.firstSaveTimeStamp = new Date().getTime();			
 			}
+			
+			Game.loadedEnvironment.currentSaveTimeStamp = new Date().getTime();
 			
 			//saved game key
 			var savedGameKey = Game.loadedEnvironment.gameKey + "-" + Game.loadedEnvironment.firstSaveTimeStamp;
@@ -81,9 +83,10 @@ var Game =  {
 			//var resumedGame = JSON.parse(localStorage.getItem('redmurksave01'));	
 			var resumedGame = JSON.parse(localStorage.getItem(selectedSavedGame));
 	
-			Game.Screen.playScreen.scheduler = null;
+			/*Game.Screen.playScreen.scheduler = null;
 			Game.Screen.playScreen.engine = null;
-			Game.Screen.playScreen.map = null;
+			Game.Screen.playScreen.map = null;*/
+			//Game.loadedEnvironment.firstSaveTimeStamp = null;
 			
 			Game.switchScreen(Game.Screen.playScreen,resumedGame);
 		}	
@@ -112,8 +115,13 @@ window.onload = function() {
         
         Game.SpecialEffects.init();
         
-        Game.interfaceObject.createUICanvas();
-        
+        Game.interfaceObject.createUIBackCanvas();
+		Game.interfaceObject.createUICanvas();
+
+		//default 'clear' method in refresh method only fills with background color
+		//hide display canvas so it isn't obscuring background canvas when in use
+		Game.display.getContainer().style.visibility = "hidden";
+		
         Game.loadedEnvironment.init();
                 
 		//Game.switchScreen(Game.Screen.menuScreen);

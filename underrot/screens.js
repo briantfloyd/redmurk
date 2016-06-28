@@ -5,11 +5,20 @@ Game.Screen.menuScreen = {
 	uiParameters: null,
     enter: function() { 
     	this.uiParameters = Game.loadedEnvironment.uiScreens.menuScreenUI;
+		
+		//reset
+		Game.Screen.playScreen.scheduler = null;
+		Game.Screen.playScreen.engine = null;
+		Game.Screen.playScreen.map = null;
+		Game.loadedEnvironment.firstSaveTimeStamp = null;
+		
 	},
     exit: function() { 
 	},
     render: function(display) {
-		Game.interfaceObject.drawUI(this.uiParameters);
+		var interfaceObject = Game.interfaceObject;
+		interfaceObject.clearCanvas();
+		interfaceObject.drawUI(this.uiParameters);
     },
     handleInput: function(inputType, inputData) {    
         if (inputType === 'mouseup' || inputType === 'touchstart') {	        		
@@ -19,8 +28,8 @@ Game.Screen.menuScreen = {
 			}
         } 
     },
-    clickEvaluation: function(eventPosition) {  
-    	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+    clickEvaluation: function(eventPosition) {
+    	Game.Screen.UIClickEvaluation(eventPosition, this, this.uiParameters);
     }
 }
 
@@ -29,7 +38,7 @@ Game.Screen.playScreen = {
 	engine: null,
 	map: null, //individual (current) level
     player: null, //FIXME - move to environment?
-    difficultySetting: null, //setting in newGameScreen //2, //FIXME - move elsewhere eventually? 1, 2, 3, 4 scale
+    difficultySetting: null, //setting in newGameScreen//FIXME ALSO NEED SET ON SAVED GAME LOAD //2, //FIXME - move elsewhere eventually? 1, 2, 3, 4 scale
     depth: 0, //FIXME should this be here?
     uiParameters: null,
     topLeftX: null,
@@ -71,13 +80,19 @@ Game.Screen.playScreen = {
 	    } else if (this.paused === false) {
 	    	console.log('unlocking engine');
 			this.engine.unlock();
-	    }	    			
+	    }
+	    
+	    //reveal display canvas
+		Game.display.getContainer().style.visibility = "visible";	    			
 	},
     exit: function() {
     	if (this.paused === false) {
     		console.log('locking engine');
 			this.engine.lock();
 		}
+		
+		//hide display canvas
+		Game.display.getContainer().style.visibility = "hidden";
 		
 		Game.SpecialEffects.clearCanvas(); //FIXME? centralize?
 	},
@@ -86,6 +101,8 @@ Game.Screen.playScreen = {
         
         //clear special effects canvas 
 		Game.SpecialEffects.clearCanvas(); //FIXME? centralize?
+        
+        //Game.display.getContainer().style.visibility = "visible";
         
         var visibleCells = {};
         
@@ -265,7 +282,8 @@ Game.Screen.playScreen = {
 			}
 		}
 		
-		//draw UI    
+		//draw UI   
+		interfaceObject.clearCanvas();		
         interfaceObject.drawUI(this.uiParameters);
 	},
     handleInput: function(inputType, inputData) {
@@ -289,8 +307,7 @@ Game.Screen.playScreen = {
         }    
     },
     clickEvaluation: function(eventPosition) {	  		
-   		
-   		var componentClicked = Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+   		var componentClicked = Game.Screen.UIClickEvaluation(eventPosition, this, this.uiParameters);
  		
    		if (componentClicked === false) {
 			//convert event positions to map coordinates 
@@ -368,7 +385,7 @@ Game.Screen.playScreen = {
 		var newMap;
 		
 		//FIXME? consolidate repeated code
-console.log(necessaryConnections);		
+//console.log(necessaryConnections);		
 		//initial level 0 map (& post resurrect on level 0 map)
 		if (necessaryConnections.down && !necessaryConnections.back && !necessaryConnections.up) {
 			
@@ -673,6 +690,10 @@ console.log(savedEntities[b].inventory[c].templateType)
 				
     	//set new playscreen map
     	this.map = newMap; //initiate
+    	
+    	//retain difficulty setting
+    	this.difficultySetting = saveData.playScreen.difficultySetting
+    	//console.log(saveData.playScreen.difficultySetting);
     }
 }
 
@@ -716,6 +737,7 @@ Game.Screen.inventoryScreen = {
 		
     	//DRAW UI
 		var interfaceObject = Game.interfaceObject;		
+		interfaceObject.clearCanvas();
 		interfaceObject.drawUI(this.uiParameters);
 
 		//DRAW ITEMS OVER UI
@@ -812,7 +834,7 @@ Game.Screen.inventoryScreen = {
         } 
     },
     clickEvaluation: function(eventPosition) {
-    	var componentClicked = Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+		var componentClicked = Game.Screen.UIClickEvaluation(eventPosition, this, this.uiParameters);
     	
     	if (componentClicked === false) {
     		this.displayedItemClickEvaluation(eventPosition);    	
@@ -921,7 +943,8 @@ Game.Screen.inventoryScreen = {
 		}
 	},
 	itemInventoryEquippedSwap: function(item, entity) {
-
+		var player = Game.Screen.playScreen.player; //FIXME - player
+	
 		if (item && item.equippable && entity) {
 			
 			//check if item is equipped item first - likely shorter list
@@ -964,27 +987,70 @@ Game.Screen.inventoryScreen = {
 Game.Screen.loadGameScreen = {
 	uiParameters: null,
 	savedGames: [],
-	displayedSavedGames: [],
+	//displayedSavedGames: [],
+	displayedSavedGameButtons: [],
+	savedGameButtons: [],
 	firstSavedGameDisplayed: 0,
 	selectedSavedGame: null,
     enter: function() { 
-    	   this.uiParameters = Game.loadedEnvironment.uiScreens.loadGameScreenUI;
-    	   this.selectedSavedGame = null; //reset
+    	this.uiParameters = Game.loadedEnvironment.uiScreens.loadGameScreenUI;
+    	   
+		//reset
+    	this.selectedSavedGame = null;
+    	this.firstSavedGameDisplayed = 0;
+    	this.updateSavedGameKeyList();
+		this.generateSavedGameUIButtons();
 	},
     exit: function() { 
 	},
     render: function(display) {
-    	var player = Game.Screen.playScreen.player; //FIXME - player
-    	
-    	this.savedGames = []; //reset
-    	this.displayedSavedGames = []; 
-    	
-    	//DRAW UI
-		var interfaceObject = Game.interfaceObject;		
+		var interfaceObject = Game.interfaceObject;	
+		interfaceObject.clearCanvas();
 		interfaceObject.drawUI(this.uiParameters);
+		
+		//reset
+		this.displayedSavedGameButtons = [];
 		
 		//localStorage.clear(); //temp - saved game deletion
 		
+		if (this.savedGameButtons.length > 0) {
+		
+			//draw identified saved games over UI display area
+			var tilePixelWidth = interfaceObject.tilePixelWidth;
+
+			var savedGameDisplayArea = Game.loadedEnvironment.uiComponents.loadGameScreen.savedGameDisplay;
+
+			//how many display positions are available
+			var displayAreaPositions = savedGameDisplayArea.height / tilePixelWidth;
+		
+			//where to begin drawing on UI canvas
+			var displayAreaNextPositionX = savedGameDisplayArea.x;
+			var displayAreaNextPositionY = savedGameDisplayArea.y;	
+			
+			var nextDisplayedButton;
+	
+			for (var a = this.firstSavedGameDisplayed, b = this.savedGameButtons.length; a < b; a++) {			
+				//break out if no more available display positions
+				if (a >= this.firstSavedGameDisplayed + displayAreaPositions ) { break;}
+				
+				nextDisplayedButton = this.savedGameButtons[a];
+				
+				//update positioning
+				nextDisplayedButton.y = displayAreaNextPositionY;
+				
+				//save in array
+				this.displayedSavedGameButtons.push(nextDisplayedButton);
+
+				//increment positioning
+				displayAreaNextPositionY += tilePixelWidth;
+			}
+			//don't clear before drawing - this is an additional layer
+			interfaceObject.drawUI(this.displayedSavedGameButtons);
+		}
+    },
+    updateSavedGameKeyList: function() {
+    	this.savedGames = []; //reset
+    	
 		//indentify saved games, add to array	
 		var keyMatch;
 		for (var x in localStorage) {
@@ -1001,66 +1067,272 @@ Game.Screen.loadGameScreen = {
 					break;
 				}
 			}
-			
+
 			if (keyMatch) {
 				//console.log('key match');
 				this.savedGames.push(x);
 			}
+		}	
+    },
+    generateSavedGameUIButtons: function() {
+		//reset
+		this.savedGameButtons = [];
+		
+		if (this.savedGames.length === 0) {
+			return;
 		}
+	
+		var interfaceObject = Game.interfaceObject;	
 		
-		if (this.savedGames.length > 0) {
+		var nextSavedGameButton, nextSavedGameObject, createDate, lastSaveDate, createDateText, lastSaveDateText, savedGameDifficultySetting;
 		
-			//draw identified saved games over UI display area
-			var spriteSheet = Game.display._options.tileSet;
-			var tilePixelWidth = interfaceObject.tilePixelWidth;
-			var ctx = interfaceObject.uiCanvas.getContext("2d");
-
-			var savedGameDisplayArea = Game.loadedEnvironment.uiComponents.loadGameScreen.savedGameDisplay;
-
-			//how many display positions are available
-			var displayAreaPositions = savedGameDisplayArea.height / tilePixelWidth;
+		var detailsDivider = String.fromCharCode(8226);
 		
-			//where to begin drawing on UI canvas
-			var displayAreaNextPositionX = savedGameDisplayArea.x;
-			var displayAreaNextPositionY = savedGameDisplayArea.y;	
+		var savedGameDisplayArea = Game.loadedEnvironment.uiComponents.loadGameScreen.savedGameDisplay;
 		
-			//for (var a = 0, b = this.savedGames.length; a < b; a++) {
-			for (var a = this.firstSavedGameDisplayed, b = this.savedGames.length; a < b; a++) {
-				//console.log(this.savedGames[a]);
+		//regenerate
+		for (var a = 0, b = this.savedGames.length; a < b; a++) {
+		
+			nextSavedGameButton = { 
+					currentSaveTimeStamp: null, //retained for sorting button display order
+					textStyle: 'savedGameButtonText01',//'buttonText01',
+					backgroundStyle: 'menu01',
+					roundedCorners: true,
+					transparency: true,
+					outline: true,
+					//x: (((interfaceObject.canvasTileWidth - 1) / 2) - 2)  * interfaceObject.tilePixelWidth,
+					//x: (interfaceObject.uiHalfTilesWide() - 2)  * interfaceObject.tilePixelWidth,
+					x: savedGameDisplayArea.x,
+					//x: (((Math.min(interfaceObject.canvasTileWidth, 11) - 1) / 2) - 2)  * interfaceObject.tilePixelWidth,
+					//y: (((interfaceObject.canvasTileHeight - 1) / 2) - 1) * interfaceObject.tilePixelWidth, //set in render()
+					//width: interfaceObject.tilePixelWidth * 4,
+					width: savedGameDisplayArea.width,
+					//width: Math.min(interfaceObject.canvasTileWidth, 11) - 1,
+					height: interfaceObject.tilePixelWidth,
+					content: [[" "]],
+					//label: ' ',
+					selected: false,
+					savedGameKey: null,
+					clickAction: function() {
+						Game.Screen.UIclearSelectedComponents(Game.Screen.loadGameScreen.savedGameButtons);
+						this.selected = true;
+						Game.Screen.loadGameScreen.selectedSavedGame = this.savedGameKey;
+						Game.Screen.loadGameScreen.render();
+					}					
+				};
 			
-				//break out if no more available display positions
-				if (a >= displayAreaPositions ) { break;}
-
-				ctx.fillStyle = "rgba(255, 255, 255, 1.0)"; //FIXME - shouldn't this be housed in interface.js?
-				ctx.font = "12px sans-serif";
-
-				var textX = displayAreaNextPositionX;// + (savedGameDisplayArea.width / 2) - (ctx.measureText(this.savedGames[a]).width / 2);
-				var textY = displayAreaNextPositionY + tilePixelWidth;// + (ctx.measureText(this.savedGames[a]).height / 2);
-		
-				ctx.fillText(this.savedGames[a],textX,textY);					
-				
-								
-				//selectedSavedGame tinting	
-				if (this.savedGames[a] === this.selectedSavedGame) {
-					ctx.fillStyle = "rgba(0, 255, 0, 0.1)";
-					ctx.fillRect(displayAreaNextPositionX,displayAreaNextPositionY,savedGameDisplayArea.width,tilePixelWidth);
+			//save savedGames key
+			nextSavedGameButton.savedGameKey = this.savedGames[a];//a;
+			
+			nextSavedGameObject = JSON.parse(localStorage.getItem(this.savedGames[a]));
+			
+			function getMonthName(dateObjectMonth) { //FIXME - move these functions somewhere central for potential reuse
+			
+				switch (dateObjectMonth){
+					case 0:
+						return "Jan.";
+						break;
+					case 1:
+						return "Feb.";
+						break;
+					case 2:
+						return "March";
+						break;
+					case 3:
+						return "April";
+						break;
+					case 4:
+						return "May";
+						break;
+					case 5:
+						return "June";
+						break
+					case 6:
+						return "July";
+						break;
+					case 7:
+						return "Aug.";
+						break;
+					case 8:
+						return "Sept.";
+						break;
+					case 9:
+						return "Oct.";
+						break;
+					case 10:
+						return "Nov.";
+						break;
+					case 11:
+						return "Dec.";
+						break;
+					default:
+						return "No data";
+				}
+			}			
+			
+			function formatTime(dateObjectHour, dateObjectMinute) {
+				//format minutes	
+				if (dateObjectMinute === 0) {
+					dateObjectMinute = "00";
+				} else if (dateObjectMinute < 10) {
+					dateObjectMinute = "0" + dateObjectMinute;
 				}
 			
-				//add to displayed (visible) saved games (used for click evaluation)
-				var newDisplayedSavedGame = {};
-				newDisplayedSavedGame.x = displayAreaNextPositionX;
-				newDisplayedSavedGame.y = displayAreaNextPositionY;
-				newDisplayedSavedGame.savedGame = this.savedGames[a];
-				this.displayedSavedGames.push(newDisplayedSavedGame);
+				//format hour
+				var hour, ampm;
 				
-				displayAreaNextPositionY += tilePixelWidth;
+				switch (dateObjectHour){
+					case 0:
+						hour = "12";
+						ampm = "a.m.";
+						break;
+					case 1:
+						hour = "1";
+						ampm = "a.m.";;
+						break;
+					case 2:
+						hour = "2";
+						ampm = "a.m.";
+						break;
+					case 3:
+						hour = "3";
+						ampm = "a.m.";
+						break;
+					case 4:
+						hour = "4";
+						ampm = "a.m.";;
+						break;
+					case 5:
+						hour = "5";
+						ampm = "a.m.";
+						break
+					case 6:
+						hour = "6";
+						ampm = "a.m.";
+						break;
+					case 7:
+						hour = "7";
+						ampm = "a.m.";
+						break;
+					case 8:
+						hour = "8";
+						ampm = "a.m.";
+						break;
+					case 9:
+						hour = "9";
+						ampm = "a.m.";
+						break;
+					case 10:
+						hour = "10";
+						ampm = "a.m.";
+						break;
+					case 11:
+						hour = "11";
+						ampm = "a.m.";
+						break;
+					case 12:
+						hour = "12";
+						ampm = "p.m.";
+						break;
+					case 13:
+						hour = "1";
+						ampm = "p.m.";
+						break;
+					case 14:
+						hour = "2";
+						ampm = "p.m.";
+						break;
+					case 15:
+						hour = "3";
+						ampm = "p.m.";
+						break;
+					case 16:
+						hour = "4";
+						ampm = "p.m.";
+						break;
+					case 17:
+						hour = "5";
+						ampm = "p.m.";
+						break;	
+					case 18:
+						hour = "6";
+						ampm = "p.m.";
+						break;
+					case 19:
+						hour = "7";
+						ampm = "p.m.";
+						break;
+					case 20:
+						hour = "8";
+						ampm = "p.m.";
+						break;
+					case 21:
+						hour = "9";
+						ampm = "p.m.";
+						break;
+					case 22:
+						hour = "10";
+						ampm = "p.m.";
+						break;
+					case 23:
+						hour = "11";
+						ampm = "p.m.";
+						break;
+					default:
+						//
+				}
+								
+				return hour + ":" + dateObjectMinute + " " + ampm;
 			}
-		}
-		
-		//FIXME - saved game display details player name, depth, difficulty setting, and time stamp of last save
+			
+			lastSaveDate = new Date (nextSavedGameObject.currentSaveTimeStamp);
+			lastSaveDateText = "";
+			lastSaveDateText += (formatTime(lastSaveDate.getHours(), lastSaveDate.getMinutes()) + " " + getMonthName(lastSaveDate.getMonth()) + " " + lastSaveDate.getDate());
+			
+			createDate = new Date(nextSavedGameObject.firstSaveTimeStamp);
+			createDateText = "";
+			createDateText += (formatTime(createDate.getHours(), createDate.getMinutes()) + " " + getMonthName(createDate.getMonth()) + " " + createDate.getDate() + ", " + createDate.getFullYear());
+						
+			/*if (isNaN(lastSaveDate.getTime())) {
+				//not a date
+				lastSaveDate = "No data";
+			}*/
+			
+			savedGameDifficultySetting = nextSavedGameObject.playScreen.difficultySetting;
 
+			switch (savedGameDifficultySetting) {
+				case 1:
+					savedGameDifficultySetting = "Easy"; //FIXME - hard coded reinterpretation - should pull from somewhere centrally
+					break;
+				case 2:
+					savedGameDifficultySetting = "Medium";
+					break;
+				case 3:
+					savedGameDifficultySetting = "Hard";
+					break;
+				default:
+					savedGameDifficultySetting = "No data";
+			}
+			
+			nextSavedGameButton.content = [
+										[lastSaveDateText + " " + detailsDivider + " " + savedGameDifficultySetting + " " + detailsDivider + " " + nextSavedGameObject.playScreen.depth],
+										['Created: ' + createDateText]
+										];
+			
+			nextSavedGameButton.currentSaveTimeStamp = nextSavedGameObject.currentSaveTimeStamp, //save for display sorting
+			
+			this.savedGameButtons.push(nextSavedGameButton);
+		}
+
+		//sorts array in place by most recent save		
+		this.savedGameButtons.sort(function(a, b) {
+		  return b.currentSaveTimeStamp - a.currentSaveTimeStamp;
+		});
 		
-		
+		//set most recent as selected
+		//this.savedGameButtons[0].selected = true;
+		this.savedGameButtons[0].clickAction();
+		//Game.Screen.loadGameScreen.selectedSavedGame		
     },
     handleInput: function(inputType, inputData) {    
         if (inputType === 'mouseup' || inputType === 'touchstart') {	        		
@@ -1071,11 +1343,21 @@ Game.Screen.loadGameScreen = {
         } 
     },
     clickEvaluation: function(eventPosition) {
-    	var componentClicked = Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
-    	
-    	if (componentClicked === false) {
-    		this.displayedSavedGameClickEvaluation(eventPosition);    	
-    	}
+		var componentClicked = Game.Screen.UIClickEvaluation(eventPosition, this, this.uiParameters);
+		
+		if (componentClicked === false){
+			componentClicked = Game.Screen.UIClickEvaluation(eventPosition, this, this.displayedSavedGameButtons);
+		}
+				
+		if (!componentClicked) {
+			Game.Screen.UIclearSelectedComponents(this.uiParameters); //FIXME - why am I only doing this here?
+			Game.Screen.UIclearSelectedComponents(this.savedGameButtons);
+			
+			this.selectedSavedGame = null;
+			
+			this.render();
+		}
+		
     },	
     savedGameDisplayScroll: function(/*display, displayType, */direction/*, items*/) {
     	if (direction === "up" && this.firstSavedGameDisplayed > 0) {
@@ -1084,8 +1366,9 @@ Game.Screen.loadGameScreen = {
     	} else if (direction === "down") {
     		this.firstSavedGameDisplayed++;
     	}
+    	    	
     	this.render();    	
-    },
+    }/*,
     displayedSavedGameClickEvaluation: function(eventPosition) {
 		var tilePixelWidth = Game.interfaceObject.tilePixelWidth;	
 		var clickX = eventPosition[0] * tilePixelWidth;
@@ -1111,7 +1394,7 @@ Game.Screen.loadGameScreen = {
 		} 
 		
 		this.render();    
-	}
+	}*/
 }
 
 
@@ -1163,7 +1446,8 @@ Game.Screen.statAssignmentScreen = {
 		}
 		
     	//DRAW UI
-		var interfaceObject = Game.interfaceObject;		
+		var interfaceObject = Game.interfaceObject;	
+		interfaceObject.clearCanvas();		
 		interfaceObject.drawUI(this.uiParameters);
 
     },
@@ -1177,7 +1461,7 @@ Game.Screen.statAssignmentScreen = {
     },
     clickEvaluation: function(eventPosition) {
     	//Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
-		var clickedAButton = Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+		var clickedAButton = Game.Screen.UIClickEvaluation(eventPosition, this, this.uiParameters);
 		if (!clickedAButton) {
 			this.statRaising = null;
 			this.render();
@@ -1274,7 +1558,8 @@ Game.Screen.mapScreen = {
     	}
     	
     	//DRAW UI
-		//var interfaceObject = Game.interfaceObject;		
+		//var interfaceObject = Game.interfaceObject;	
+		interfaceObject.clearCanvas();		
 		interfaceObject.drawUI(this.uiParameters);
 
     },
@@ -1287,7 +1572,7 @@ Game.Screen.mapScreen = {
         } 
     },
     clickEvaluation: function(eventPosition) {
-    	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+		Game.Screen.UIClickEvaluation(eventPosition, this, this.uiParameters);
     }
 }
 
@@ -1302,7 +1587,8 @@ Game.Screen.playerDeathScreen = {
     	//var player = Game.Screen.playScreen.player; //FIXME - player
 
     	//DRAW UI
-		var interfaceObject = Game.interfaceObject;		
+		var interfaceObject = Game.interfaceObject;	
+		interfaceObject.clearCanvas();		
 		interfaceObject.drawUI(this.uiParameters);
     },
     handleInput: function(inputType, inputData) {    
@@ -1314,7 +1600,7 @@ Game.Screen.playerDeathScreen = {
         } 
     },
     clickEvaluation: function(eventPosition) {
-    	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+		Game.Screen.UIClickEvaluation(eventPosition, this, this.uiParameters);
     }
 }
 
@@ -1336,7 +1622,8 @@ Game.Screen.confirmScreen = {
 		Game.loadedEnvironment.uiComponents.confirmScreen.confirmMessageDisplay.content = this.confirmationMessage;
 		
     	//DRAW UI
-		var interfaceObject = Game.interfaceObject;		
+		var interfaceObject = Game.interfaceObject;	
+		interfaceObject.clearCanvas();		
 		interfaceObject.drawUI(this.uiParameters);
     },
     handleInput: function(inputType, inputData) {    
@@ -1348,7 +1635,7 @@ Game.Screen.confirmScreen = {
         } 
     },
     clickEvaluation: function(eventPosition) {
-    	Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+		Game.Screen.UIClickEvaluation(eventPosition, this, this.uiParameters);
     },
     reset: function() {
     	this.confirmationMessage = null;
@@ -1393,7 +1680,8 @@ Game.Screen.newGameScreen = {
 	},
     render: function(display) {
     	//DRAW UI
-		var interfaceObject = Game.interfaceObject;		
+		var interfaceObject = Game.interfaceObject;	
+		interfaceObject.clearCanvas();		
 		interfaceObject.drawUI(this.uiParameters);
     },
     handleInput: function(inputType, inputData) {    
@@ -1406,7 +1694,7 @@ Game.Screen.newGameScreen = {
     },
     clickEvaluation: function(eventPosition) {
     	//Game.Screen.UIClickEvaluation(this, eventPosition, this.uiParameters);	
-		var clickedAButton = Game.Screen.UIClickEvaluation(eventPosition, this.uiParameters);
+		var clickedAButton = Game.Screen.UIClickEvaluation(eventPosition, this, this.uiParameters);
 		if (!clickedAButton) {
 			this.difficultySelection = null;
 			this.render();
@@ -1428,13 +1716,16 @@ Game.Screen.updateTopLeft = function() {
         playScreen.topLeftY = Math.min(newTopLeftY, playScreen.map.height - screenHeight);	    
 }
 
-Game.Screen.UIClickEvaluation = function(eventPosition, uiParameters) {
+Game.Screen.UIClickEvaluation = function(eventPosition, screen, uiParameters) {
+	//sometimes the parameters aren't from the .uiParameters property of the passed screen (for example load game screen uses second array for saved game buttons)
 	var tilePixelWidth = Game.interfaceObject.tilePixelWidth;	
 	var clickX = eventPosition[0] * tilePixelWidth;
 	var clickY = eventPosition[1] * tilePixelWidth;
 	var componentClicked = false;
-	
+console.log(screen);
+console.log(uiParameters);	
 	//clear current selection 
+	console.log('call05');
 	Game.Screen.UIclearSelectedComponents(uiParameters);
 	
 	//loop through UI components checking for position match
@@ -1443,7 +1734,50 @@ Game.Screen.UIClickEvaluation = function(eventPosition, uiParameters) {
 		//if within button boundary coordinates
 		if (clickX >= uiParameters[i].x && clickX < (uiParameters[i].x + uiParameters[i].width) && clickY >= uiParameters[i].y && clickY < (uiParameters[i].y + uiParameters[i].height)) { 
 			if (uiParameters[i].clickAction) {
-				uiParameters[i].clickAction();
+				
+				//uiParameters[i].clickAction();
+				//componentClicked = true;
+				
+				/*
+				uiParameters[i].clickHighlight = true;		
+				Game.Screen.menuScreen.render();
+				
+				//brief delay for clickHighlight rendering to be seen before continuing
+				var uiComponentObject = uiParameters[i];
+				setTimeout(
+					function(uiComponentObject){ 
+						uiComponentObject.clickHighlight = false;
+						uiComponentObject.clickAction();
+					} , 1, uiComponentObject); 
+				
+				*/
+				
+				uiParameters[i].clickHighlight = true;		
+				screen.render(Game.display);
+				
+				var uiComponentObject = uiParameters[i];
+				
+				if (uiParameters[i].availabilityCheck) {
+					if (uiParameters[i].availabilityCheck()){
+						//uiParameters[i].clickAction();
+						//componentClicked = true;
+						setTimeout(
+							function(uiComponentObject){ 
+								uiComponentObject.clickHighlight = false;
+								uiComponentObject.clickAction();
+							} , 83, uiComponentObject); 
+					}
+				
+				} else{
+					//uiParameters[i].clickAction();
+					//componentClicked = true;
+					setTimeout(
+							function(uiComponentObject){ 
+								uiComponentObject.clickHighlight = false;
+								uiComponentObject.clickAction();
+							} , 83, uiComponentObject); 
+				}
+				
 				componentClicked = true;
 			}
 		}
