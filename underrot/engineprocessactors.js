@@ -87,25 +87,30 @@ Game.Mixins.GameStateSaverActor = {
 				savedMapData.entities[a].equipped = {}; //reset
 				
 				//update check
-				if (mapEntities[a].equipped.head) {
+				/*if (mapEntities[a].equipped.head) {
 					savedMapData.entities[a].equipped.head = mapEntities[a].equipped.head.templateType;
-				}
+				}*/
+				savedMapData.entities[a].equipped.head = mapEntities[a].equipped.head ? mapEntities[a].equipped.head.templateType : null;
 				
-				if (mapEntities[a].equipped.body) {
+				/*if (mapEntities[a].equipped.body) {
 					savedMapData.entities[a].equipped.body = mapEntities[a].equipped.body.templateType;
-				}
+				}*/
+				savedMapData.entities[a].equipped.body = mapEntities[a].equipped.body ? mapEntities[a].equipped.body.templateType : null;
 				
-				if (mapEntities[a].equipped.hand) {
+				/*if (mapEntities[a].equipped.hand) {
 					savedMapData.entities[a].equipped.hand = mapEntities[a].equipped.hand.templateType;
-				}
+				}*/
+				savedMapData.entities[a].equipped.hand = mapEntities[a].equipped.hand ? mapEntities[a].equipped.hand.templateType : null;
 				
-				if (mapEntities[a].equipped.shieldhand) {
+				/*if (mapEntities[a].equipped.shieldhand) {
 					savedMapData.entities[a].equipped.shieldhand = mapEntities[a].equipped.shieldhand.templateType;
-				}
+				}*/
+				savedMapData.entities[a].equipped.shieldhand = mapEntities[a].equipped.shieldhand ? mapEntities[a].equipped.shieldhand.templateType : null;
 				
-				if (mapEntities[a].equipped.accessory) {
+				/*if (mapEntities[a].equipped.accessory) {
 					savedMapData.entities[a].equipped.accessory = mapEntities[a].equipped.accessory.templateType;
-				}
+				}*/
+				savedMapData.entities[a].equipped.accessory = mapEntities[a].equipped.accessory ? mapEntities[a].equipped.accessory.templateType : null;
 			}
 					
 			if (mapEntities[a].hasMixin('InventoryCarrier')) {	

@@ -51,6 +51,7 @@ var Interface =  {
 		this.loadIcons();
 		this.updateCanvasTileDimensions();
 		window.addEventListener('resize', this.updateCanvasTileDimensions());	
+		window.addEventListener('orientationchange', this.updateCanvasTileDimensions());	
     },
     loadIcons: function() {
     
@@ -66,7 +67,7 @@ var Interface =  {
     	healIcon.src = '../underrot/interface/icons/icon-60x60-heal-white.svg';	    	
     	this.uiIcons.healIcon = healIcon;
     	
-    	/*var arrowIcon = new Image(); //FIXME - way to rotat single image?
+    	/*var arrowIcon = new Image(); //FIXME - way to rotate single image?
     	arrowIcon.src = '../underrot/interface/icons/icon-60x60-arrow.svg';    	
     	this.uiIcons.arrowIcon = arrowIcon;*/
     	
@@ -126,9 +127,17 @@ var Interface =  {
     	attackIcon.src = '../underrot/interface/icons/icon-60x60-attack.svg';	    	
     	this.uiIcons.attackIcon = attackIcon;
 		
+		var attackIconWhite = new Image();
+    	attackIconWhite.src = '../underrot/interface/icons/icon-60x60-attack-white.svg';	    	
+    	this.uiIcons.attackIconWhite = attackIconWhite;
+		
 		var defenseIcon = new Image();
     	defenseIcon.src = '../underrot/interface/icons/icon-60x60-defense.svg';	    	
     	this.uiIcons.defenseIcon = defenseIcon;
+		
+		var defenseIconWhite = new Image();
+    	defenseIconWhite.src = '../underrot/interface/icons/icon-60x60-defense-white.svg';	    	
+    	this.uiIcons.defenseIconWhite = defenseIconWhite;
     	
     	var stairsIcon = new Image();
     	stairsIcon.src = '../underrot/interface/icons/icon-60x60-stairs.svg'; 	    	
@@ -145,7 +154,31 @@ var Interface =  {
     	var loadGameIcon = new Image();
     	loadGameIcon.src = '../underrot/interface/icons/icon-60x60-load-game.svg'; 	    	
     	this.uiIcons.loadGameIcon = loadGameIcon;
-    	    	
+	
+    	var helmIcon = new Image();
+    	helmIcon.src = '../underrot/interface/icons/icon-60x60-helm.svg'; 	    	
+    	this.uiIcons.helmIcon = helmIcon;
+    	
+    	var helmIconWhite = new Image();
+    	helmIconWhite.src = '../underrot/interface/icons/icon-60x60-helm-white.svg'; 	    	
+    	this.uiIcons.helmIconWhite = helmIconWhite;
+    	
+    	var armorIcon = new Image();
+    	armorIcon.src = '../underrot/interface/icons/icon-60x60-armor.svg'; 	    	
+    	this.uiIcons.armorIcon = armorIcon;
+    	
+    	var armorIconWhite = new Image();
+    	armorIconWhite.src = '../underrot/interface/icons/icon-60x60-armor-white.svg'; 	    	
+    	this.uiIcons.armorIconWhite = armorIconWhite;
+    	
+    	var amuletIcon = new Image();
+    	amuletIcon.src = '../underrot/interface/icons/icon-60x60-amulet.svg'; 	    	
+    	this.uiIcons.amuletIcon = amuletIcon;
+    	
+    	var amuletIconWhite = new Image();
+    	amuletIconWhite.src = '../underrot/interface/icons/icon-60x60-amulet-white.svg'; 	    	
+    	this.uiIcons.amuletIconWhite = amuletIconWhite;
+ 	
     },
     updateCanvasTileDimensions: function() {
 
@@ -154,9 +187,6 @@ var Interface =  {
 		
 		this.backCanvasTileWidth = this.backCanvasContainer.offsetWidth / this.tilePixelWidth;
     	this.backCanvasTileHeight = this.backCanvasContainer.offsetHeight / this.tilePixelWidth;
-
-//console.log(this.canvasContainer.offsetWidth + ',' + this.canvasContainer.offsetHeight);
-//console.log(this.canvasTileWidth + ',' + this.canvasTileHeight);
 		
 		if (this.uiCanvas !== null) {
 			this.uiCanvas.width = this.canvasTileWidth * this.tilePixelWidth;
@@ -244,6 +274,7 @@ var Interface =  {
 			
 			//component styling & drawing
 			var componentBackgroundStyle = componentParameters.backgroundStyle;
+			var componentBackgroundTile = componentParameters.backgroundTile;
 			var componentImageBackground = componentParameters.imageBackground;
 			var componentScreenBackground = componentParameters.screenBackground;
 			var componentHorizontalRule = componentParameters.horizontalRule;
@@ -254,8 +285,22 @@ var Interface =  {
 			var componentOutline = componentParameters.outline;
 			var componentHighlighted = componentParameters.highlighted;
 			var componentClickHighlight = componentParameters.clickHighlight;
-					
-			if (!componentTransparency) {
+			
+			var drawingOpacity = 1.0;
+			
+			if (componentTransparency) {
+				drawingOpacity = 0.30;
+						
+				if (componentAvailable) {
+					drawingOpacity = 0.60;
+				}
+				if (componentSelected) {
+					drawingOpacity = 0.60;//0.90;
+				}			
+			}
+			
+			/*
+			if (!componentTransparency) { //FIXME? switching from boolean to numeric value
 				componentTransparency = 1.0;
 
 			} else {
@@ -268,7 +313,7 @@ var Interface =  {
 				if (componentSelected) {
 					componentTransparency = 0.60;//0.90;
 				}
-			}
+			}*/
 
 			if (componentRoundedCorners) {
 				
@@ -284,66 +329,106 @@ var Interface =  {
 				ctx.lineTo(componentX + cornerRadius, componentY + componentHeight);
 				ctx.quadraticCurveTo(componentX, componentY + componentHeight, componentX, componentY + componentHeight - cornerRadius);
 				ctx.lineTo(componentX, componentY + cornerRadius);
-			}/* else {
-	console.log(componentContent);		
-				console.log(componentX);
-				console.log(componentY);
-				console.log(componentWidth);
-				console.log(componentHeight);
+			} else {
 				ctx.rect(componentX, componentY, componentWidth, componentHeight);
-			}*/	
+			}	
 			
-			if (componentImageBackground) {
-				ctx.globalAlpha = componentTransparency;
-				ctx.drawImage(componentImageBackground, componentX, componentY, componentWidth, componentHeight);
+			if (componentImageBackground) { 
+				ctx.globalAlpha = drawingOpacity;
+				
+				if (componentBackgroundStyle && componentBackgroundStyle === 'equipped01') { //FIXME
+					ctx.globalAlpha = .3;
+				}
+				
+				ctx.drawImage(componentImageBackground, componentX + inset, componentY + inset, componentWidth - (inset * 2), componentHeight - (inset * 2));
 				ctx.globalAlpha = 1.0; //reset back
 				
 			}
 			
-			if (componentScreenBackground) {
-				ctx2.globalAlpha = componentTransparency;
+			if (componentScreenBackground) { //draws to back canvas (ctx2)
+				ctx2.globalAlpha = drawingOpacity;
 				ctx2.drawImage(componentScreenBackground, componentX, componentY, componentWidth, componentHeight);
-				ctx2.globalAlpha = 1.0; //reset back
+				ctx2.globalAlpha = 1.0;
 				
 			}
 			
-			if (componentHorizontalRule) {
-				//ctx.globalAlpha = componentTransparency;
-				ctx.fillStyle = "rgba(128, 128, 128, " + componentTransparency + ")";
+			/*if (componentHorizontalRule) {
+				//ctx.globalAlpha = drawingOpacity;
+				ctx.fillStyle = "rgba(128, 128, 128, " + drawingOpacity + ")";
 				
 				if (componentHorizontalRule === 'bottom') {
 					ctx.fillRect(componentX, componentY + this.tilePixelWidth - 10, componentWidth, 2);
-				} /*else if (componentHorizontalRule === 'top') {
-					ctx.fillRect(componentX, componentY + this.tilePixelWidth - 10, componentWidth, 2);
-				}*/
+				} //lse if (componentHorizontalRule === 'top') {
+					//ctx.fillRect(componentX, componentY + this.tilePixelWidth - 10, componentWidth, 2);
+				//}
 				
 				//ctx.globalAlpha = 1.0; //reset back
 				
-			}
+			}*/
 			
 			
 			//component background fill
 			if (componentBackgroundStyle) {	
-				if (componentBackgroundStyle === 'hud01') {
-					ctx.fillStyle = "rgba(128, 128, 128, " + componentTransparency + ")";	
+			
+				ctx.fillStyle = "rgba(128, 128, 128, " + drawingOpacity + ")"; //default
+	//console.log(componentBackgroundStyle);		
+				if (componentBackgroundStyle === 'menu01') {
+					if (componentClickHighlight) {
+						ctx.fillStyle = "rgba(51, 204, 51, " + drawingOpacity + ")";
+					} else if (componentHighlighted) {
+						ctx.fillStyle = "rgba(0, 255, 0, " + drawingOpacity + ")";
+					} else if (componentSelected) {	
+						//ctx.fillStyle = "rgba(64, 64, 64, " + drawingOpacity + ")";
+						ctx.fillStyle = "rgba(0, 255, 0, " + drawingOpacity + ")";		
+					} else {
+						ctx.fillStyle = "rgba(0, 0, 0, " + drawingOpacity + ")";
+					}
+				}
+				
+				if (componentBackgroundStyle === 'heal01') {
+					if (componentAvailable) {
+						ctx.fillStyle = "rgba(255, 0, 0, " + drawingOpacity + ")";
+					} else {
+						ctx.fillStyle = "rgba(128, 128, 128, " + drawingOpacity + ")";
+					}
+				}
+				
+				if (componentBackgroundStyle === 'equipped01') {
+					//ctx.fillStyle = "rgba(255, 255, 255, " + drawingOpacity + ")";
+					ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+					//ctx.fillStyle = "rgba(0, 0, 0, " + drawingOpacity + ")";
+				}
+				
+				if (componentBackgroundStyle === 'tile01' && componentBackgroundTile) {
+					var tilePattern = ctx.createPattern(componentBackgroundTile,"repeat");
+					ctx.fillStyle = tilePattern;
+				}
+				
+			
+			
+			
+				/*if (componentBackgroundStyle === 'hud01') {
+					ctx.fillStyle = "rgba(128, 128, 128, " + drawingOpacity + ")";	
 			  
 				} else if (componentBackgroundStyle === 'heal01') {
 					if (componentAvailable) {
-						ctx.fillStyle = "rgba(255, 0, 0, " + componentTransparency + ")";
+						ctx.fillStyle = "rgba(255, 0, 0, " + drawingOpacity + ")";
 					} else {
-						ctx.fillStyle = "rgba(128, 128, 128, " + componentTransparency + ")";
+						ctx.fillStyle = "rgba(128, 128, 128, " + drawingOpacity + ")";
 					}
 				} else if (componentBackgroundStyle === 'menu01') {
 					if (componentClickHighlight) {
-						ctx.fillStyle = "rgba(51, 204, 51, " + componentTransparency + ")";
+						ctx.fillStyle = "rgba(51, 204, 51, " + drawingOpacity + ")";
 					} else if (componentHighlighted) {
-						ctx.fillStyle = "rgba(0, 255, 0, " + componentTransparency + ")";
+						ctx.fillStyle = "rgba(0, 255, 0, " + drawingOpacity + ")";
 					} else if (componentSelected) {	
-						ctx.fillStyle = "rgba(64, 64, 64, " + componentTransparency + ")";		
+						ctx.fillStyle = "rgba(64, 64, 64, " + drawingOpacity + ")";		
 					} else {
-						ctx.fillStyle = "rgba(0, 0, 0, " + componentTransparency + ")";
+						ctx.fillStyle = "rgba(0, 0, 0, " + drawingOpacity + ")";
 					}
-				}
+				}*/ //else if (componentBackgroundStyle === 'equipped01') {
+					//ctx.fillStyle = "rgba(255, 255, 255, " + drawingOpacity + ")";
+				//}
 				
 				//else if (componentBackgroundStyle === 'button01') {		
 					//var gradient1 = ctx.createLinearGradient(componentX,componentY,componentX,componentY+componentHeight);
@@ -352,26 +437,22 @@ var Interface =  {
 					//ctx.fillStyle = gradient1;
 			
 				//} else if (componentBackgroundStyle === 'light01') {
-					//ctx.fillStyle = "rgba(160, 160, 160, " + componentTransparency + ")";
+					//ctx.fillStyle = "rgba(160, 160, 160, " + drawingOpacity + ")";
 				//}
 				
 				ctx.fill();
 			}
 
 			if (componentOutline) { 
-				//if (componentAvailable) { //no outline if component not available
-					
-					if (componentSelected) {
-						ctx.strokeStyle = "rgb(255, 255, 255)";
-					} else {
-						var outlineGradient1 = ctx.createLinearGradient(componentX,componentY,componentX+(componentWidth / 4),componentY+componentHeight);
-						outlineGradient1.addColorStop("0","#808080");
-						outlineGradient1.addColorStop("1.0","#ffffff");
-						ctx.strokeStyle = outlineGradient1;
-					}
-					ctx.lineWidth = .3;//.1;
-					ctx.stroke();
-				//}
+				ctx.strokeStyle = "rgb(155, 155, 155)";
+				ctx.lineWidth = .3;
+				
+				if (componentSelected) {
+					ctx.strokeStyle = "rgb(255, 255, 255)";
+					ctx.lineWidth = .6;
+				} 
+				
+				ctx.stroke();
 			}
 		
 			//default text styling
@@ -380,20 +461,14 @@ var Interface =  {
 			ctx.lineWidth = 2;
 			
 			//gray out labels and icons if component not available
-			var labelAndIconTransparency = componentTransparency;
+			var labelAndIconTransparency = drawingOpacity;
 			
 			if (componentAvailable) {
 				labelAndIconTransparency = 1.0;
 			}
 			
 			ctx.fillStyle = "rgba(255, 255, 255, " + labelAndIconTransparency + ")";
-			//ctx.strokeStyle = "rgba(0, 0, 0, " + labelAndIconTransparency + ")";
 			ctx.globalAlpha = labelAndIconTransparency; //reset back to 1.0 below
-
-			//highlight component if selected
-			if (componentSelected) {
-				//ctx.strokeStyle = "rgba(102, 255, 102, " + labelAndIconTransparency + ")";
-			}
 
 			//label
 			if (componentLabel) {
@@ -425,6 +500,9 @@ var Interface =  {
 					fontSize = 24;
 				} else if (componentTextStyle === 'headingText02') {
 					fontWeight = 'bold';
+				} else if (componentTextStyle === 'statText01') {
+					fontWeight = 'bold';
+					fontSize = 24;
 				}
 				
 				//fontSize = fontSize / componentRowsTotal;
@@ -494,17 +572,7 @@ var Interface =  {
 				}
 			}
 			
-			ctx.globalAlpha = 1.0; //reset back
-			
-	
-			//background image
-			//var c=document.getElementById("myCanvas");
-			//var ctx=c.getContext("2d");
-			//var img=document.getElementById("lamp");
-			//var pat=ctx.createPattern(img,"repeat");
-			//ctx.rect(0,0,150,100);
-			//ctx.fillStyle=pat;
-			//ctx.fill();			
+			ctx.globalAlpha = 1.0; //reset back		
     	}
     }
 }

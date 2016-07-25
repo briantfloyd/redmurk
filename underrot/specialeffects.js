@@ -1,6 +1,6 @@
 /* Copyright (c) 2015, Brian T. Floyd. FreeBSD License. */
 Game.SpecialEffects =  {
-	canvasContainer: document.getElementById('canvas-container'),
+	canvasContainer: document.getElementById('back-canvas-container'), //document.getElementById('canvas-container'),
 	tilePixelWidth: 60, //single tile height/width //FIXME - hardcoded //Game.interfaceObject.tilePixelWidth - not yet available
 	canvasTileWidth: null, //# of tiles wide
 	canvasTileHeight: null,

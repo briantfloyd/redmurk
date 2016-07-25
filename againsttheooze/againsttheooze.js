@@ -116,6 +116,15 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		var potentialItemsToDrop = [];
 		
 		//below all available at depth 1 at medium (2) difficulty //add more at higher maxRarity eventually
+		if (maxRarity >= 6){
+			potentialItemsToDrop.push(this.GreenAmuletTemplate);
+		}
+		if (maxRarity >= 5){
+			potentialItemsToDrop.push(this.WoodenArmorTemplate);
+		}
+		if (maxRarity >= 4){
+			potentialItemsToDrop.push(this.WoodenHelmTemplate);
+		}
 		if (maxRarity >= 3){
 			potentialItemsToDrop.push(this.WoodenShieldTemplate);
 		}
@@ -166,15 +175,20 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		var attackValueDisplay, defenseValueDisplay, healthValueDisplay, experienceValueDisplay;
 		attackValueDisplay = player.getAttackValue().toString();
 		defenseValueDisplay = player.getDefenseValue().toString();
-		healthValueDisplay = player.hp.toString();
-		experienceValueDisplay = player.experiencePoints + "|" + player.nextExperiencePointThreshold;
+		healthValueDisplay = /*player.hp.toString() + "|" + */player.maxHp.toString();
+		experienceValueDisplay = player.experiencePoints.toString()/* + "|" + player.nextExperiencePointThreshold*/;
 		
-		this.uiComponents.inventoryScreen.statsDisplayAttack.content = [[attackValueDisplay]];
-		this.uiComponents.inventoryScreen.statsDisplayDefense.content = [[defenseValueDisplay]];
-		this.uiComponents.inventoryScreen.statsDisplayHealth.content = [[healthValueDisplay]];
+		//this.uiComponents.inventoryScreen.statsDisplayAttack.content = [[attackValueDisplay]];
+		//this.uiComponents.inventoryScreen.statsDisplayDefense.content = [[defenseValueDisplay]];
+		//this.uiComponents.inventoryScreen.statsDisplayHealth.content = [[healthValueDisplay]];
 		//this.uiComponents.inventoryScreen.statsDisplayExperience.content = [[experienceValueDisplay]];
-		this.uiComponents.inventoryScreen.statsDisplayExperience.content = [[player.experiencePoints.toString()],[player.nextExperiencePointThreshold.toString()]];
-
+		//this.uiComponents.inventoryScreen.statsDisplayExperience.content = [[player.experiencePoints.toString()],[player.nextExperiencePointThreshold.toString()]];
+		//this.uiComponents.inventoryScreen.statDisplay.content = [[attackValueDisplay,interfaceObject.uiIcons.attackIcon],[defenseValueDisplay,interfaceObject.uiIcons.defenseIcon],[healthValueDisplay,interfaceObject.uiIcons.healthIcon],[(player.experiencePoints.toString() + '/' + player.nextExperiencePointThreshold.toString()),interfaceObject.uiIcons.trophyIcon]];
+		//this.uiComponents.inventoryScreen.statAttackDefenseDisplay.content = [[attackValueDisplay,interfaceObject.uiIcons.attackIcon],[defenseValueDisplay,interfaceObject.uiIcons.defenseIcon]];
+		//this.uiComponents.inventoryScreen.statHealthExpDisplay.content = [[healthValueDisplay,interfaceObject.uiIcons.healthIcon],[experienceValueDisplay,interfaceObject.uiIcons.trophyIcon]];
+		
+		this.uiComponents.inventoryScreen.statDisplay.content = [[attackValueDisplay,interfaceObject.uiIcons.attackIcon,' ',defenseValueDisplay,interfaceObject.uiIcons.defenseIcon,' ',healthValueDisplay,interfaceObject.uiIcons.healthIcon],[experienceValueDisplay,interfaceObject.uiIcons.trophyIcon]];
+		
 		//depth display update
 		var depthString = Game.Screen.playScreen.depth.toString();
 		//this.uiComponents.playScreen.depthDisplay.content = [[depthString]];	
@@ -195,14 +209,28 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		
 		var tunnelBackgroundImage = new Image(); 
 		tunnelBackgroundImage.src = '../againsttheooze/art/ato-tunnel-bg-660x660.jpg';
-
-
+		
+		
+		
+		//inventory screen display area background tile images
+		var burlap01TextureTile = new Image();
+		burlap01TextureTile.src = '../againsttheooze/art/texture-tile-burlap-01-60x60.jpg';
+		
+		var ground01TextureTile = new Image();
+		ground01TextureTile.src = '../againsttheooze/art/texture-tile-ground-01-60x60.jpg';
+		
+		/*
+		//unexplored tile image
+		//using in ground spritesheet - additional use?
+		var unexplored01Tile = new Image();
+		unexplored01Tile.src = '../againsttheooze/art/texture-tile-fog-01-60x60.jpg';*/
 
 		/*
 		//component options
 		exampleScreenComponents.exampleComponent = 
 			{	
 				backgroundStyle: 'hud01', //optional //'button01', 'light01' 
+				backgroundTile: burlap01TextureTile, //optional
 				imageBackground: '', //optional
 				screenBackground: '', //optional - for full screen, back UI canvas display
 				horizontalRule: '', //optional //'bottom', 'top',
@@ -249,17 +277,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				content: null*/
 			};
 			
-		/*menuComponents.gameTitle = 
-			{	
-				textStyle: 'headingText01',
-				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
-				y: (((interfaceObject.canvasTileHeight - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
-				width: interfaceObject.tilePixelWidth * 3,
-				height: interfaceObject.tilePixelWidth,
-				content: [["Against the Ooze"]]
-			};*/
-
-			
 		menuComponents.exitButton = 
 			{	
 				backgroundStyle: 'menu01',
@@ -268,20 +285,18 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				outline: true,
 				content: [[interfaceObject.uiIcons.closeIcon]],
 				label: 'Exit',
-				//x: 0, 
-				//y: 0,
 				x: interfaceObject.uiTileHorizontalMargin() * interfaceObject.tilePixelWidth,
 				y: interfaceObject.uiTileVerticalMargin() * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth, 
 				height: interfaceObject.tilePixelWidth,
 				availabilityCheck: function() {
 					return false;//FIXME - temporary
-				},
+				}/*,
 				clickAction: function() {
 					//if (this.availabilityCheck()) {
 						//Game.Screen.playScreen.player.useHealingPotion();
 					//}
-				}					
+				}	*/				
 			};	
 			
 		menuComponents.continueGameButton = 
@@ -313,43 +328,26 @@ Game.AgainstTheOoze = { //set as loaded environment below
 					return savedGames;					
 				},
 				clickAction: function() {
-					//if (this.availabilityCheck()) {
-
-						var saves = Game.Screen.loadGameScreen.savedGames;
-						var savedGameObject;
-						
-						//for determining most recent time stamp
-						var recentSaveTimeStamps = [];
-						
-						//for loading most recent save - recent time stamps as properties with save keys as values
-						var recentSaveKeys = {};
-						
-						for (var x in saves){
-							savedGameObject = JSON.parse(localStorage.getItem(saves[x]));
-							if (savedGameObject) {
-								recentSaveTimeStamps.push(savedGameObject.currentSaveTimeStamp);
-								recentSaveKeys[savedGameObject.currentSaveTimeStamp] = saves[x];
-							}
+					var saves = Game.Screen.loadGameScreen.savedGames;
+					var savedGameObject;
+					
+					//for determining most recent time stamp
+					var recentSaveTimeStamps = [];
+					
+					//for loading most recent save - recent time stamps as properties with save keys as values
+					var recentSaveKeys = {};
+					
+					for (var x in saves){
+						savedGameObject = JSON.parse(localStorage.getItem(saves[x]));
+						if (savedGameObject) {
+							recentSaveTimeStamps.push(savedGameObject.currentSaveTimeStamp);
+							recentSaveKeys[savedGameObject.currentSaveTimeStamp] = saves[x];
 						}
-						
-						var mostRecentSaveTimeStamp = Math.max.apply(null, recentSaveTimeStamps);
-						Game.resumeGame(recentSaveKeys[mostRecentSaveTimeStamp]);
-						
-						
-						
-						/*this.clickHighlight = true;		
-						Game.Screen.menuScreen.render();
-						
-						//brief delay for clickHighlight rendering to be seen before continuing
-						var thisObject = this;
-						setTimeout(
-							function(thisObject){ 
-								thisObject.clickHighlight = false;
-								Game.resumeGame(recentSaveKeys[mostRecentSaveTimeStamp]);		
-							} , 1, thisObject); */
-						
-						
-					//}
+					}
+					
+					var mostRecentSaveTimeStamp = Math.max.apply(null, recentSaveTimeStamps);
+					Game.resumeGame(recentSaveKeys[mostRecentSaveTimeStamp]);
+
 				}					
 			};
 			
@@ -369,9 +367,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 					return Game.Screen.loadGameScreen.savedGames.length > 0;
 				},
 				clickAction: function() {
-					//if (this.availabilityCheck()) {
-						Game.switchScreen(Game.Screen.loadGameScreen);
-					//}
+					Game.switchScreen(Game.Screen.loadGameScreen);
 				}					
 			};	
 			
@@ -407,8 +403,11 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				outline: true,
 				content: [[interfaceObject.uiIcons.menuIcon]],
 				label: 'Menu',
-				x: 0, 
-				y: 0,
+				//x: 0, 
+				//y: 0,
+				x: interfaceObject.uiTileHorizontalMargin() * interfaceObject.tilePixelWidth,
+				//y: interfaceObject.uiTileVerticalMargin() * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.canvasTileHeight - 2) * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth, 
 				height: interfaceObject.tilePixelWidth,
 				clickAction: function() {
@@ -418,38 +417,42 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		playComponents.healButton = 
 			{	
-				//backgroundStyle: 'hud01',
-				backgroundStyle: 'heal01',
+				backgroundStyle: 'menu01',
+				//backgroundStyle: 'heal01',
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
 				content: [[interfaceObject.uiIcons.healIcon]],
 				label: 'Heal',
-				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
-				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				//x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				//y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiMenuScreenTileWidth() - 1 /*interfaceObject.uiHalfTilesWide() + ((interfaceObject.uiMenuScreenTileWidth() > 5) ? 3 : 2)*/) * interfaceObject.tilePixelWidth,
+				//y: (interfaceObject.uiTileVerticalMargin() + interfaceObject.uiMenuScreenTileHeight() - 1 ) * interfaceObject.tilePixelWidth,
+				//y: (interfaceObject.getBackCanvasHeight() - 5 ) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.canvasTileHeight - 1) * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
 				availabilityCheck: function() {
 					return Game.Screen.playScreen.player.haveHealingPotion();
 				},
 				clickAction: function() {
-					//if (this.availabilityCheck()) {
-						Game.Screen.playScreen.player.useHealingPotion();
-					//}
+					Game.Screen.playScreen.player.useHealingPotion();
 				}				
 			};
 			
 		playComponents.pauseButton = 
 			{	
-				backgroundStyle: 'hud01',
+				backgroundStyle: 'menu01',
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
 				content:[[interfaceObject.uiIcons.pauseIcon]],
 				label: 'Pause',
-				x: interfaceObject.tilePixelWidth,
-				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
-				width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
+				//x: interfaceObject.tilePixelWidth,
+				x: (interfaceObject.uiTileHorizontalMargin() + 1) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.canvasTileHeight - 1) * interfaceObject.tilePixelWidth,
+				width: (interfaceObject.uiMenuScreenTileWidth() - 2) * interfaceObject.tilePixelWidth,
+				//width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
 				height: interfaceObject.tilePixelWidth,
 				clickAction: function() {
 					Game.Screen.playScreen.pauseToggle();
@@ -481,14 +484,17 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		playComponents.mapButton = 
 			{	
-				backgroundStyle: 'hud01',
+				backgroundStyle: 'menu01',
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
 				content: [[interfaceObject.uiIcons.compassIcon]],
 				label: 'Map',
-				x: 0, 
-				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				x: interfaceObject.uiTileHorizontalMargin() * interfaceObject.tilePixelWidth,
+				//y: (interfaceObject.uiTileVerticalMargin()  + interfaceObject.uiMenuScreenTileHeight() - 1 ) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.canvasTileHeight - 1) * interfaceObject.tilePixelWidth,
+				//x: 0, 
+				//y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth, 
 				height: interfaceObject.tilePixelWidth,
 				clickAction: function() {
@@ -502,16 +508,29 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		this.uiComponents.inventoryScreen = {};	
 		var inventoryComponents = this.uiComponents.inventoryScreen;
 
+		inventoryComponents.screenBackground = 
+			{	
+				screenBackground: tunnelBackgroundImage,
+				noInset: true,
+				x: (((interfaceObject.backCanvasTileWidth - 1) / 2) - 5) * interfaceObject.tilePixelWidth,
+				y: (((interfaceObject.backCanvasTileHeight - 1) / 2) - 5) * interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth * 11,
+				height: interfaceObject.tilePixelWidth * 11,
+				content: null
+			};
+		
 		inventoryComponents.closeButton = 
 			{	
-				backgroundStyle: 'hud01',
+				backgroundStyle: 'menu01',
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconLeft]],
 				label: 'Back',
-				x: 0,
-				y: 0,
+				//x: 0,
+				//y: 0,
+				x: interfaceObject.uiTileHorizontalMargin() * interfaceObject.tilePixelWidth,
+				y: interfaceObject.uiTileVerticalMargin() * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
 				clickAction: function() {
@@ -521,68 +540,77 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		inventoryComponents.messageDisplay = 
 			{	
-				x: interfaceObject.tilePixelWidth,
-				y: 0,
-				width:(interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
+				//x: interfaceObject.tilePixelWidth,
+				//y: 0,
+				//x: (interfaceObject.uiTileHorizontalMargin() + 1) * interfaceObject.tilePixelWidth,
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() - 1) * interfaceObject.tilePixelWidth,
+				y: interfaceObject.uiTileVerticalMargin() * interfaceObject.tilePixelWidth,
+				//width:(interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
+				width: interfaceObject.tilePixelWidth * 3,
 				height: interfaceObject.tilePixelWidth,
 				content: null
 			};
 		
-		inventoryComponents.statsDisplayAttack = 
+		inventoryComponents.statDisplay = 
 			{	
-				imageBackground: interfaceObject.uiIcons.attackIcon,
-				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
-				y: 0,
-				width: interfaceObject.tilePixelWidth,
-				height: interfaceObject.tilePixelWidth,
-				content: null,
-				label: 'Attack',
-			};		
-		
-		inventoryComponents.statsDisplayDefense = 
-			{	
-				imageBackground: interfaceObject.uiIcons.defenseIcon,
-				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
-				y: 0,
-				width: interfaceObject.tilePixelWidth,
-				height: interfaceObject.tilePixelWidth,
-				content: null,
-				label: 'Defense',
-			};				
-		
-		inventoryComponents.statsDisplayHealth = 
-			{	
-				imageBackground: interfaceObject.uiIcons.healthIcon,
-				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
-				y: 0,
-				width: interfaceObject.tilePixelWidth,
-				height: interfaceObject.tilePixelWidth,
-				content: null,
-				label: 'Health',
+				backgroundStyle: 'equipped01',
+				roundedCorners: true,
+				transparency: true,
+				//outline: true,
+				textStyle: 'statText01',
+				content: null, //set by inventory screen render calling setStatsDisplayContent method above
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiMenuScreenTileWidth() - 2 /*interfaceObject.uiHalfTilesWide() + ((interfaceObject.uiMenuScreenTileWidth() > 5) ? 3 : 2)*/) * interfaceObject.tilePixelWidth,				
+				y: (interfaceObject.uiTileVerticalMargin() + 2) * interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth * 2,
+				height: interfaceObject.tilePixelWidth
 			};
-		
-		inventoryComponents.statsDisplayExperience = 
-			{	
-				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
-				y: interfaceObject.tilePixelWidth * 2,
-				width: interfaceObject.tilePixelWidth,
-				height: interfaceObject.tilePixelWidth,
-				content: null,
-				label: 'Experience',
-			};		
 			
 		inventoryComponents.groundInventorySwapButton = 
 			{
-				backgroundStyle: 'hud01',
+				backgroundStyle: 'menu01',
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconRightLeft]],
 				label: 'Move',
-				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),
-				y: interfaceObject.tilePixelWidth * 3,
+				highlighted: false,
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiMenuScreenTileWidth() - 3 /*interfaceObject.uiHalfTilesWide() + ((interfaceObject.uiMenuScreenTileWidth() > 5) ? 3 : 2)*/) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin() + 4) * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
-				height: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3),//interfaceObject.tilePixelWidth * 2,
+				height: (interfaceObject.uiMenuScreenTileHeight() - 5) * interfaceObject.tilePixelWidth,
+				availabilityCheck: function() {	
+					//default
+					this.content = [[interfaceObject.uiIcons.arrowIconRightLeft]];
+					this.label = 'Move';
+					this.highlighted = false;
+											
+					//return false if nothing selected
+					var	selectedItem = Game.Screen.inventoryScreen.selectedItem;
+					if (!selectedItem) {
+						return false;
+					}
+					
+					var player = Game.Screen.playScreen.player;
+					var inventoryScreen = Game.Screen.inventoryScreen;
+					
+					var groundItemSelected = inventoryScreen.isGroundItem(selectedItem, player);
+					var inventoryItemSelected = inventoryScreen.isInventoryItem(selectedItem, player);
+
+					if (groundItemSelected || inventoryItemSelected) {
+						this.content = [[interfaceObject.uiIcons.arrowIconLeft]];
+						this.label = 'Pick up';
+						
+						if (inventoryItemSelected) {
+							this.content = [[interfaceObject.uiIcons.arrowIconRight]];
+							this.label = 'Drop';
+						}
+					
+						this.highlighted = true;
+						return true;
+					} else {
+						return false;
+					}
+				},
 				clickAction: function() {
 					var player = Game.Screen.playScreen.player; //location of item to remove
 					var	selectedItem = Game.Screen.inventoryScreen.selectedItem;
@@ -594,16 +622,54 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		inventoryComponents.inventoryEquippedSwapButton = 
 			{
-				backgroundStyle: 'hud01',
+				backgroundStyle: 'menu01',
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconUpDown]],
 				label: 'Move',
-				x: interfaceObject.tilePixelWidth,//0,
-				y: interfaceObject.tilePixelWidth * 2,
-				width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 4),//interfaceObject.tilePixelWidth * 2,
+				highlighted: false,
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() - 2) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin() + 2) * interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth * 3,
+				//width: (interfaceObject.uiMenuScreenTileWidth() - 5) * interfaceObject.tilePixelWidth,
+				//x: interfaceObject.tilePixelWidth,//0,
+				//y: interfaceObject.tilePixelWidth * 2,
+				//width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 4),//interfaceObject.tilePixelWidth * 2,
 				height: interfaceObject.tilePixelWidth,
+				availabilityCheck: function() {	
+					//default
+					this.content = [[interfaceObject.uiIcons.arrowIconUpDown]];
+					this.label = 'Move';
+					this.highlighted = false;
+					
+					//return false if nothing selected or un-equippable item selected
+					var	selectedItem = Game.Screen.inventoryScreen.selectedItem;
+					if (!selectedItem || !selectedItem.equippable) {
+						return false;
+					}
+									
+					var player = Game.Screen.playScreen.player;
+					var inventoryScreen = Game.Screen.inventoryScreen;
+				
+					var equippedItemSelected = inventoryScreen.isEquippedItem(selectedItem, player);
+					var inventoryItemSelected = inventoryScreen.isInventoryItem(selectedItem, player);
+
+					if (equippedItemSelected || inventoryItemSelected) {
+						this.content = [[interfaceObject.uiIcons.arrowIconDown]];
+						this.label = 'Remove';
+						
+						if (inventoryItemSelected) {
+							this.content = [[interfaceObject.uiIcons.arrowIconUp]];
+							this.label = 'Equip';
+						}
+					
+						this.highlighted = true;
+						return true;
+					} else {
+						return false;
+					}
+				},
 				clickAction: function() {
 					var player = Game.Screen.playScreen.player;
 					var selectedItem = Game.Screen.inventoryScreen.selectedItem;
@@ -615,16 +681,24 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		inventoryComponents.groundScrollUpButton = 
 			{
-				backgroundStyle: 'hud01',
+				backgroundStyle: 'menu01',
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconUp]],
 				label: ' ',
-				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
-				y: interfaceObject.tilePixelWidth * 3,
+				//x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiMenuScreenTileWidth() - 1 /*interfaceObject.uiHalfTilesWide() + ((interfaceObject.uiMenuScreenTileWidth() > 5) ? 3 : 2)*/) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin() + 3 ) * interfaceObject.tilePixelWidth, // * 3,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
+				availabilityCheck: function() {					
+					if (Game.Screen.inventoryScreen.displaysFirstItemsDisplayed.ground > 0) {
+						return true;
+					} else {
+						return false;
+					}
+				},
 				clickAction: function() {
 					var display = Game.loadedEnvironment.uiComponents.inventoryScreen.groundDisplay;
 					var direction = 'up';
@@ -636,16 +710,38 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		inventoryComponents.groundScrollDownButton = 
 			{
-				backgroundStyle: 'hud01',
+				backgroundStyle: 'menu01',
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconDown]],
 				label: ' ',
-				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
-				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				//x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				//y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiMenuScreenTileWidth() - 1 /*interfaceObject.uiHalfTilesWide() + ((interfaceObject.uiMenuScreenTileWidth() > 5) ? 3 : 2)*/) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin()  + interfaceObject.uiMenuScreenTileHeight() - 1 ) * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
+				availabilityCheck: function() {	
+					//return out if nothing on ground
+					var groundItems = Game.Screen.inventoryScreen.groundItems;
+					if (!groundItems || groundItems.length === 0) {
+						return false;
+					}				
+
+					var displayComponent = Game.loadedEnvironment.uiComponents.inventoryScreen.groundDisplay
+					var interfaceObject = Game.interfaceObject;
+					var tilePixelWidth = interfaceObject.tilePixelWidth;
+					var displaySlots = (displayComponent.height / tilePixelWidth) * (displayComponent.width / tilePixelWidth);
+					var totalItems = groundItems.length;
+					var firstDisplayedItem = Game.Screen.inventoryScreen.displaysFirstItemsDisplayed.ground;
+					
+					if (totalItems > displaySlots && totalItems > firstDisplayedItem + displaySlots) {
+						return true;
+					} else {
+						return false;
+					}
+				},
 				clickAction: function() {
 					var display = Game.loadedEnvironment.uiComponents.inventoryScreen.groundDisplay;
 					var direction = 'down';
@@ -657,16 +753,25 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		inventoryComponents.inventoryScrollUpButton = 
 			{
-				backgroundStyle: 'hud01',
+				backgroundStyle: 'menu01',
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconUp]],
 				label: ' ',
-				x: 0,
-				y: interfaceObject.tilePixelWidth * 3,
+				x: interfaceObject.uiTileHorizontalMargin() * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin() + 3) * interfaceObject.tilePixelWidth,
+				//x: 0,
+				//y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
+				availabilityCheck: function() {					
+					if (Game.Screen.inventoryScreen.displaysFirstItemsDisplayed.inventory > 0) {
+						return true;
+					} else {
+						return false;
+					}
+				},
 				clickAction: function() {
 					var display = Game.loadedEnvironment.uiComponents.inventoryScreen.inventoryDisplay;
 					var direction = 'up';
@@ -678,16 +783,38 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		inventoryComponents.inventoryScrollDownButton = 
 			{
-				backgroundStyle: 'hud01',
+				backgroundStyle: 'menu01',
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconDown]],
 				label: ' ',
-				x: 0,
-				y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				x: interfaceObject.uiTileHorizontalMargin() * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin()  + interfaceObject.uiMenuScreenTileHeight() - 1 ) * interfaceObject.tilePixelWidth,
+				//x: 0,
+				//y: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
+				availabilityCheck: function() {	
+					//return out if nothing in inventory
+					var inventoryItems = Game.Screen.inventoryScreen.inventoryItems;
+					if (!inventoryItems || inventoryItems.length === 0) {
+						return false;
+					}				
+
+					var displayComponent = Game.loadedEnvironment.uiComponents.inventoryScreen.inventoryDisplay
+					var interfaceObject = Game.interfaceObject;
+					var tilePixelWidth = interfaceObject.tilePixelWidth;
+					var displaySlots = (displayComponent.height / tilePixelWidth) * (displayComponent.width / tilePixelWidth);
+					var totalItems = inventoryItems.length;
+					var firstDisplayedItem = Game.Screen.inventoryScreen.displaysFirstItemsDisplayed.inventory;
+					
+					if (totalItems > displaySlots && totalItems > firstDisplayedItem + displaySlots) {
+						return true;
+					} else {
+						return false;
+					}
+				},
 				clickAction: function() {
 					var display = Game.loadedEnvironment.uiComponents.inventoryScreen.inventoryDisplay;
 					var direction = 'down';
@@ -699,41 +826,125 @@ Game.AgainstTheOoze = { //set as loaded environment below
 			
 		inventoryComponents.equippedDisplay = 
 			{
-				backgroundStyle: 'hud01',
-				roundedCorners: true,
-				transparency: true,
-				outline: true,
-				x: 0,
-				y: interfaceObject.tilePixelWidth,
-				width: interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth,
+				//backgroundStyle: 'menu01',
+				//roundedCorners: true,
+				//transparency: true,
+				//outline: true,
+				//x: 0,
+				//y: interfaceObject.tilePixelWidth,
+				//width: interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth,
+				//x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() - 2) * interfaceObject.tilePixelWidth,
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() - ((interfaceObject.uiMenuScreenTileWidth() > 10) ? 3 : 2)) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin() + 1) * interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth * 5,
 				height: interfaceObject.tilePixelWidth						
 			};
+			
+		inventoryComponents.equippedDisplayHelmIcon = 
+			{
+				backgroundStyle: 'equipped01',
+				imageBackground: interfaceObject.uiIcons.helmIconWhite,
+				roundedCorners: true,
+				transparency: true,
+				//outline: true,
+				//content: [[interfaceObject.uiIcons.helmIconWhite]],
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() - ((interfaceObject.uiMenuScreenTileWidth() > 10 ? 3 : 2))) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin() + 1) * interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth						
+			};
+		
+		inventoryComponents.equippedDisplayArmorIcon = 
+			{
+				backgroundStyle: 'equipped01',
+				imageBackground: interfaceObject.uiIcons.armorIconWhite,
+				roundedCorners: true,
+				transparency: true,
+				//outline: true,
+				//content: [[interfaceObject.uiIcons.helmIconWhite]],
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() - ((interfaceObject.uiMenuScreenTileWidth() > 10 ? 2 : 1))) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin() + 1) * interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth						
+			};
+		
+		inventoryComponents.equippedDisplayAttackIcon = 
+			{
+				backgroundStyle: 'equipped01',
+				imageBackground: interfaceObject.uiIcons.attackIconWhite,
+				roundedCorners: true,
+				transparency: true,
+				//outline: true,
+				//content: [[interfaceObject.uiIcons.helmIconWhite]],
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() - ((interfaceObject.uiMenuScreenTileWidth() > 10 ? 1 : 0))) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin() + 1) * interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth						
+			};
+			
+		inventoryComponents.equippedDisplayDefenseIcon = 
+			{
+				backgroundStyle: 'equipped01',
+				imageBackground: interfaceObject.uiIcons.defenseIconWhite,
+				roundedCorners: true,
+				transparency: true,
+				//outline: true,
+				//content: [[interfaceObject.uiIcons.helmIconWhite]],
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() + ((interfaceObject.uiMenuScreenTileWidth() > 10 ? 0 : 1))) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin() + 1) * interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth						
+			};
+			
+		inventoryComponents.equippedDisplayAmuletIcon = 
+			{
+				backgroundStyle: 'equipped01',
+				imageBackground: interfaceObject.uiIcons.amuletIconWhite,
+				roundedCorners: true,
+				transparency: true,
+				//outline: true,
+				//content: [[interfaceObject.uiIcons.helmIconWhite]],
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() + ((interfaceObject.uiMenuScreenTileWidth() > 10 ? 1 : 2))) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin() + 1) * interfaceObject.tilePixelWidth,
+				width: interfaceObject.tilePixelWidth,
+				height: interfaceObject.tilePixelWidth						
+			};
+		
 
 		inventoryComponents.inventoryDisplay = 
 			{
-				backgroundStyle: 'hud01',
+				backgroundStyle: 'tile01',
+				backgroundTile: burlap01TextureTile,
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				x: interfaceObject.tilePixelWidth,
-				y: interfaceObject.tilePixelWidth * 3,
-				width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 4),
-				height: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3)					
+				//x: interfaceObject.tilePixelWidth,
+				//y: interfaceObject.tilePixelWidth * 3,
+				x: (interfaceObject.uiTileHorizontalMargin() + 1) * interfaceObject.tilePixelWidth,
+				y: (interfaceObject.uiTileVerticalMargin() + 3) * interfaceObject.tilePixelWidth,
+				//width: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 4),
+				width: (interfaceObject.uiMenuScreenTileWidth() - 4) * interfaceObject.tilePixelWidth,
+				//height: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3)
+				height: (interfaceObject.uiMenuScreenTileHeight() - 3) * interfaceObject.tilePixelWidth			
 			};
 
 		inventoryComponents.groundDisplay = 
 			{
-				backgroundStyle: 'hud01',
+				backgroundStyle: 'tile01',
+				backgroundTile: ground01TextureTile,
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
-				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
-				y: interfaceObject.tilePixelWidth * 3,
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiMenuScreenTileWidth() - 2 /*interfaceObject.uiHalfTilesWide() + ((interfaceObject.uiMenuScreenTileWidth() > 5) ? 3 : 2)*/) * interfaceObject.tilePixelWidth,
+				//x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 2),
+				y: (interfaceObject.uiTileVerticalMargin() + 3) * interfaceObject.tilePixelWidth,
+				//y: interfaceObject.tilePixelWidth * 3,
 				width: interfaceObject.tilePixelWidth,
-				height: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3)				
+				height: (interfaceObject.uiMenuScreenTileHeight() - 3) * interfaceObject.tilePixelWidth
+				//height: (interfaceObject.canvasTileHeight * interfaceObject.tilePixelWidth) - (interfaceObject.tilePixelWidth * 3)				
 			};
 			
-		this.uiScreens.inventoryScreenUI = [inventoryComponents.closeButton, inventoryComponents.messageDisplay, inventoryComponents.statsDisplayAttack, inventoryComponents.statsDisplayDefense, inventoryComponents.statsDisplayHealth, inventoryComponents.statsDisplayExperience, inventoryComponents.groundInventorySwapButton, inventoryComponents.equippedDisplay, inventoryComponents.inventoryDisplay, inventoryComponents.groundDisplay, inventoryComponents.groundScrollUpButton, inventoryComponents.groundScrollDownButton, inventoryComponents.inventoryScrollUpButton, inventoryComponents.inventoryScrollDownButton, inventoryComponents.inventoryEquippedSwapButton];
+		this.uiScreens.inventoryScreenUI = [inventoryComponents.screenBackground, inventoryComponents.closeButton, inventoryComponents.messageDisplay, /*inventoryComponents.statAttackDefenseDisplay, inventoryComponents.statHealthExpDisplay,*/ inventoryComponents.statDisplay, /*inventoryComponents.statsDisplayAttack, inventoryComponents.statsDisplayDefense, inventoryComponents.statsDisplayHealth, inventoryComponents.statsDisplayExperience, */inventoryComponents.groundInventorySwapButton, inventoryComponents.equippedDisplay, inventoryComponents.equippedDisplayHelmIcon, inventoryComponents.equippedDisplayArmorIcon, inventoryComponents.equippedDisplayAttackIcon, inventoryComponents.equippedDisplayDefenseIcon, inventoryComponents.equippedDisplayAmuletIcon, inventoryComponents.inventoryDisplay, inventoryComponents.groundDisplay, inventoryComponents.groundScrollUpButton, inventoryComponents.groundScrollDownButton, inventoryComponents.inventoryScrollUpButton, inventoryComponents.inventoryScrollDownButton, inventoryComponents.inventoryEquippedSwapButton];
 		
 		//stat assignment screen UI components
 		this.uiComponents.statAssignmentScreen = {};	
@@ -775,10 +986,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 					return availability;
 				},
 				clickAction: function() {			
-					//if (this.availabilityCheck()) {
-						Game.Screen.statAssignmentScreen.statAssignment();
-						Game.switchScreen(Game.Screen.playScreen);
-					//}					
+					Game.Screen.statAssignmentScreen.statAssignment();
+					Game.switchScreen(Game.Screen.playScreen);
 				}				
 			};
 			
@@ -861,10 +1070,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				y: (((interfaceObject.canvasTileHeight - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: null/*,
-				availabilityCheck: function() {
-					return Game.Screen.statAssignmentScreen.statRaising === 'attack';
-				}*/
+				content: null
 			};
 
 		statAssignmentComponents.defenseCurrentValueDisplay = 
@@ -876,10 +1082,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				y: ((interfaceObject.canvasTileHeight - 1) / 2) * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: null/*,
-				availabilityCheck: function() {
-					return Game.Screen.statAssignmentScreen.statRaising === 'defense';
-				}*/
+				content: null
 			};
 
 		statAssignmentComponents.hpCurrentValueDisplay = 
@@ -891,10 +1094,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				y: (((interfaceObject.canvasTileHeight - 1) / 2) + 1) * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
-				content: null/*,
-				availabilityCheck: function() {
-					return Game.Screen.statAssignmentScreen.statRaising === 'health';
-				}*/
+				content: null
 			};
 
 		this.uiScreens.statAssignmentScreenUI = [statAssignmentComponents.screenBackground, statAssignmentComponents.saveButton, statAssignmentComponents.instructionsDisplay, statAssignmentComponents.attackIncreaseButton, statAssignmentComponents.defenseIncreaseButton, statAssignmentComponents.hpIncreaseButton, statAssignmentComponents.attackCurrentValueDisplay, statAssignmentComponents.defenseCurrentValueDisplay, statAssignmentComponents.hpCurrentValueDisplay];
@@ -905,14 +1105,16 @@ Game.AgainstTheOoze = { //set as loaded environment below
 
 		mapComponents.closeButton = 
 			{	
-				backgroundStyle: 'hud01',
+				backgroundStyle: 'menu01',
 				roundedCorners: true,
 				transparency: true,
 				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconLeft]],
 				label: 'Back',
-				x: 0,
-				y: 0,
+				//x: 0,
+				//y: 0,
+				x: interfaceObject.uiTileHorizontalMargin() * interfaceObject.tilePixelWidth,
+				y: interfaceObject.uiTileVerticalMargin() * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
 				clickAction: function() {
@@ -926,8 +1128,10 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				transparency: true,
 				imageBackground: interfaceObject.uiIcons.stairsIcon,
 				textStyle: 'headingText01',
-				x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
-				y: 0,
+				//x: (interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth) - interfaceObject.tilePixelWidth,
+				//y: 0,
+				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiMenuScreenTileWidth() - 1 /*interfaceObject.uiHalfTilesWide() + ((interfaceObject.uiMenuScreenTileWidth() > 5) ? 3 : 2)*/) * interfaceObject.tilePixelWidth,				
+				y: interfaceObject.uiTileVerticalMargin() * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
 				content: null,
@@ -994,34 +1198,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				clickAction: function() {
 					Game.switchScreen(Game.Screen.menuScreen);
 				}					
-			};	
-		
-		/*
-
-	
-		statAssignmentComponents.attackIncreaseButton = 
-			{	
-				backgroundStyle: 'menu01',
-				roundedCorners: true,
-				transparency: true,
-				outline: true,
-				roundedCorners: true,
-				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 2)  * interfaceObject.tilePixelWidth,
-				y: (((interfaceObject.canvasTileHeight - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
-				width: interfaceObject.tilePixelWidth * 5,
-				height: interfaceObject.tilePixelWidth,
-				content: [["Attack"]],
-				selected: false,
-				clickAction: function() {	
-					this.selected = true;		
-					Game.Screen.statAssignmentScreen.statRaising = "attack";
-					Game.Screen.statAssignmentScreen.render();
-				}					
-			};
-		
-		
-		*/
-		
+			};		
 		
 		this.uiScreens.playerDeathScreenUI = [playerDeathComponents.screenBackground, playerDeathComponents.menuButton, playerDeathComponents.slainMessageDisplay, playerDeathComponents.continueButton];
 
@@ -1101,7 +1278,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				transparency: true,
 				outline: true,
 				content: [[interfaceObject.uiIcons.closeIcon,"Cancel"]],
-				//label: 'No',
 				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 2)  * interfaceObject.tilePixelWidth,
 				y: (((interfaceObject.canvasTileHeight - 1) / 2) + 2) * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth * 5,
@@ -1136,8 +1312,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconLeft]],
 				label: 'Back',
-				//x: 0, 
-				//y: 0,
 				x: interfaceObject.uiTileHorizontalMargin() * interfaceObject.tilePixelWidth,
 				y: interfaceObject.uiTileVerticalMargin() * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth, 
@@ -1171,11 +1345,10 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				content: [[interfaceObject.uiIcons.attackIcon," Easy"]],
 				selected: false,
 				clickAction: function() {	
-					//Game.Screen.newGameScreen.clearSelected();
 					this.selected = true;
-					//Game.Screen.newGameScreen.setDifficultySetting('easy');
 					var newGameScreen = Game.Screen.newGameScreen;
-					newGameScreen.setDifficultySetting('easy');
+					//newGameScreen.setDifficultySetting('easy');
+					newGameScreen.difficultySelection = 1; //easy
 					newGameScreen.render();
 				}					
 			};
@@ -1192,13 +1365,12 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				width: interfaceObject.tilePixelWidth * 5,
 				height: interfaceObject.tilePixelWidth,
 				content: [[interfaceObject.uiIcons.attackIcon,interfaceObject.uiIcons.attackIcon," Medium"]],
-				selected: true, //default difficulty selection
+				selected: false,
 				clickAction: function() {	
-					//Game.Screen.newGameScreen.clearSelected();
 					this.selected = true;
-					//Game.Screen.newGameScreen.setDifficultySetting('medium');
 					var newGameScreen = Game.Screen.newGameScreen;
-					newGameScreen.setDifficultySetting('medium');
+					//newGameScreen.setDifficultySetting('medium');
+					newGameScreen.difficultySelection = 2; //medium
 					newGameScreen.render();
 				}					
 			};
@@ -1217,11 +1389,10 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				content: [[interfaceObject.uiIcons.attackIcon,interfaceObject.uiIcons.attackIcon,interfaceObject.uiIcons.attackIcon," Hard"]],
 				selected: false,
 				clickAction: function() {	
-					//Game.Screen.newGameScreen.clearSelected();
 					this.selected = true;
-					//Game.Screen.newGameScreen.setDifficultySetting('hard');
 					var newGameScreen = Game.Screen.newGameScreen;
-					newGameScreen.setDifficultySetting('hard');
+					//newGameScreen.setDifficultySetting('hard');
+					newGameScreen.difficultySelection = 3; //hard
 					newGameScreen.render();
 				}					
 			};
@@ -1245,6 +1416,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 					//Game.Screen.newGameScreen.setDifficultySetting('nightmare');
 					var newGameScreen = Game.Screen.newGameScreen;
 					newGameScreen.setDifficultySetting('nightmare');
+					newGameScreen.difficultySelection = 4; //nightmare
 					newGameScreen.render();
 				}						
 			};*/
@@ -1256,21 +1428,15 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				transparency: true,
 				outline: true,
 				roundedCorners: true,
-				//x: (((interfaceObject.canvasTileWidth - 1) / 2) + 1)  * interfaceObject.tilePixelWidth,
 				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 2)  * interfaceObject.tilePixelWidth,
-				//y: ((interfaceObject.canvasTileHeight - 1) / 2) * interfaceObject.tilePixelWidth,
-				//y: (((interfaceObject.canvasTileHeight - 1) / 2) + 1) * interfaceObject.tilePixelWidth,
 				y: (((interfaceObject.canvasTileHeight - 1) / 2) + 2) * interfaceObject.tilePixelWidth,
-				//width: interfaceObject.tilePixelWidth * 2,
-				//height: interfaceObject.tilePixelWidth * 2,
 				width: interfaceObject.tilePixelWidth * 5,
 				height: interfaceObject.tilePixelWidth,
-				//content: [[interfaceObject.uiIcons.checkmarkIcon]/*,["Start"]*/],
 				content: [[interfaceObject.uiIcons.arrowIconRight,"Play"]],
-				//label: 'Start Game',
 				highlighted: false,
 				availabilityCheck: function() {
-					var availability = Game.Screen.newGameScreen.difficultySelected();
+					//var availability = Game.Screen.newGameScreen.difficultySelected();
+					var availability = Game.Screen.newGameScreen.difficultySelection;
 					
 					//reset
 					newGameComponents.beginButton.highlighted = false;
@@ -1282,10 +1448,8 @@ Game.AgainstTheOoze = { //set as loaded environment below
 					return availability;
 				},
 				clickAction: function() {
-					//if (this.availabilityCheck()) {
-						Game.Screen.playScreen.difficultySetting = Game.Screen.newGameScreen.difficultySelection;
-						Game.switchScreen(Game.Screen.playScreen);
-					//}
+					Game.Screen.playScreen.difficultySetting = Game.Screen.newGameScreen.difficultySelection;
+					Game.switchScreen(Game.Screen.playScreen);
 				}					
 			};
 		
@@ -1315,8 +1479,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconLeft]],
 				label: 'Back',
-				//x: 0,
-				//y: 0,
 				x: interfaceObject.uiTileHorizontalMargin() * interfaceObject.tilePixelWidth,
 				y: interfaceObject.uiTileVerticalMargin() * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
@@ -1329,8 +1491,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 		loadGameComponents.instructionsDisplay = 
 			{	
 				textStyle: 'headingText01',
-				//x: (((interfaceObject.canvasTileWidth - 1) / 2) - 2)  * interfaceObject.tilePixelWidth,
-				//y: (((interfaceObject.canvasTileHeight - 1) / 2) - 2) * interfaceObject.tilePixelWidth,
 				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() - 2) * interfaceObject.tilePixelWidth,
 				y: interfaceObject.uiTileVerticalMargin() * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth * 5,
@@ -1345,9 +1505,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				transparency: true,
 				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconRight,"Play"]],
-				//x: (((interfaceObject.canvasTileWidth - 1) / 2) - 1)  * interfaceObject.tilePixelWidth,
-				//y: (((interfaceObject.canvasTileHeight - 1) / 2) + 2) * interfaceObject.tilePixelWidth,
-				//x: (interfaceObject.uiTileHorizontalMargin() + 1) * interfaceObject.tilePixelWidth,
 				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() - 1) * interfaceObject.tilePixelWidth,
 				y: (interfaceObject.uiTileVerticalMargin() + interfaceObject.uiMenuScreenTileHeight() - 1) * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth * 3,
@@ -1366,9 +1523,7 @@ Game.AgainstTheOoze = { //set as loaded environment below
 					return available;
 				},
 				clickAction: function() {
-					//if (this.availabilityCheck()) {
-						Game.resumeGame(Game.Screen.loadGameScreen.selectedSavedGame);
-					//}
+					Game.resumeGame(Game.Screen.loadGameScreen.selectedSavedGame);
 				}					
 			};
 
@@ -1380,8 +1535,6 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				outline: true,
 				content: [[interfaceObject.uiIcons.trashIcon]],
 				label: 'Delete',
-				//x: (((interfaceObject.canvasTileWidth - 1) / 2) - 2)  * interfaceObject.tilePixelWidth,
-				//y: (((interfaceObject.canvasTileHeight - 1) / 2) + 2) * interfaceObject.tilePixelWidth,
 				x: interfaceObject.uiTileHorizontalMargin() * interfaceObject.tilePixelWidth,
 				y: (interfaceObject.uiTileVerticalMargin() + interfaceObject.uiMenuScreenTileHeight() - 1) * interfaceObject.tilePixelWidth,
 				width: interfaceObject.tilePixelWidth,
@@ -1389,94 +1542,44 @@ Game.AgainstTheOoze = { //set as loaded environment below
 				availabilityCheck: function() {
 					return Game.Screen.loadGameScreen.selectedSavedGame;
 				},
-				clickAction: function() {
-					//if (this.availabilityCheck()) {
-						
-						//set message to display 'Delete saved game'
-						Game.Screen.confirmScreen.confirmationMessage = [['Delete game?']];
-						
-						//set command object						
-						Game.Screen.confirmScreen.confirmationCommandObject = localStorage;
-						
-						//set command object method to execute
-						Game.Screen.confirmScreen.confirmationCommandMethod = 'removeItem';
-						
-						//set parameters to pass into command
-						Game.Screen.confirmScreen.confirmationCommandParameters = Game.Screen.loadGameScreen.selectedSavedGame;
-						
-						//set screen to return to after execution or cancelation
-						Game.Screen.confirmScreen.returnScreen = Game.Screen.loadGameScreen;
-						
-						Game.switchScreen(Game.Screen.confirmScreen);
-					//}
+				clickAction: function() {	
+					//set message to display 'Delete saved game'
+					Game.Screen.confirmScreen.confirmationMessage = [['Delete game?']];
+					
+					//set command object						
+					Game.Screen.confirmScreen.confirmationCommandObject = localStorage;
+					
+					//set command object method to execute
+					Game.Screen.confirmScreen.confirmationCommandMethod = 'removeItem';
+					
+					//set parameters to pass into command
+					Game.Screen.confirmScreen.confirmationCommandParameters = Game.Screen.loadGameScreen.selectedSavedGame;
+					
+					//set screen to return to after execution or cancelation
+					Game.Screen.confirmScreen.returnScreen = Game.Screen.loadGameScreen;
+					
+					Game.switchScreen(Game.Screen.confirmScreen);
 				}					
 			};
 		
 		loadGameComponents.savedGameDisplay =
 			{
-				//backgroundStyle: 'menu01', //FIXME - don't want this, but want to know why is it dependent on roundedCorners being true?
-				//roundedCorners: true,
-				//x: (((interfaceObject.canvasTileWidth - 1) / 2) - 2)  * interfaceObject.tilePixelWidth,
-				//y: (((interfaceObject.canvasTileHeight - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
-				
-				//x: interfaceObject.uiTileHorizontalMargin() * interfaceObject.tilePixelWidth,
 				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() - 2) * interfaceObject.tilePixelWidth,
 				y: (interfaceObject.uiTileVerticalMargin() + 1) * interfaceObject.tilePixelWidth,
-				
-				
-				//width: interfaceObject.tilePixelWidth * 4,
-				//height: interfaceObject.tilePixelWidth * 3
-				
-				//x: (((interfaceObject.canvasTileWidth - 1) / 2) - ((Math.min(interfaceObject.canvasTileWidth, interfaceObject.uiMaxTilesWide) - 1) / 2))  * interfaceObject.tilePixelWidth,
-				//y: (((Math.min(interfaceObject.canvasTileHeight, interfaceObject.uiMaxTilesWide) - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
-				
-				//width: interfaceObject.uiMenuScreenTileWidth() - 1,
 				width: ((interfaceObject.uiMenuScreenTileWidth() > 5) ? 5 : 4) * interfaceObject.tilePixelWidth,// - 1,
 				height: (interfaceObject.uiMenuScreenTileHeight() - 2) * interfaceObject.tilePixelWidth
-				
-				
 			};
-
-/*
-
-inventoryComponents.equippedDisplay = 
-			{
-				backgroundStyle: 'hud01',
-				roundedCorners: true,
-				transparency: true,
-				outline: true,
-				x: 0,
-				y: interfaceObject.tilePixelWidth,
-				width: interfaceObject.canvasTileWidth * interfaceObject.tilePixelWidth,
-				height: interfaceObject.tilePixelWidth						
-			};
-
-*/
 
 		loadGameComponents.savedGameScrollUpButton = 
 			{
 				backgroundStyle: 'menu01',
 				roundedCorners: true,
 				transparency: true,
-				//outline: true,
+				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconUp]],
-				//label: ' ',
-				//x: (((interfaceObject.canvasTileWidth - 1) / 2) + 2)  * interfaceObject.tilePixelWidth,
-				//y: (((interfaceObject.canvasTileHeight - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
-				
-				//x: (((Math.min(interfaceObject.canvasTileWidth, interfaceObject.uiMaxTilesWide) - 1) / 2) + 2)  * interfaceObject.tilePixelWidth,
-				//y: (((Math.min(interfaceObject.canvasTileHeight, interfaceObject.uiMaxTilesWide) - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
-				
-				
-				//x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() + interfaceObject.uiHalfTilesWide())  * interfaceObject.tilePixelWidth,
-				//x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiMenuScreenTileWidth() - 1) * interfaceObject.tilePixelWidth,
+				label: ' ',
 				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() + ((interfaceObject.uiMenuScreenTileWidth() > 5) ? 3 : 2)) * interfaceObject.tilePixelWidth,
-				//((interfaceObject.uiMenuScreenTileWidth() > 5) ? 5 : 4)
-				//interfaceObject.uiHalfTilesWide()
 				y: (interfaceObject.uiTileVerticalMargin() + 1) * interfaceObject.tilePixelWidth,
-				
-				
-				
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
 				availabilityCheck: function() {					
@@ -1487,10 +1590,8 @@ inventoryComponents.equippedDisplay =
 					}
 				},
 				clickAction: function() {
-					//if (this.availabilityCheck()) {
-						var direction = 'up';
-						Game.Screen.loadGameScreen.savedGameDisplayScroll(direction);
-					//}
+					var direction = 'up';
+					Game.Screen.loadGameScreen.savedGameDisplayScroll(direction);
 				}				
 			};
 
@@ -1499,31 +1600,19 @@ inventoryComponents.equippedDisplay =
 				backgroundStyle: 'menu01',
 				roundedCorners: true,
 				transparency: true,
-				//outline: true,
+				outline: true,
 				content: [[interfaceObject.uiIcons.arrowIconDown]],
-				//label: ' ',
-				//x: (((interfaceObject.canvasTileWidth - 1) / 2) + 2)  * interfaceObject.tilePixelWidth,
-				//y: (((interfaceObject.canvasTileHeight - 1) / 2) + 1) * interfaceObject.tilePixelWidth,
-				
-				//x: (((Math.min(interfaceObject.canvasTileWidth, interfaceObject.uiMaxTilesWide) - 1) / 2) + 2)  * interfaceObject.tilePixelWidth,
-				//y: (((Math.min(interfaceObject.canvasTileHeight, interfaceObject.uiMaxTilesWide) - 1) / 2) + 1) * interfaceObject.tilePixelWidth,
-				
-				//x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() + interfaceObject.uiHalfTilesWide())  * interfaceObject.tilePixelWidth,
-				//x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiMenuScreenTileWidth)  * interfaceObject.tilePixelWidth,
-				//y: (interfaceObject.uiTileVerticalMargin() + interfaceObject.uiMenuScreenTileHeight - 1)  * interfaceObject.tilePixelWidth,
-				
-				//x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiMenuScreenTileWidth() - 1) * interfaceObject.tilePixelWidth,
+				label: ' ',
 				x: (interfaceObject.uiTileHorizontalMargin() + interfaceObject.uiHalfTilesWide() + ((interfaceObject.uiMenuScreenTileWidth() > 5) ? 3 : 2)) * interfaceObject.tilePixelWidth,
-				y: (interfaceObject.uiTileVerticalMargin() + interfaceObject.uiMenuScreenTileHeight() - 2) * interfaceObject.tilePixelWidth,
-				
+				y: (interfaceObject.uiTileVerticalMargin() + interfaceObject.uiMenuScreenTileHeight() - 2) * interfaceObject.tilePixelWidth,	
 				width: interfaceObject.tilePixelWidth,
 				height: interfaceObject.tilePixelWidth,
 				availabilityCheck: function() {					
 				
-					var savedGameDisplay = Game.loadedEnvironment.uiComponents.loadGameScreen.savedGameDisplay;
+					var displayComponent = Game.loadedEnvironment.uiComponents.loadGameScreen.savedGameDisplay;
 					var interfaceObject = Game.interfaceObject;
 					var tilePixelWidth = interfaceObject.tilePixelWidth;
-					var displaySlots = savedGameDisplay.height / tilePixelWidth;
+					var displaySlots = displayComponent.height / tilePixelWidth;
 					var totalButtons = Game.Screen.loadGameScreen.savedGameButtons.length;
 					var firstDisplayedGame = Game.Screen.loadGameScreen.firstSavedGameDisplayed;
 										
@@ -1534,10 +1623,8 @@ inventoryComponents.equippedDisplay =
 					}
 				},
 				clickAction: function() {
-					//if (this.availabilityCheck()) {
-						var direction = 'down';
-						Game.Screen.loadGameScreen.savedGameDisplayScroll(direction);
-					//}
+					var direction = 'down';
+					Game.Screen.loadGameScreen.savedGameDisplayScroll(direction);
 				}
 			};
 			
@@ -1559,39 +1646,7 @@ inventoryComponents.equippedDisplay =
 				height: 10//interfaceObject.tilePixelWidth,					
 			};*/
 
-		this.uiScreens.loadGameScreenUI = [loadGameComponents.screenBackground, loadGameComponents.menuButton, loadGameComponents.instructionsDisplay, loadGameComponents.savedGameDisplay, loadGameComponents.savedGameScrollUpButton, loadGameComponents.savedGameScrollDownButton, loadGameComponents.loadGameButton, loadGameComponents.deleteGameButton/*, loadGameComponents.horizontalRuleTop, loadGameComponents.horizontalRuleBottom*/];
-
-		
-/*		//load game screen Saved Game button UI component
-		this.uiComponents.loadGameScreenSavedGameButtonTemplate = {};	
-		var savedGameComponent = this.uiComponents.loadGameScreenSavedGameButtonTemplate;
-		
-		savedGameComponent.button = 
-			{	
-				textStyle: 'buttonText01',
-				backgroundStyle: 'menu01',
-				roundedCorners: true,
-				transparency: true,
-				outline: true,
-				roundedCorners: true,
-				x: (((interfaceObject.canvasTileWidth - 1) / 2) - 2)  * interfaceObject.tilePixelWidth,
-				y: (((interfaceObject.canvasTileHeight - 1) / 2) - 1) * interfaceObject.tilePixelWidth,
-				width: interfaceObject.tilePixelWidth * 4,
-				height: interfaceObject.tilePixelWidth,
-				content: [[" "]],
-				label: ' ',
-				selected: false,
-				clickAction: function() {	
-					this.selected = true;
-					//var newGameScreen = Game.Screen.newGameScreen;
-					//newGameScreen.setDifficultySetting('easy');
-					//newGameScreen.render();
-				}					
-			};
-		
-		this.uiScreens.loadGameScreenUISavedGameButton = [savedGameComponent.button];
-*/
-		
+		this.uiScreens.loadGameScreenUI = [loadGameComponents.screenBackground, loadGameComponents.menuButton, loadGameComponents.instructionsDisplay, loadGameComponents.savedGameDisplay, loadGameComponents.savedGameScrollUpButton, loadGameComponents.savedGameScrollDownButton, loadGameComponents.loadGameButton, loadGameComponents.deleteGameButton/*, loadGameComponents.horizontalRuleTop, loadGameComponents.horizontalRuleBottom*/];		
 		
 	},
 	playerDeath: function() {
@@ -1824,6 +1879,42 @@ Game.AgainstTheOoze.WoodenShieldTemplate = {
     spriteSheetY: 4,	
 	defenseValue: 1,
 	equippable: 'shieldhand',
+	mixins: [Game.ItemMixins.Equippable]
+}
+
+Game.AgainstTheOoze.WoodenHelmTemplate = {
+	templateType: 'WoodenHelmTemplate',
+	name: 'Wooden helm',
+	//rarity: 2,
+	character: 'woodenhelm',
+	spriteSheetX: 0,
+    spriteSheetY: 16,	
+	defenseValue: 1,
+	equippable: 'head',
+	mixins: [Game.ItemMixins.Equippable]
+}
+
+Game.AgainstTheOoze.WoodenArmorTemplate = {
+	templateType: 'WoodenArmorTemplate',
+	name: 'Wooden armor',
+	//rarity: 2,
+	character: 'woodenarmor',
+	spriteSheetX: 0,
+    spriteSheetY: 17,	
+	defenseValue: 1,
+	equippable: 'body',
+	mixins: [Game.ItemMixins.Equippable]
+}
+
+Game.AgainstTheOoze.GreenAmuletTemplate = {
+	templateType: 'GreenAmuletTemplate',
+	name: 'Green amulet',
+	//rarity: 2,
+	character: 'greenamulet',
+	spriteSheetX: 0,
+    spriteSheetY: 18,	
+	healthValue: 1,
+	equippable: 'accessory',
 	mixins: [Game.ItemMixins.Equippable]
 }
 

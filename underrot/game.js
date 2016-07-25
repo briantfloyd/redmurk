@@ -11,8 +11,8 @@ var Game =  {
 		
         this.display = new ROT.Display({
         	layout: 'tile',
-        	width: interfaceObject.canvasTileWidth,
-        	height: interfaceObject.canvasTileHeight, 
+        	width: null,//interfaceObject.backCanvasTileWidth, //canvasTileWidth,
+        	height: null,//interfaceObject.backCanvasTileHeight, //canvasTileHeight,		
         	tileWidth: interfaceObject.tilePixelWidth,
         	tileHeight: interfaceObject.tilePixelWidth,
         	tileSet: null, //new Image(), src set by environment
@@ -20,7 +20,7 @@ var Game =  {
         	forceSquareRatio:true,
 			tileColorize:true
         	});    
-		
+
 		var game = this;
 		var bindEventToScreen = function(event) {
 			window.addEventListener(event, function(e) {
@@ -57,7 +57,11 @@ var Game =  {
 	},
 	resizeCanvas: function() {		
 		var interfaceObject = Game.interfaceObject;	
-		this.display.setOptions({height: interfaceObject.canvasTileHeight, width: interfaceObject.canvasTileWidth});			
+	//console.log(interfaceObject.canvasTileHeight);	
+	//console.log(interfaceObject.canvasTileWidth);
+	//console.log(interfaceObject.backCanvasTileHeight);	
+	//console.log(interfaceObject.backCanvasTileWidth);
+		this.display.setOptions({height: interfaceObject.backCanvasTileHeight/*canvasTileHeight*/, width: interfaceObject.backCanvasTileWidth/*canvasTileWidth*/});
 	},
 	saveGame: function() {
 		if (!this.supportLocalStorage) {
@@ -111,8 +115,9 @@ window.onload = function() {
         
         Game.init(); 
         
-        Game.interfaceObject.canvasContainer.appendChild(Game.display.getContainer());
-        
+        //Game.interfaceObject.canvasContainer.appendChild(Game.display.getContainer());
+		Game.interfaceObject.backCanvasContainer.appendChild(Game.display.getContainer());
+		
         Game.SpecialEffects.init();
         
         Game.interfaceObject.createUIBackCanvas();

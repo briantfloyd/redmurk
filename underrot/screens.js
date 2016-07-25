@@ -122,8 +122,8 @@ Game.Screen.playScreen = {
 		
 		var entityLocations = []; //for entity stat overlay drawing
 		
-		for (var x = this.topLeftX; x < this.topLeftX + interfaceObject.canvasTileWidth; x++) {
-			for (var y = this.topLeftY; y < this.topLeftY + interfaceObject.canvasTileHeight; y++) {
+		for (var x = this.topLeftX; x < this.topLeftX + interfaceObject.backCanvasTileWidth/*canvasTileWidth*/; x++) {
+			for (var y = this.topLeftY; y < this.topLeftY + interfaceObject.backCanvasTileHeight/*canvasTileHeight*/; y++) {
 				if (this.map.isExplored(x, y)) {			
 					
 					//default tinting - none
@@ -223,6 +223,18 @@ Game.Screen.playScreen = {
 						tintForeground,
 						tintBackground
 					);					
+				} else {
+					//unexplored
+					/*
+					display.draw(
+						x - this.topLeftX, 
+						y - this.topLeftY,
+						charactersToDraw, //TODO - set to unexplored tile
+						tintForeground,
+						tintBackground
+					);
+					
+					*/
 				}
 			}
 		}
@@ -610,28 +622,33 @@ Game.Screen.playScreen = {
 			}
 		
 			if (nextEntity.hasMixin('Equipper')) {			
-				nextEntity.equipped = {}; //reset
+				nextEntity.equipped = {}; //reset //FIXME - necessary? seems potentially problematic
 			
 				//update check
-				if (savedEntities[b].equipped.head) {
+				/*if (savedEntities[b].equipped.head) {
 					nextEntity.equipped.head = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.head]);
-				}
+				}*/
+				nextEntity.equipped.head = savedEntities[b].equipped.head ? new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.head]) : null;
 			
-				if (savedEntities[b].equipped.body) {
+				/*if (savedEntities[b].equipped.body) {
 					nextEntity.equipped.body = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.body]);
-				}
+				}*/
+				nextEntity.equipped.body = savedEntities[b].equipped.body ? new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.body]) : null;
 			
-				if (savedEntities[b].equipped.hand) {
+				/*if (savedEntities[b].equipped.hand) {
 					nextEntity.equipped.hand = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.hand]);
-				}
+				}*/
+				nextEntity.equipped.hand = savedEntities[b].equipped.hand ? new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.hand]) : null;
 			
-				if (savedEntities[b].equipped.shieldhand) {
+				/*if (savedEntities[b].equipped.shieldhand) {
 					nextEntity.equipped.shieldhand = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.shieldhand]);
-				}
+				}*/
+				nextEntity.equipped.shieldhand = savedEntities[b].equipped.shieldhand ? new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.shieldhand]) : null;
 			
-				if (savedEntities[b].equipped.accessory) {
+				/*if (savedEntities[b].equipped.accessory) {
 					nextEntity.equipped.accessory = new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.accessory]);
-				}
+				}*/
+				nextEntity.equipped.accessory = savedEntities[b].equipped.accessory ? new Game.Item(Game.loadedEnvironment[savedEntities[b].equipped.accessory]) : null;
 			}
 		
 			if (nextEntity.hasMixin('InventoryCarrier')) {	
@@ -708,11 +725,24 @@ Game.Screen.inventoryScreen = {
 	},
 	selectedItem: null,
     enter: function() { 
-    	   this.uiParameters = Game.loadedEnvironment.uiScreens.inventoryScreenUI;
+    	this.uiParameters = Game.loadedEnvironment.uiScreens.inventoryScreenUI;
+		   
+		this.equippedItemsDisplayArea = Game.loadedEnvironment.uiComponents.inventoryScreen.equippedDisplay;
+		this.equippedDisplayFirstItemDisplayed = this.displaysFirstItemsDisplayed.equipped;
+		
+		//inventory display area
+		this.inventoryItems = Game.Screen.playScreen.player.inventory;
+		this.inventoryItemsDisplayArea = Game.loadedEnvironment.uiComponents.inventoryScreen.inventoryDisplay;
+		this.inventoryDisplayFirstItemDisplayed = this.displaysFirstItemsDisplayed.inventory;
+		
+		//ground display area
+		var player = Game.Screen.playScreen.player; //FIXME - player
+		this.groundItems = Game.Screen.playScreen.map.getItemsAt(player.x, player.y);
+		this.groundItemsDisplayArea = Game.loadedEnvironment.uiComponents.inventoryScreen.groundDisplay;
+		this.groundDisplayFirstItemDisplayed = this.displaysFirstItemsDisplayed.ground;
 	},
     exit: function() { 
     	this.justViewed = true;
-    	//Game.loadedEnvironment.uiComponents.inventoryScreen.messageDisplay.content = [['']]; //FIXME? Right place to be clearing this display?
 	},
     render: function(display) {
     	var player = Game.Screen.playScreen.player; //FIXME - player
@@ -728,10 +758,8 @@ Game.Screen.inventoryScreen = {
 		var inventoryMessageDisplay = Game.loadedEnvironment.uiComponents.inventoryScreen.messageDisplay;		
 
 		if (inventorySelectedItem) {
-			//inventoryMessageDisplay.text = [inventorySelectedItem.name];
 			inventoryMessageDisplay.content = [[inventorySelectedItem.name]];
 		} else {
-			//inventoryMessageDisplay.text = [''];
 			inventoryMessageDisplay.content = [['']];
 		}	
 		
@@ -743,22 +771,22 @@ Game.Screen.inventoryScreen = {
 		//DRAW ITEMS OVER UI
 		//equipped display area
 		this.equippedItems = [];
+
 		for (var x in Game.Screen.playScreen.player.equipped) {
-			if (Game.Screen.playScreen.player.equipped[x]) {
-				this.equippedItems.push(Game.Screen.playScreen.player.equipped[x]);
-			}
+			this.equippedItems.push(Game.Screen.playScreen.player.equipped[x]);
 		}
-		this.equippedItemsDisplayArea = Game.loadedEnvironment.uiComponents.inventoryScreen.equippedDisplay;
+		
+		//this.equippedItemsDisplayArea = Game.loadedEnvironment.uiComponents.inventoryScreen.equippedDisplay;
 		this.equippedDisplayFirstItemDisplayed = this.displaysFirstItemsDisplayed.equipped;
 		
 		//inventory display area
-		this.inventoryItems = Game.Screen.playScreen.player.inventory;
-		this.inventoryItemsDisplayArea = Game.loadedEnvironment.uiComponents.inventoryScreen.inventoryDisplay;
+		//this.inventoryItems = Game.Screen.playScreen.player.inventory;
+		//this.inventoryItemsDisplayArea = Game.loadedEnvironment.uiComponents.inventoryScreen.inventoryDisplay;
 		this.inventoryDisplayFirstItemDisplayed = this.displaysFirstItemsDisplayed.inventory;
 		
 		//ground display area
-		this.groundItems = Game.Screen.playScreen.map.getItemsAt(player.x, player.y);
-		this.groundItemsDisplayArea = Game.loadedEnvironment.uiComponents.inventoryScreen.groundDisplay;
+		this.groundItems = Game.Screen.playScreen.map.getItemsAt(player.x, player.y); //need to refresh
+		//this.groundItemsDisplayArea = Game.loadedEnvironment.uiComponents.inventoryScreen.groundDisplay;
 		this.groundDisplayFirstItemDisplayed = this.displaysFirstItemsDisplayed.ground;
 		
 		var itemGroups= [
@@ -790,32 +818,54 @@ Game.Screen.inventoryScreen = {
 
 				for (var l = itemGroups[i][2], m = items.length; l < m; l++) {
 								
-					//break out if no more available display positions
+					//break out if no more available display positions (applies to inventory and ground displays)
 					if (l >= displayAreaPositions) { break;}
+
+					if (items[l]) {	//if null, will skip (applies to equipped display)
+						characterToDraw = items[l].character;	
+						itemImageY = items[l].spriteSheetY;
+						itemImageX = items[l].spriteSheetX;
+						
+						//selected item background tinting	
+						if (items[l] === this.selectedItem) {
+							ctx.fillStyle = "rgba(0, 255, 0, 0.40)";
+							//ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+							//ctx.fillRect(displayAreaNextPositionX,displayAreaNextPositionY,tilePixelWidth,tilePixelWidth);
+								
+							var cornerRadius = 10;
+							var inset = 4;
+							var insetPositonX = displayAreaNextPositionX + inset;
+							var insetPositionY = displayAreaNextPositionY + inset;
+							var insetWidth = tilePixelWidth - (inset * 2);
+							
+							
+							ctx.beginPath();
+							ctx.moveTo(insetPositonX, insetPositionY + cornerRadius);
+							ctx.quadraticCurveTo(insetPositonX, insetPositionY, insetPositonX + cornerRadius, insetPositionY);
+							ctx.lineTo(insetPositonX + insetWidth - cornerRadius, insetPositionY);
+							ctx.quadraticCurveTo(insetPositonX + insetWidth, insetPositionY, insetPositonX + insetWidth, insetPositionY + cornerRadius);
+							ctx.lineTo(insetPositonX + insetWidth, insetPositionY + insetWidth - cornerRadius);
+							ctx.quadraticCurveTo(insetPositonX + insetWidth, insetPositionY + insetWidth, insetPositonX + insetWidth - cornerRadius, insetPositionY + insetWidth);
+							ctx.lineTo(insetPositonX + cornerRadius, insetPositionY + insetWidth);
+							ctx.quadraticCurveTo(insetPositonX, insetPositionY + insetWidth, insetPositonX, insetPositionY + insetWidth - cornerRadius);
+							ctx.lineTo(insetPositonX, insetPositionY + cornerRadius);
+							ctx.fill();
+						}
 					
-					characterToDraw = items[l].character;	
-					itemImageY = items[l].spriteSheetY;
-					itemImageX = items[l].spriteSheetX;
-				
-					//drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
-					ctx.drawImage(spriteSheet, itemImageX, itemImageY, tilePixelWidth, tilePixelWidth, displayAreaNextPositionX, displayAreaNextPositionY, tilePixelWidth, tilePixelWidth);				
+						//drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
+						ctx.drawImage(spriteSheet, itemImageX, itemImageY, tilePixelWidth, tilePixelWidth, displayAreaNextPositionX, displayAreaNextPositionY, tilePixelWidth, tilePixelWidth);				
 					
-					//selected item tinting	
-					if (items[l] === this.selectedItem) {
-						ctx.fillStyle = "rgba(0, 255, 0, 0.1)";
-						ctx.fillRect(displayAreaNextPositionX,displayAreaNextPositionY,tilePixelWidth,tilePixelWidth);
+						//add to displayed (visible) items (used for click evaluation)
+						newDisplayedItem = {};
+						newDisplayedItem.x = displayAreaNextPositionX;
+						newDisplayedItem.y = displayAreaNextPositionY;
+						newDisplayedItem.item = items[l];
+						newDisplayedItem.itemsArrayPosition = l;
+						this.displayedItems.push(newDisplayedItem);
 					}
 					
-					//add to displayed (visible) items (used for click evaluation)
-					newDisplayedItem = {};
-					newDisplayedItem.x = displayAreaNextPositionX;
-					newDisplayedItem.y = displayAreaNextPositionY;
-					newDisplayedItem.item = items[l];
-					newDisplayedItem.itemsArrayPosition = l;
-					this.displayedItems.push(newDisplayedItem);
-					
 					//check if another display position to the right exists, or go down to next row
-					if ((displayAreaNextPositionX + tilePixelWidth) < displayArea.width) {
+					if ((displayAreaNextPositionX + tilePixelWidth) < (displayArea.x + displayArea.width)) {
 						displayAreaNextPositionX += tilePixelWidth;
 					} else {
 						displayAreaNextPositionY += tilePixelWidth;
@@ -860,7 +910,17 @@ Game.Screen.inventoryScreen = {
 		var clickX = eventPosition[0] * tilePixelWidth;
 		var clickY = eventPosition[1] * tilePixelWidth;
 		var itemClicked = false;
+
+		//convert to account for difference in backCanvas size and front canvas (which ui positioning parameters are based on)
+		var interfaceObject = Game.interfaceObject;	
+		var screenUIWidth = interfaceObject.canvasTileWidth * tilePixelWidth;
+		var screenUIHeight = interfaceObject.canvasTileHeight * tilePixelWidth;
+		var screenWidth = interfaceObject.backCanvasTileWidth * tilePixelWidth;
+		var screenHeight = interfaceObject.backCanvasTileHeight * tilePixelWidth;
 	
+		clickX -= ((screenWidth - screenUIWidth) / 2);
+		clickY -= ((screenHeight - screenUIHeight) / 2); 
+			
 		var displayedItems = this.displayedItems;
 	
 		//loop through displayed items checking for position match
@@ -883,11 +943,39 @@ Game.Screen.inventoryScreen = {
 	itemInventoryGroundSwap: function(item, entity) {
 		
 		if (item && entity) {
-		
+
 			var positionX = entity.x;
-			var positionY = entity.y;
+			var positionY = entity.y;			
+			
+			//check if item is ground item first - likely shorter list
+			var groundItemArrayPosition = this.isGroundItem(item, entity);
+	
+			//if match found
+			if (groundItemArrayPosition) { //FIXME - issue is that it is interpreting 0 as false
+				var groundItems = Game.Screen.playScreen.map.items[positionX + ',' + positionY];
+				
+				//remove from ground
+				groundItems.splice(groundItemArrayPosition[0],1);
+				
+				//add to inventory
+				entity.inventory.push(item);		
+										
+				//reset ground - delete everything at position
+				delete Game.Screen.playScreen.map.items[positionX + ',' + positionY];
+				
+				//cycle through remaining items and add back
+				for (var i = 0, j = groundItems.length; i < j; i++) {
+					Game.Screen.playScreen.map.addItem(positionX, positionY, groundItems[i]);
+				}
+
+				return;
+			}
+			
+			
+			
+			
 		
-			var groundItems = Game.Screen.playScreen.map.items[positionX + ',' + positionY];
+			/*var groundItems = Game.Screen.playScreen.map.items[positionX + ',' + positionY];
 			
 			//check if item is ground item first - likely shorter list
 			if (groundItems) {
@@ -900,9 +988,7 @@ Game.Screen.inventoryScreen = {
 						
 						//add to inventory
 						entity.inventory.push(item);		
-						
-						//Game.Screen.playScreen.map.setItemsAt(positionX, positionY, groundItems);	
-						
+												
 						//reset ground - delete everything at position
 						delete Game.Screen.playScreen.map.items[positionX + ',' + positionY];
 						
@@ -914,9 +1000,33 @@ Game.Screen.inventoryScreen = {
 						return;
 					}				
 				}
+			}*/
+			
+			
+			
+			
+			//now check inventory if not already returned out
+			var inventoryItemArrayPosition = this.isInventoryItem(item, entity);
+			
+			//if match found
+			if (inventoryItemArrayPosition) {
+				var inventoryItems = entity.inventory;
+				
+				//remove item from entity inventory
+				inventoryItems.splice(inventoryItemArrayPosition[0],1);
+
+				//add item to ground					
+				Game.Screen.playScreen.map.addItem(positionX, positionY, item);
+				
+				return;	
 			}
 			
-			//now check ground if not already returned out
+			
+			
+			/*
+			
+			
+			//now check inventory if not already returned out
 			var inventoryItems = entity.inventory;
 			
 			for (var i = 0, j = inventoryItems.length; i < j; i++) {
@@ -926,20 +1036,13 @@ Game.Screen.inventoryScreen = {
 					//remove item from entity inventory
 					inventoryItems.splice(i,1);
 
-					//add item to ground
-					/*if (groundItems) {
-						groundItems.push(item);
-					} else{
-						groundItems = [item];
-					}
-				
-					Game.Screen.playScreen.map.setItemsAt(positionX, positionY, groundItems);*/	
-					
+					//add item to ground					
 					Game.Screen.playScreen.map.addItem(positionX, positionY, item);
-					
+//console.log(Game.Screen.playScreen.map.items[positionX + ',' + positionY]);
+//console.log(Game.Screen.playScreen.map.items[positionX + ',' + positionY].length);			
 					return;								
 				}
-			}			
+			}	*/		
 		}
 	},
 	itemInventoryEquippedSwap: function(item, entity) {
@@ -947,18 +1050,63 @@ Game.Screen.inventoryScreen = {
 	
 		if (item && item.equippable && entity) {
 			
+			
+			var equippedItemArrayPosition = this.isEquippedItem(item, entity);
+			
+			//check if item is equipped item first - likely shorter list
+			if (equippedItemArrayPosition) {
+				var x = equippedItemArrayPosition[0];
+				
+				//remove item from equipped
+					entity.equipped[x] = null;
+					//entity.equipped[x] = undefined;
+					
+					//add item to inventory
+					entity.inventory.push(item);
+					return;	
+			}
+			
+			
+			/*
+			
 			//check if item is equipped item first - likely shorter list
 			for (var x in entity.equipped) {
 				if (entity.equipped[x] === item) {
 				
 					//remove item from equipped
 					entity.equipped[x] = null;
+					//entity.equipped[x] = undefined;
 					
 					//add item to inventory
 					entity.inventory.push(item);
 					return;
 				}
 			}
+			
+			*/
+			
+			//now check inventory if not already returned out
+			var inventoryItemArrayPosition = this.isInventoryItem(item, entity);
+			
+			if (inventoryItemArrayPosition) {
+				var i = inventoryItemArrayPosition[0];
+				
+				//remove item from entity inventory
+				entity.inventory.splice(i,1);
+				
+				//check if something already equipped
+				if (entity.equipped[item.equippable]) {
+					
+					//move previously equipped item back to inventory
+					entity.inventory.push(player.equipped[item.equippable]);	
+				}
+				
+				//equip new item
+				entity.equipped[item.equippable] = item;
+				return;	
+			}
+			
+			/*
 			
 			//now check inventory if not already returned out
 			for (var i = 0, j = entity.inventory.length; i < j; i++) {
@@ -979,8 +1127,54 @@ Game.Screen.inventoryScreen = {
 					entity.equipped[item.equippable] = item;
 					return;								
 				}
-			}			
+			}	*/		
 		}
+	},
+	isGroundItem: function(item, entity) {
+		if (item && entity) {
+			var positionX = entity.x;
+			var positionY = entity.y;
+	
+			var groundItems = Game.Screen.playScreen.map.items[positionX + ',' + positionY];
+		
+			if (groundItems) {
+				for (var x = 0, y = groundItems.length; x < y; x++){ 
+					if (groundItems[x] === item) {
+						return [x];
+					}				
+				}			
+			}
+		}
+		
+		//not found or nothing on the ground at this entity's position
+		return false;	
+	
+	},
+	isInventoryItem: function(item, entity) {
+		if (item && entity) {
+			var inventoryItems = entity.inventory;
+		
+			for (var i = 0, j = inventoryItems.length; i < j; i++) {		
+				if (inventoryItems[i] === item) {			
+					return [i];								
+				}
+			}
+		}
+		
+		//not found
+		return false;	
+	},
+	isEquippedItem: function(item, entity) {
+		if (item && entity) {
+			for (var x in entity.equipped) {
+				if (entity.equipped[x] === item) {
+					return [x];
+				}
+			}
+		}
+		
+		//not found
+		return false;	
 	}
 }
 
@@ -1095,22 +1289,15 @@ Game.Screen.loadGameScreen = {
 		
 			nextSavedGameButton = { 
 					currentSaveTimeStamp: null, //retained for sorting button display order
-					textStyle: 'savedGameButtonText01',//'buttonText01',
+					textStyle: 'savedGameButtonText01',
 					backgroundStyle: 'menu01',
 					roundedCorners: true,
 					transparency: true,
 					outline: true,
-					//x: (((interfaceObject.canvasTileWidth - 1) / 2) - 2)  * interfaceObject.tilePixelWidth,
-					//x: (interfaceObject.uiHalfTilesWide() - 2)  * interfaceObject.tilePixelWidth,
 					x: savedGameDisplayArea.x,
-					//x: (((Math.min(interfaceObject.canvasTileWidth, 11) - 1) / 2) - 2)  * interfaceObject.tilePixelWidth,
-					//y: (((interfaceObject.canvasTileHeight - 1) / 2) - 1) * interfaceObject.tilePixelWidth, //set in render()
-					//width: interfaceObject.tilePixelWidth * 4,
 					width: savedGameDisplayArea.width,
-					//width: Math.min(interfaceObject.canvasTileWidth, 11) - 1,
 					height: interfaceObject.tilePixelWidth,
 					content: [[" "]],
-					//label: ' ',
 					selected: false,
 					savedGameKey: null,
 					clickAction: function() {
@@ -1648,15 +1835,19 @@ Game.Screen.confirmScreen = {
 
 Game.Screen.newGameScreen = {
 	uiParameters: null,
-	difficultySelection: 2,//null, //FIXME? manually setting default value here and on button in environment
+	difficultySelection: null,
     enter: function() { 
     	this.uiParameters = Game.loadedEnvironment.uiScreens.newGameScreenUI;
+    	
+		//set default selection
+    	Game.loadedEnvironment.uiComponents.newGameScreen.mediumButton.selected = true; //FIXME - hard coded/current environment dependent, should be reference call to environment to grab these values
+    	this.difficultySelection = 2;
 	},
     exit: function() { 
 		Game.Screen.UIclearSelectedComponents(this.uiParameters);
 		this.difficultySelection = null;
 	},
-	setDifficultySetting: function(difficulty) {
+	/*setDifficultySetting: function(difficulty) { //FIXME - this whole switch can be eliminated if just pass in actual numeric value
 		switch(difficulty) {
 			case 'easy':
 				this.difficultySelection = 1;
@@ -1674,10 +1865,10 @@ Game.Screen.newGameScreen = {
 				this.difficultySelection = null;
 				break;
 		}		
-	},
-	difficultySelected: function() {
+	},*/
+	/*difficultySelected: function() {
 		return this.difficultySelection;
-	},
+	},*/
     render: function(display) {
     	//DRAW UI
 		var interfaceObject = Game.interfaceObject;	
@@ -1704,10 +1895,10 @@ Game.Screen.newGameScreen = {
 
 Game.Screen.updateTopLeft = function() {
    		var interfaceObject = Game.interfaceObject;	
-   		var screenWidth = interfaceObject.canvasTileWidth;
-        var screenHeight = interfaceObject.canvasTileHeight;
+   		var screenWidth = interfaceObject.backCanvasTileWidth/*canvasTileWidth*/;
+        var screenHeight = interfaceObject.backCanvasTileHeight/*canvasTileHeight*/;
         
-        var playScreen = Game.Screen.playScreen; //FIXME? - play screen dependent
+        var playScreen = Game.Screen.playScreen; //FIXME? - play screen dependent// play screen only screen using this, move to screen method
 
    		var newTopLeftX = Math.max(0, playScreen.player.x - ((screenWidth - 1) / 2)); //-1 from screenWidth/Height for even number
         playScreen.topLeftX = Math.min(newTopLeftX, playScreen.map.width - screenWidth);
@@ -1721,11 +1912,20 @@ Game.Screen.UIClickEvaluation = function(eventPosition, screen, uiParameters) {
 	var tilePixelWidth = Game.interfaceObject.tilePixelWidth;	
 	var clickX = eventPosition[0] * tilePixelWidth;
 	var clickY = eventPosition[1] * tilePixelWidth;
+	
+	//convert to account for difference in backCanvas size and front canvas (which ui positioning parameters are based on)
+	var interfaceObject = Game.interfaceObject;	
+   	var screenUIWidth = interfaceObject.canvasTileWidth * tilePixelWidth;
+    var screenUIHeight = interfaceObject.canvasTileHeight * tilePixelWidth;
+   	var screenWidth = interfaceObject.backCanvasTileWidth * tilePixelWidth;
+    var screenHeight = interfaceObject.backCanvasTileHeight * tilePixelWidth;
+	
+	clickX -= ((screenWidth - screenUIWidth) / 2);
+	clickY -= ((screenHeight - screenUIHeight) / 2); 
+		
 	var componentClicked = false;
-console.log(screen);
-console.log(uiParameters);	
+
 	//clear current selection 
-	console.log('call05');
 	Game.Screen.UIclearSelectedComponents(uiParameters);
 	
 	//loop through UI components checking for position match
@@ -1752,8 +1952,8 @@ console.log(uiParameters);
 				
 				*/
 				
-				uiParameters[i].clickHighlight = true;		
-				screen.render(Game.display);
+				//uiParameters[i].clickHighlight = true;		
+				//screen.render(Game.display);
 				
 				var uiComponentObject = uiParameters[i];
 				
@@ -1761,6 +1961,9 @@ console.log(uiParameters);
 					if (uiParameters[i].availabilityCheck()){
 						//uiParameters[i].clickAction();
 						//componentClicked = true;
+						uiParameters[i].clickHighlight = true;		
+						screen.render(Game.display);
+				
 						setTimeout(
 							function(uiComponentObject){ 
 								uiComponentObject.clickHighlight = false;
@@ -1771,6 +1974,9 @@ console.log(uiParameters);
 				} else{
 					//uiParameters[i].clickAction();
 					//componentClicked = true;
+					uiParameters[i].clickHighlight = true;		
+					screen.render(Game.display);
+				
 					setTimeout(
 							function(uiComponentObject){ 
 								uiComponentObject.clickHighlight = false;
