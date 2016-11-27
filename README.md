@@ -8,4 +8,4 @@ UnderROT and "Against the Ooze" ~~are currently under development. (At a slow pa
 
 Current draft: [briantfloyd.github.io/redmurk/againsttheooze](https://briantfloyd.github.io/redmurk/againsttheooze/)
 
-UnderROT and "Against the Ooze" are Copyright (c) 2015, Brian T. Floyd. UnderROT is FreeBSD licensed. [ROT.js](http://ondras.github.io/rot.js/hp/) is Copyright (c) 2012-present, Ondrej Zara. ROT.js is BSD licensed.
+UnderROT and "Against the Ooze" are Copyright (c) 2016, Brian T. Floyd. UnderROT is FreeBSD licensed. [ROT.js](http://ondras.github.io/rot.js/hp/) is Copyright (c) 2012-present, Ondrej Zara. ROT.js is BSD licensed.
